@@ -1,0 +1,6 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+Always refer to [BEST_PRACTICES.md](mdc:BEST_PRACTICES.md) before making edits to the code base.
