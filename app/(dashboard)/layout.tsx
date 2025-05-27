@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { use, useState, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
-import { CircleIcon, Home, LogOut } from 'lucide-react';
+import { ChefHat, Home, LogOut } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -38,8 +38,8 @@ function UserMenu() {
         >
           Pricing
         </Link>
-        <Button asChild className="rounded-full">
-          <Link href="/sign-up">Sign Up</Link>
+        <Button asChild className="rounded-full bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800">
+          <Link href="/sign-up">Start Free Trial</Link>
         </Button>
       </>
     );
@@ -80,11 +80,15 @@ function UserMenu() {
 
 function Header() {
   return (
-    <header className="border-b border-gray-200">
+    <header className="border-b border-gray-200 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-        <Link href="/" className="flex items-center">
-          <CircleIcon className="h-6 w-6 text-orange-500" />
-          <span className="ml-2 text-xl font-semibold text-gray-900">ACME</span>
+        <Link href="/" className="flex items-center group">
+          <div className="w-8 h-8 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
+            <ChefHat className="h-5 w-5 text-white" />
+          </div>
+          <span className="ml-3 text-xl font-bold bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">
+            AI Petite
+          </span>
         </Link>
         <div className="flex items-center space-x-4">
           <Suspense fallback={<div className="h-9" />}>
