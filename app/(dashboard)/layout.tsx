@@ -39,7 +39,7 @@ function UserMenu() {
           Pricing
         </Link>
         <Button asChild className="rounded-full bg-gradient-to-r from-primary to-primary hover:from-primary/90 hover:to-primary/90">
-          <Link href="/sign-up">Start Free Trial</Link>
+          <Link href="/pricing">Start Free Trial</Link>
         </Button>
       </>
     );

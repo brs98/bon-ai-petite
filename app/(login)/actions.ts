@@ -103,11 +103,12 @@ export const signIn = validatedAction(signInSchema, async (data, formData) => {
 const signUpSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8),
-  inviteId: z.string().optional()
+  inviteId: z.string().optional(),
+  plan: z.enum(['essential', 'premium']).optional()
 });
 
 export const signUp = validatedAction(signUpSchema, async (data, formData) => {
-  const { email, password, inviteId } = data;
+  const { email, password, inviteId, plan } = data;
 
   const existingUser = await db
     .select()
@@ -213,9 +214,44 @@ export const signUp = validatedAction(signUpSchema, async (data, formData) => {
   ]);
 
   const redirectTo = formData.get('redirect') as string | null;
+  const selectedPlan = formData.get('plan') as string | null;
+  
   if (redirectTo === 'checkout') {
     const priceId = formData.get('priceId') as string;
     return createCheckoutSession({ team: createdTeam, priceId });
+  }
+
+  // If a plan is selected, redirect to Stripe checkout
+  if (selectedPlan && createdTeam) {
+    // Get Stripe prices and products to find the correct price ID
+    const { getStripePrices, getStripeProducts } = await import('@/lib/payments/stripe');
+    const [prices, products] = await Promise.all([
+      getStripePrices(),
+      getStripeProducts(),
+    ]);
+
+    // Map plan names to product names
+    const planToProductName = {
+      'essential': 'Base',
+      'premium': 'Plus'
+    };
+    
+    const productName = planToProductName[selectedPlan as keyof typeof planToProductName];
+    
+    if (productName) {
+      const product = products.find((p) => p.name === productName);
+      const price = prices.find((p) => p.productId === product?.id);
+      
+      if (price?.id) {
+        return createCheckoutSession({ team: createdTeam, priceId: price.id });
+      } else {
+        // Fallback: redirect to profile if Stripe products are not set up
+        redirect('/profile');
+      }
+    } else {
+      // Fallback: redirect to profile if plan mapping is incorrect
+      redirect('/profile');
+    }
   }
 
   redirect('/dashboard');

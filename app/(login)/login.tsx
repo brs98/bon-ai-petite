@@ -15,10 +15,27 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
   const redirect = searchParams.get('redirect');
   const priceId = searchParams.get('priceId');
   const inviteId = searchParams.get('inviteId');
+  const plan = searchParams.get('plan');
   const [state, formAction, pending] = useActionState<ActionState, FormData>(
     mode === 'signin' ? signIn : signUp,
     { error: '' }
   );
+
+  // Plan display information
+  const planInfo = {
+    essential: {
+      name: 'Essential Plan',
+      price: '$8/month',
+      features: ['AI-Generated Meal Plans', 'Basic Dietary Preferences', 'Shopping List Generation']
+    },
+    premium: {
+      name: 'Premium Plan', 
+      price: '$12/month',
+      features: ['Everything in Essential', 'Advanced Nutrition Tracking', 'Family Meal Planning']
+    }
+  };
+
+  const selectedPlan = plan && planInfo[plan as keyof typeof planInfo] ? planInfo[plan as keyof typeof planInfo] : null;
 
   return (
     <div className="min-h-[100dvh] flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-primary/10 via-background to-accent/10">
@@ -45,6 +62,18 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
               ? 'Sign in to access your personalized meal plans'
               : 'Create your account and get AI-powered nutrition in minutes'}
           </p>
+          {mode === 'signup' && selectedPlan && (
+            <div className="mt-4 p-4 bg-gradient-to-r from-primary/10 to-emerald-100/50 rounded-xl border border-primary/20">
+              <div className="flex items-center justify-center mb-2">
+                <Sparkles className="h-5 w-5 text-primary mr-2" />
+                <span className="font-semibold text-primary">Selected Plan: {selectedPlan.name}</span>
+              </div>
+              <p className="text-sm text-muted-foreground mb-2">{selectedPlan.price} • 7-day free trial</p>
+              <div className="text-xs text-muted-foreground">
+                {selectedPlan.features.slice(0, 2).join(' • ')}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -54,6 +83,7 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
             <input type="hidden" name="redirect" value={redirect || ''} />
             <input type="hidden" name="priceId" value={priceId || ''} />
             <input type="hidden" name="inviteId" value={inviteId || ''} />
+            <input type="hidden" name="plan" value={plan || ''} />
             
             <div>
               <Label
@@ -163,10 +193,6 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
                 <div className="flex items-center">
                   <div className="w-2 h-2 bg-primary rounded-full mr-2"></div>
                   <span>7-day free trial</span>
-                </div>
-                <div className="flex items-center">
-                  <div className="w-2 h-2 bg-primary rounded-full mr-2"></div>
-                  <span>No credit card required</span>
                 </div>
                 <div className="flex items-center">
                   <div className="w-2 h-2 bg-primary rounded-full mr-2"></div>

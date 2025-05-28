@@ -1,7 +1,7 @@
-import { checkoutAction } from '@/lib/payments/actions';
 import { Check, ChefHat, Sparkles, Star, Zap } from 'lucide-react';
 import { getStripePrices, getStripeProducts } from '@/lib/payments/stripe';
 import { SubmitButton } from './submit-button';
+import Link from 'next/link';
 
 // Prices are fresh for one hour max
 export const revalidate = 3600;
@@ -23,6 +23,26 @@ export default async function PricingPage() {
       {/* Background decorative elements */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent"></div>
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,_var(--tw-gradient-stops))] from-accent/5 via-transparent to-transparent"></div>
+      
+      {/* Navigation */}
+      <nav className="relative z-10 flex items-center justify-between p-6">
+        <Link href="/" className="flex items-center group">
+          <div className="w-10 h-10 bg-gradient-to-r from-primary to-primary/90 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
+            <ChefHat className="h-5 w-5 text-primary-foreground" />
+          </div>
+          <span className="ml-3 text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            AI Petite
+          </span>
+        </Link>
+        <div className="flex items-center space-x-4">
+          <Link 
+            href="/sign-in" 
+            className="text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Sign In
+          </Link>
+        </div>
+      </nav>
       
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="text-center mb-16">
@@ -55,7 +75,7 @@ export default async function PricingPage() {
               'Email Support',
               'Mobile App Access'
             ]}
-            priceId={basePrice?.id}
+            planId="essential"
             popular={false}
           />
           <PricingCard
@@ -73,7 +93,7 @@ export default async function PricingPage() {
               'Priority Support',
               'Nutritionist Consultations'
             ]}
-            priceId={plusPrice?.id}
+            planId="premium"
             popular={true}
           />
         </div>
@@ -141,7 +161,7 @@ function PricingCard({
   interval,
   trialDays,
   features,
-  priceId,
+  planId,
   popular = false,
 }: {
   name: string;
@@ -150,7 +170,7 @@ function PricingCard({
   interval: string;
   trialDays: number;
   features: string[];
-  priceId?: string;
+  planId: string;
   popular?: boolean;
 }) {
   return (
@@ -204,10 +224,7 @@ function PricingCard({
         ))}
       </ul>
       
-      <form action={checkoutAction}>
-        <input type="hidden" name="priceId" value={priceId} />
-        <SubmitButton popular={popular} />
-      </form>
+      <SubmitButton planId={planId} popular={popular} />
     </div>
   );
-}
+} 

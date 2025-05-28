@@ -10,14 +10,20 @@ export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const sessionId = searchParams.get('session_id');
 
+  console.log('Checkout API called with session_id:', sessionId);
+
   if (!sessionId) {
+    console.log('No session_id provided, redirecting to pricing');
     return NextResponse.redirect(new URL('/pricing', request.url));
   }
 
   try {
+    console.log('Retrieving Stripe session...');
     const session = await stripe.checkout.sessions.retrieve(sessionId, {
       expand: ['customer', 'subscription'],
     });
+
+    console.log('Stripe session retrieved successfully');
 
     if (!session.customer || typeof session.customer === 'string') {
       throw new Error('Invalid customer data from Stripe.');
@@ -33,6 +39,7 @@ export async function GET(request: NextRequest) {
       throw new Error('No subscription found for this session.');
     }
 
+    console.log('Retrieving subscription details...');
     const subscription = await stripe.subscriptions.retrieve(subscriptionId, {
       expand: ['items.data.price.product'],
     });
@@ -54,44 +61,71 @@ export async function GET(request: NextRequest) {
       throw new Error("No user ID found in session's client_reference_id.");
     }
 
-    const user = await db
-      .select()
-      .from(users)
-      .where(eq(users.id, Number(userId)))
-      .limit(1);
+    console.log('Starting database operations for user:', userId);
 
-    if (user.length === 0) {
-      throw new Error('User not found in database.');
+    // Try to update the database with a timeout, but don't fail the entire flow if it times out
+    try {
+      // Add a timeout wrapper for database operations
+      const dbOperationPromise = (async () => {
+        const user = await db
+          .select()
+          .from(users)
+          .where(eq(users.id, Number(userId)))
+          .limit(1);
+
+        if (user.length === 0) {
+          throw new Error('User not found in database.');
+        }
+
+        const userTeam = await db
+          .select({
+            teamId: teamMembers.teamId,
+          })
+          .from(teamMembers)
+          .where(eq(teamMembers.userId, user[0].id))
+          .limit(1);
+
+        if (userTeam.length === 0) {
+          throw new Error('User is not associated with any team.');
+        }
+
+        await db
+          .update(teams)
+          .set({
+            stripeCustomerId: customerId,
+            stripeSubscriptionId: subscriptionId,
+            stripeProductId: productId,
+            planName: (plan.product as Stripe.Product).name,
+            subscriptionStatus: subscription.status,
+            updatedAt: new Date(),
+          })
+          .where(eq(teams.id, userTeam[0].teamId));
+
+        await setSession(user[0]);
+        return user[0];
+      })();
+
+      // Set a 10-second timeout for database operations
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Database operation timeout')), 10000);
+      });
+
+      await Promise.race([dbOperationPromise, timeoutPromise]);
+      console.log('Successfully updated database for user:', userId);
+    } catch (dbError) {
+      console.error('Database error during checkout processing:', dbError);
+      console.log('Continuing with redirect - webhook will handle subscription update');
+      // Continue to redirect even if database update fails
+      // The webhook will handle the subscription update later
     }
 
-    const userTeam = await db
-      .select({
-        teamId: teamMembers.teamId,
-      })
-      .from(teamMembers)
-      .where(eq(teamMembers.userId, user[0].id))
-      .limit(1);
-
-    if (userTeam.length === 0) {
-      throw new Error('User is not associated with any team.');
-    }
-
-    await db
-      .update(teams)
-      .set({
-        stripeCustomerId: customerId,
-        stripeSubscriptionId: subscriptionId,
-        stripeProductId: productId,
-        planName: (plan.product as Stripe.Product).name,
-        subscriptionStatus: subscription.status,
-        updatedAt: new Date(),
-      })
-      .where(eq(teams.id, userTeam[0].teamId));
-
-    await setSession(user[0]);
-    return NextResponse.redirect(new URL('/dashboard', request.url));
+    console.log('Redirecting to profile with success status');
+    // Always redirect to profile, even if database update failed
+    return NextResponse.redirect(new URL('/profile?payment=success', request.url));
   } catch (error) {
     console.error('Error handling successful checkout:', error);
-    return NextResponse.redirect(new URL('/error', request.url));
+    console.log('Redirecting to profile with error status');
+    // Still redirect to profile with an error flag so user isn't stuck
+    return NextResponse.redirect(new URL('/profile?payment=error', request.url));
   }
 }
