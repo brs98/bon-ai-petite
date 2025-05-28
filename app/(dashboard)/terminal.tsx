@@ -32,16 +32,16 @@ export function Terminal() {
   };
 
   return (
-    <div className="w-full rounded-lg shadow-lg overflow-hidden bg-slate-900 text-white font-mono text-sm relative">
-      <div className="flex items-center justify-between px-4 py-2 bg-slate-800">
+    <div className="w-full rounded-lg shadow-lg overflow-hidden bg-card text-card-foreground font-mono text-sm relative">
+      <div className="flex items-center justify-between px-4 py-2 bg-muted">
         <div className="flex space-x-2">
           <div className="w-3 h-3 rounded-full bg-destructive"></div>
-          <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+          <div className="w-3 h-3 rounded-full bg-accent"></div>
           <div className="w-3 h-3 rounded-full bg-primary"></div>
         </div>
         <button
           onClick={copyToClipboard}
-          className="text-muted-foreground hover:text-white transition-colors"
+          className="text-muted-foreground hover:text-card-foreground transition-colors"
           aria-label="Copy to clipboard"
         >
           {copied ? (

@@ -38,7 +38,7 @@ function UserMenu() {
         >
           Pricing
         </Link>
-        <Button asChild className="rounded-full bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800">
+        <Button asChild className="rounded-full bg-gradient-to-r from-primary to-primary hover:from-primary/90 hover:to-primary/90">
           <Link href="/sign-up">Start Free Trial</Link>
         </Button>
       </>
@@ -83,10 +83,10 @@ function Header() {
     <header className="border-b border-border bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
         <Link href="/" className="flex items-center group">
-          <div className="w-8 h-8 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
-            <ChefHat className="h-5 w-5 text-white" />
+          <div className="w-8 h-8 bg-gradient-to-r from-primary to-primary rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
+            <ChefHat className="h-5 w-5 text-primary-foreground" />
           </div>
-          <span className="ml-3 text-xl font-bold bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">
+          <span className="ml-3 text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
             AI Petite
           </span>
         </Link>

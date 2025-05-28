@@ -22,10 +22,10 @@ Transform eating habits with AI-powered meal planning, personalized nutrition pl
 ### Primary Logo
 ```tsx
 <Link href="/" className="flex items-center group">
-  <div className="w-12 h-12 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
-    <ChefHat className="h-6 w-6 text-white" />
+  <div className="w-12 h-12 bg-gradient-to-r from-primary to-primary rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
+    <ChefHat className="h-6 w-6 text-primary-foreground" />
   </div>
-  <span className="ml-3 text-2xl font-bold bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">
+  <span className="ml-3 text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
     AI Petite
   </span>
 </Link>
@@ -35,62 +35,55 @@ Transform eating habits with AI-powered meal planning, personalized nutrition pl
 
 #### Header Logo (Smaller)
 ```tsx
-<div className="w-8 h-8 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-lg flex items-center justify-center">
-  <ChefHat className="h-5 w-5 text-white" />
+<div className="w-8 h-8 bg-gradient-to-r from-primary to-primary rounded-lg flex items-center justify-center">
+  <ChefHat className="h-5 w-5 text-primary-foreground" />
 </div>
-<span className="ml-3 text-xl font-bold bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">
+<span className="ml-3 text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
   AI Petite
 </span>
 ```
 
 #### Icon Only
 ```tsx
-<div className="w-16 h-16 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-2xl flex items-center justify-center">
-  <ChefHat className="h-8 w-8 text-white" />
+<div className="w-16 h-16 bg-gradient-to-r from-primary to-primary rounded-2xl flex items-center justify-center">
+  <ChefHat className="h-8 w-8 text-primary-foreground" />
 </div>
 ```
 
 ## 🌈 Color Palette
 
-### Primary Colors
-- **Emerald 500**: Primary brand color
-- **Emerald 600**: Primary dark
-- **Emerald 700**: Primary darker
+### Semantic Colors
+All colors use semantic naming for consistency and maintainability:
 
-### Secondary Colors
-- **Blue 500**: Secondary accent
-- **Blue 600**: Secondary dark
+- **Primary**: Main brand color (red-based)
+- **Secondary**: Light background tints
+- **Accent**: Warm accent color (orange-based)
+- **Muted**: Subtle text and backgrounds
+- **Destructive**: Error states
+- **Foreground**: Main text color
+- **Background**: Page backgrounds
+- **Border**: Borders and dividers
 
 ### Gradient Combinations
 ```css
 /* Primary Brand Gradient */
-bg-gradient-to-r from-emerald-500 to-emerald-600
+bg-gradient-to-r from-primary to-primary
 
 /* Logo Text Gradient */
-bg-gradient-to-r from-emerald-600 to-blue-600
+bg-gradient-to-r from-primary to-accent
 
 /* Background Gradient */
-bg-gradient-to-br from-emerald-50 via-white to-blue-50
+bg-gradient-to-br from-secondary via-background to-secondary
 
 /* Button Hover Gradient */
-hover:from-emerald-700 hover:to-emerald-800
+hover:from-primary/90 hover:to-primary/90
 ```
 
-### Neutral Colors
-- **Gray 50**: Light background
-- **Gray 100**: Card borders
-- **Gray 200**: Dividers
-- **Gray 300**: Input borders
-- **Gray 500**: Secondary text
-- **Gray 600**: Body text
-- **Gray 700**: Dark text
-- **Gray 900**: Headings
-
 ### Status Colors
-- **Success**: `text-emerald-500`
-- **Warning**: `text-amber-500`
-- **Error**: `text-red-500`
-- **Info**: `text-blue-500`
+- **Success**: `text-primary`
+- **Warning**: `text-accent`
+- **Error**: `text-destructive`
+- **Info**: `text-accent`
 
 ## 📝 Typography
 
@@ -103,28 +96,28 @@ font-family: "Manrope", Arial, Helvetica, sans-serif;
 ### Heading Hierarchy
 ```css
 /* H1 - Hero Titles */
-text-5xl lg:text-7xl font-bold text-gray-900
+text-5xl lg:text-7xl font-bold text-foreground
 
 /* H2 - Section Titles */
-text-4xl font-bold text-gray-900
+text-4xl font-bold text-foreground
 
 /* H3 - Subsection Titles */
-text-2xl font-bold text-gray-900
+text-2xl font-bold text-foreground
 
 /* H4 - Card Titles */
-text-xl font-semibold text-gray-900
+text-xl font-semibold text-foreground
 ```
 
 ### Body Text
 ```css
 /* Large Body */
-text-xl text-gray-600
+text-xl text-muted-foreground
 
 /* Regular Body */
-text-base text-gray-600
+text-base text-muted-foreground
 
 /* Small Text */
-text-sm text-gray-500
+text-sm text-muted-foreground
 ```
 
 ## 🧩 Component Styles
@@ -133,7 +126,7 @@ text-sm text-gray-500
 
 #### Primary Button
 ```tsx
-<Button className="bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white px-8 py-4 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 font-semibold">
+<Button className="bg-gradient-to-r from-primary to-primary hover:from-primary/90 hover:to-primary/90 text-primary-foreground px-8 py-4 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 font-semibold">
   Button Text
 </Button>
 ```
@@ -142,7 +135,7 @@ text-sm text-gray-500
 ```tsx
 <Button 
   variant="outline"
-  className="border-2 border-gray-300 hover:border-emerald-500 text-gray-700 hover:text-emerald-700 px-8 py-4 text-lg rounded-xl transition-all duration-200"
+  className="border-2 border-border hover:border-primary text-muted-foreground hover:text-primary px-8 py-4 text-lg rounded-xl transition-all duration-200"
 >
   Button Text
 </Button>
@@ -150,7 +143,7 @@ text-sm text-gray-500
 
 #### CTA Button (White on colored background)
 ```tsx
-<Button className="bg-white text-emerald-600 hover:bg-gray-50 px-8 py-4 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 font-semibold">
+<Button className="bg-background text-primary hover:bg-background/90 px-8 py-4 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 font-semibold">
   Button Text
 </Button>
 ```
@@ -159,12 +152,12 @@ text-sm text-gray-500
 
 #### Input Fields
 ```tsx
-<Input className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors duration-200" />
+<Input className="w-full px-4 py-3 border border-input rounded-xl focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring transition-colors duration-200" />
 ```
 
 #### Labels
 ```tsx
-<Label className="block text-sm font-medium text-gray-700 mb-2">
+<Label className="block text-sm font-medium text-foreground mb-2">
   Label Text
 </Label>
 ```
@@ -173,31 +166,31 @@ text-sm text-gray-500
 
 #### Primary Card
 ```tsx
-<div className="bg-white rounded-3xl shadow-xl p-8 border border-gray-100">
+<div className="bg-card rounded-3xl shadow-xl p-8 border border-border">
   {/* Card content */}
 </div>
 ```
 
 #### Feature Card
 ```tsx
-<div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+<div className="bg-card rounded-2xl shadow-lg p-6 border border-border">
   {/* Card content */}
 </div>
 ```
 
 #### Pricing Card
 ```tsx
-<div className="relative bg-white rounded-3xl shadow-xl border border-gray-200 p-8">
+<div className="relative bg-card rounded-3xl shadow-xl border border-border p-8">
   {/* Card content */}
 </div>
 ```
 
 #### Popular Pricing Card
 ```tsx
-<div className="relative bg-white rounded-3xl shadow-xl border border-emerald-200 ring-2 ring-emerald-500 p-8">
+<div className="relative bg-card rounded-3xl shadow-xl border border-primary/20 ring-2 ring-primary p-8">
   {/* Popular badge */}
   <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-    <div className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-4 py-2 rounded-full text-sm font-medium flex items-center">
+    <div className="bg-primary text-primary-foreground px-4 py-2 rounded-full text-sm font-medium flex items-center">
       <Sparkles className="h-4 w-4 mr-1" />
       Most Popular
     </div>
@@ -223,22 +216,22 @@ text-sm text-gray-500
 ### Icon Usage
 ```tsx
 // Feature icons with colored backgrounds
-<div className="w-16 h-16 rounded-2xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white mb-6 flex items-center justify-center">
+<div className="w-16 h-16 rounded-2xl bg-gradient-to-r from-primary to-primary text-primary-foreground mb-6 flex items-center justify-center">
   <Sparkles className="h-8 w-8" />
 </div>
 
 // Small accent icons
-<CheckCircle className="h-5 w-5 text-emerald-500 mr-2" />
+<CheckCircle className="h-5 w-5 text-primary mr-2" />
 
 // Navigation icons
-<ChefHat className="h-5 w-5 text-white" />
+<ChefHat className="h-5 w-5 text-primary-foreground" />
 ```
 
 ## 🏗️ Layout Patterns
 
 ### Page Structure
 ```tsx
-<main className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-blue-50">
+<main className="min-h-screen bg-gradient-to-br from-secondary via-background to-secondary">
   {/* Page content */}
 </main>
 ```
@@ -271,19 +264,19 @@ py-8
 
 ### Primary Background
 ```css
-bg-gradient-to-br from-emerald-50 via-white to-blue-50
+bg-gradient-to-br from-secondary via-background to-secondary
 ```
 
 ### Section Backgrounds
 ```css
-/* White sections */
-bg-white
+/* Card sections */
+bg-card
 
 /* Light accent sections */
-bg-gradient-to-r from-emerald-50 to-blue-50
+bg-gradient-to-r from-primary/10 to-accent/10
 
 /* CTA sections */
-bg-gradient-to-r from-emerald-600 to-blue-600
+bg-gradient-to-r from-primary to-primary/90
 ```
 
 ## 📱 Responsive Design
@@ -343,7 +336,7 @@ shadow-lg hover:shadow-xl transition-all duration-200
 ## 🔧 Implementation Notes
 
 ### Color System
-All colors are defined in `globals.css` using CSS custom properties and Tailwind's color system. Use Tailwind classes like `text-emerald-600`, `bg-gray-100`, etc. rather than hardcoded hex values.
+All colors are defined in `globals.css` using CSS custom properties with semantic naming. Always use semantic classes like `text-primary`, `bg-card`, `border-border`, etc. rather than specific color names or hardcoded hex values.
 
 ### Font Configuration
 The Manrope font is configured in `globals.css` and applied globally to the body element.
@@ -352,7 +345,7 @@ The Manrope font is configured in `globals.css` and applied globally to the body
 
 ### Page Header
 ```tsx
-<header className="border-b border-gray-200 bg-white">
+<header className="border-b border-border bg-background">
   <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
     {/* Logo */}
     {/* Navigation */}
@@ -363,7 +356,7 @@ The Manrope font is configured in `globals.css` and applied globally to the body
 ### Hero Section
 ```tsx
 <section className="relative py-20 lg:py-32 overflow-hidden">
-  <div className="absolute inset-0 bg-gradient-to-r from-emerald-600/10 to-blue-600/10"></div>
+  <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-accent/10"></div>
   <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     {/* Hero content */}
   </div>
@@ -372,7 +365,7 @@ The Manrope font is configured in `globals.css` and applied globally to the body
 
 ### Feature Section
 ```tsx
-<section className="py-20 bg-white">
+<section className="py-20 bg-background">
   <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     {/* Feature content */}
   </div>
@@ -383,22 +376,26 @@ The Manrope font is configured in `globals.css` and applied globally to the body
 
 ## 🎯 Quick Reference
 
-### Brand Colors (Tailwind Classes)
-- Primary: `text-emerald-600` / `bg-emerald-600`
-- Secondary: `text-blue-600` / `bg-blue-600`
-- Success: `text-emerald-500` / `bg-emerald-500`
-- Text: `text-gray-900`
+### Semantic Color Classes
+- Primary: `text-primary` / `bg-primary`
+- Secondary: `text-secondary-foreground` / `bg-secondary`
+- Accent: `text-accent` / `bg-accent`
+- Text: `text-foreground`
+- Muted: `text-muted-foreground`
+- Background: `bg-background`
+- Card: `bg-card`
+- Border: `border-border`
 
 ### Key Components
 - Logo: ChefHat + "AI Petite" gradient text
-- Buttons: Emerald gradients with `rounded-xl`
-- Cards: White with `shadow-xl` and `rounded-3xl`
-- Inputs: Emerald focus states with `rounded-xl`
+- Buttons: Primary gradients with `rounded-xl`
+- Cards: Card background with `shadow-xl` and `rounded-3xl`
+- Inputs: Ring focus states with `rounded-xl`
 
 ### Typography Classes
 - Font: Manrope (defined in globals.css)
-- Headings: `font-bold text-gray-900`
-- Body: `text-gray-600`
-- Small: `text-gray-500`
+- Headings: `font-bold text-foreground`
+- Body: `text-muted-foreground`
+- Small: `text-muted-foreground text-sm`
 
 This style guide should be referenced for all new pages and components to maintain visual consistency across the AI Petite application. 

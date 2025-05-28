@@ -21,14 +21,14 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
   );
 
   return (
-    <div className="min-h-[100dvh] flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-primary/10 via-white to-blue-50">
+    <div className="min-h-[100dvh] flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-primary/10 via-background to-accent/10">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center mb-6">
           <Link href="/" className="flex items-center group">
             <div className="w-12 h-12 bg-gradient-to-r from-primary to-primary/90 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
               <ChefHat className="h-6 w-6 text-primary-foreground" />
             </div>
-            <span className="ml-3 text-2xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
+            <span className="ml-3 text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
               AI Petite
             </span>
           </Link>

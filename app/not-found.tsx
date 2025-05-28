@@ -3,11 +3,11 @@ import { ChefHat } from 'lucide-react';
 
 export default function NotFound() {
   return (
-    <div className="flex items-center justify-center min-h-[100dvh] bg-gradient-to-br from-emerald-50 via-white to-blue-50">
+    <div className="flex items-center justify-center min-h-[100dvh] bg-gradient-to-br from-secondary via-background to-secondary">
       <div className="max-w-md space-y-8 p-4 text-center">
         <div className="flex justify-center">
-          <div className="w-16 h-16 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-2xl flex items-center justify-center">
-            <ChefHat className="h-8 w-8 text-white" />
+          <div className="w-16 h-16 bg-gradient-to-r from-primary to-primary rounded-2xl flex items-center justify-center">
+            <ChefHat className="h-8 w-8 text-primary-foreground" />
           </div>
         </div>
         <h1 className="text-4xl font-bold text-foreground tracking-tight">

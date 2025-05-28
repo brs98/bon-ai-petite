@@ -1,5 +1,5 @@
 import { checkoutAction } from '@/lib/payments/actions';
-import { Check, ChefHat, Sparkles } from 'lucide-react';
+import { Check, ChefHat, Sparkles, Star, Zap } from 'lucide-react';
 import { getStripePrices, getStripeProducts } from '@/lib/payments/stripe';
 import { SubmitButton } from './submit-button';
 
@@ -19,75 +19,114 @@ export default async function PricingPage() {
   const plusPrice = prices.find((price) => price.productId === plusPlan?.id);
 
   return (
-    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 bg-gradient-to-br from-emerald-50 via-white to-blue-50 min-h-screen">
-      <div className="text-center mb-16">
-        <div className="flex items-center justify-center mb-6">
-          <div className="w-12 h-12 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center">
-            <ChefHat className="h-6 w-6 text-white" />
+    <main className="min-h-screen bg-gradient-to-br from-emerald-50 via-background to-blue-50 relative overflow-hidden">
+      {/* Background decorative elements */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent"></div>
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,_var(--tw-gradient-stops))] from-accent/5 via-transparent to-transparent"></div>
+      
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="text-center mb-16">
+          <div className="flex items-center justify-center mb-6">
+            <div className="w-16 h-16 bg-gradient-to-r from-primary via-emerald-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg">
+              <ChefHat className="h-8 w-8 text-primary-foreground" />
+            </div>
+          </div>
+          <h1 className="text-5xl font-bold text-foreground mb-6">
+            Choose Your <span className="bg-gradient-to-r from-primary via-emerald-500 to-accent bg-clip-text text-transparent">AI Petite</span> Plan
+          </h1>
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+            Start your journey to healthier eating with personalized meal plans and seamless grocery delivery integration. 
+            Transform your relationship with food today.
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto mb-16">
+          <PricingCard
+            name="Essential"
+            displayName={basePlan?.name || 'Essential'}
+            price={basePrice?.unitAmount || 800}
+            interval={basePrice?.interval || 'month'}
+            trialDays={basePrice?.trialPeriodDays || 7}
+            features={[
+              'AI-Generated Meal Plans',
+              'Basic Dietary Preferences',
+              'Shopping List Generation',
+              'Instacart Integration',
+              'Email Support',
+              'Mobile App Access'
+            ]}
+            priceId={basePrice?.id}
+            popular={false}
+          />
+          <PricingCard
+            name="Premium"
+            displayName={plusPlan?.name || 'Premium'}
+            price={plusPrice?.unitAmount || 1200}
+            interval={plusPrice?.interval || 'month'}
+            trialDays={plusPrice?.trialPeriodDays || 7}
+            features={[
+              'Everything in Essential, plus:',
+              'Advanced Nutrition Tracking',
+              'Family Meal Planning',
+              'Amazon Fresh Integration',
+              'Custom Recipe Requests',
+              'Priority Support',
+              'Nutritionist Consultations'
+            ]}
+            priceId={plusPrice?.id}
+            popular={true}
+          />
+        </div>
+
+        {/* Trust indicators */}
+        <div className="text-center mb-12">
+          <div className="bg-gradient-to-r from-emerald-50 to-blue-50 rounded-2xl p-8 border border-emerald-200/50 max-w-4xl mx-auto">
+            <div className="flex items-center justify-center mb-4">
+              <Star className="h-5 w-5 text-yellow-500 fill-current" />
+              <Star className="h-5 w-5 text-yellow-500 fill-current" />
+              <Star className="h-5 w-5 text-yellow-500 fill-current" />
+              <Star className="h-5 w-5 text-yellow-500 fill-current" />
+              <Star className="h-5 w-5 text-yellow-500 fill-current" />
+              <span className="ml-2 text-foreground font-semibold">4.9/5 from 2,000+ users</span>
+            </div>
+            <p className="text-muted-foreground mb-6">
+              Join thousands of satisfied users who have transformed their eating habits with AI Petite
+            </p>
+            <div className="flex items-center justify-center space-x-8 text-sm text-muted-foreground">
+              <div className="flex items-center">
+                <Check className="h-4 w-4 text-primary mr-2" />
+                <span>7-day free trial</span>
+              </div>
+              <div className="flex items-center">
+                <Check className="h-4 w-4 text-primary mr-2" />
+                <span>Cancel anytime</span>
+              </div>
+              <div className="flex items-center">
+                <Check className="h-4 w-4 text-primary mr-2" />
+                <span>30-day money back guarantee</span>
+              </div>
+            </div>
           </div>
         </div>
-        <h1 className="text-4xl font-bold text-foreground mb-4">
-          Choose Your <span className="bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">AI Petite</span> Plan
-        </h1>
-        <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          Start your journey to healthier eating with personalized meal plans and seamless grocery delivery integration.
-        </p>
-      </div>
 
-      <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-        <PricingCard
-          name="Essential"
-          displayName={basePlan?.name || 'Essential'}
-          price={basePrice?.unitAmount || 800}
-          interval={basePrice?.interval || 'month'}
-          trialDays={basePrice?.trialPeriodDays || 7}
-          features={[
-            'AI-Generated Meal Plans',
-            'Basic Dietary Preferences',
-            'Shopping List Generation',
-            'Instacart Integration',
-            'Email Support',
-            'Mobile App Access'
-          ]}
-          priceId={basePrice?.id}
-          popular={false}
-        />
-        <PricingCard
-          name="Premium"
-          displayName={plusPlan?.name || 'Premium'}
-          price={plusPrice?.unitAmount || 1200}
-          interval={plusPrice?.interval || 'month'}
-          trialDays={plusPrice?.trialPeriodDays || 7}
-          features={[
-            'Everything in Essential, plus:',
-            'Advanced Nutrition Tracking',
-            'Family Meal Planning',
-            'Amazon Fresh Integration',
-            'Custom Recipe Requests',
-            'Priority Support',
-            'Nutritionist Consultations'
-          ]}
-          priceId={plusPrice?.id}
-          popular={true}
-        />
-      </div>
-
-      <div className="text-center mt-16">
-        <p className="text-muted-foreground mb-4">
-          All plans include a 7-day free trial. No credit card required to start.
-        </p>
-        <div className="flex items-center justify-center space-x-8 text-sm text-muted-foreground">
-          <div className="flex items-center">
-            <Check className="h-4 w-4 text-primary mr-2" />
-            <span>Cancel anytime</span>
-          </div>
-          <div className="flex items-center">
-            <Check className="h-4 w-4 text-primary mr-2" />
-            <span>No setup fees</span>
-          </div>
-          <div className="flex items-center">
-            <Check className="h-4 w-4 text-primary mr-2" />
-            <span>30-day money back guarantee</span>
+        {/* FAQ Section */}
+        <div className="max-w-3xl mx-auto">
+          <h2 className="text-3xl font-bold text-foreground text-center mb-8">
+            Frequently Asked Questions
+          </h2>
+          <div className="space-y-6">
+            <div className="bg-card/80 backdrop-blur-sm rounded-xl p-6 border border-border">
+              <h3 className="font-semibold text-foreground mb-2">How does the AI meal planning work?</h3>
+              <p className="text-muted-foreground">Our AI analyzes your dietary preferences, health goals, and lifestyle to create personalized meal plans that evolve with your needs and feedback.</p>
+            </div>
+            <div className="bg-card/80 backdrop-blur-sm rounded-xl p-6 border border-border">
+              <h3 className="font-semibold text-foreground mb-2">Can I cancel my subscription anytime?</h3>
+              <p className="text-muted-foreground">Yes, you can cancel your subscription at any time. There are no cancellation fees or long-term commitments.</p>
+            </div>
+            <div className="bg-card/80 backdrop-blur-sm rounded-xl p-6 border border-border">
+              <h3 className="font-semibold text-foreground mb-2">Do you support special dietary requirements?</h3>
+              <p className="text-muted-foreground">Absolutely! We support vegetarian, vegan, keto, paleo, gluten-free, and many other dietary preferences and restrictions.</p>
+            </div>
           </div>
         </div>
       </div>
@@ -115,18 +154,34 @@ function PricingCard({
   popular?: boolean;
 }) {
   return (
-    <div className={`relative bg-white rounded-3xl shadow-xl border ${popular ? 'border-primary/20 ring-2 ring-primary' : 'border-border'} p-8`}>
+    <div className={`relative bg-card/80 backdrop-blur-sm rounded-3xl shadow-xl border transition-all duration-300 hover:shadow-2xl hover:scale-105 ${
+      popular 
+        ? 'border-primary/30 ring-2 ring-primary/20 bg-gradient-to-b from-card to-emerald-50/30' 
+        : 'border-border hover:border-primary/20'
+    } p-8`}>
       {popular && (
         <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-          <span className="bg-primary text-primary-foreground px-4 py-1 rounded-full text-sm font-medium">
+          <div className="bg-gradient-to-r from-primary via-emerald-500 to-emerald-600 text-primary-foreground px-6 py-2 rounded-full text-sm font-medium flex items-center shadow-lg">
+            <Sparkles className="h-4 w-4 mr-1" />
             Most Popular
-          </span>
+          </div>
         </div>
       )}
       
       <div className="text-center mb-8">
+        <div className={`inline-flex items-center justify-center w-12 h-12 rounded-xl mb-4 ${
+          popular 
+            ? 'bg-gradient-to-r from-primary to-emerald-500' 
+            : 'bg-gradient-to-r from-accent to-blue-500'
+        }`}>
+          {popular ? (
+            <Zap className="h-6 w-6 text-primary-foreground" />
+          ) : (
+            <ChefHat className="h-6 w-6 text-accent-foreground" />
+          )}
+        </div>
         <h2 className="text-2xl font-bold text-foreground mb-2">{name}</h2>
-        <p className="text-sm text-muted-foreground mb-4">
+        <p className="text-sm text-muted-foreground mb-6">
           {trialDays} day free trial included
         </p>
         <div className="mb-4">
@@ -139,7 +194,11 @@ function PricingCard({
       <ul className="space-y-4 mb-8">
         {features.map((feature, index) => (
           <li key={index} className="flex items-start">
-            <Check className="h-5 w-5 text-primary mr-3 mt-0.5 flex-shrink-0" />
+            <div className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center mr-3 mt-0.5 ${
+              popular ? 'bg-primary/20' : 'bg-accent/20'
+            }`}>
+              <Check className={`h-3 w-3 ${popular ? 'text-primary' : 'text-accent'}`} />
+            </div>
             <span className="text-foreground">{feature}</span>
           </li>
         ))}
