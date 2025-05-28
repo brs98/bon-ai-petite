@@ -21,26 +21,26 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
   );
 
   return (
-    <div className="min-h-[100dvh] flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-emerald-50 via-white to-blue-50">
+    <div className="min-h-[100dvh] flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-primary/10 via-white to-blue-50">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center mb-6">
           <Link href="/" className="flex items-center group">
-            <div className="w-12 h-12 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
-              <ChefHat className="h-6 w-6 text-white" />
+            <div className="w-12 h-12 bg-gradient-to-r from-primary to-primary/90 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
+              <ChefHat className="h-6 w-6 text-primary-foreground" />
             </div>
-            <span className="ml-3 text-2xl font-bold bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">
+            <span className="ml-3 text-2xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
               AI Petite
             </span>
           </Link>
         </div>
         
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">
+          <h2 className="text-3xl font-bold text-foreground mb-2">
             {mode === 'signin'
               ? 'Welcome back!'
               : 'Start your healthy journey'}
           </h2>
-          <p className="text-gray-600">
+          <p className="text-muted-foreground">
             {mode === 'signin'
               ? 'Sign in to access your personalized meal plans'
               : 'Create your account and get AI-powered nutrition in minutes'}
@@ -49,7 +49,7 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
       </div>
 
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-6 shadow-xl rounded-3xl border border-gray-100">
+        <div className="bg-card py-8 px-6 shadow-xl rounded-3xl border border-border">
           <form className="space-y-6" action={formAction}>
             <input type="hidden" name="redirect" value={redirect || ''} />
             <input type="hidden" name="priceId" value={priceId || ''} />
@@ -58,7 +58,7 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
             <div>
               <Label
                 htmlFor="email"
-                className="block text-sm font-medium text-gray-700 mb-2"
+                className="block text-sm font-medium text-card-foreground mb-2"
               >
                 Email address
               </Label>
@@ -70,7 +70,7 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
                 defaultValue={state.email}
                 required
                 maxLength={50}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors duration-200"
+                className="w-full px-4 py-3 border border-input rounded-xl focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring transition-colors duration-200"
                 placeholder="Enter your email"
               />
             </div>
@@ -78,7 +78,7 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
             <div>
               <Label
                 htmlFor="password"
-                className="block text-sm font-medium text-gray-700 mb-2"
+                className="block text-sm font-medium text-card-foreground mb-2"
               >
                 Password
               </Label>
@@ -93,21 +93,21 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
                 required
                 minLength={8}
                 maxLength={100}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors duration-200"
+                className="w-full px-4 py-3 border border-input rounded-xl focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring transition-colors duration-200"
                 placeholder={mode === 'signin' ? 'Enter your password' : 'Create a password (min. 8 characters)'}
               />
             </div>
 
             {state?.error && (
-              <div className="bg-red-50 border border-red-200 rounded-xl p-4">
-                <div className="text-red-600 text-sm">{state.error}</div>
+              <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-4">
+                <div className="text-destructive text-sm">{state.error}</div>
               </div>
             )}
 
             <div>
               <Button
                 type="submit"
-                className="w-full bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white py-3 px-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 font-semibold"
+                className="w-full bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary/80 text-primary-foreground py-3 px-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 font-semibold"
                 disabled={pending}
               >
                 {pending ? (
@@ -130,10 +130,10 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
           <div className="mt-6">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-200" />
+                <div className="w-full border-t border-border" />
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-4 bg-white text-gray-500">
+                <span className="px-4 bg-card text-muted-foreground">
                   {mode === 'signin'
                     ? 'New to AI Petite?'
                     : 'Already have an account?'}
@@ -146,7 +146,7 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
                 href={`${mode === 'signin' ? '/sign-up' : '/sign-in'}${
                   redirect ? `?redirect=${redirect}` : ''
                 }${priceId ? `&priceId=${priceId}` : ''}`}
-                className="w-full flex justify-center py-3 px-4 border-2 border-gray-300 rounded-xl shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 hover:border-emerald-500 hover:text-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-all duration-200"
+                className="w-full flex justify-center py-3 px-4 border-2 border-border rounded-xl shadow-sm text-sm font-medium text-muted-foreground bg-card hover:bg-muted hover:border-ring hover:text-ring focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring transition-all duration-200"
               >
                 {mode === 'signin'
                   ? 'Create your account'
@@ -158,18 +158,18 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
 
         {mode === 'signup' && (
           <div className="mt-8 text-center">
-            <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
-              <div className="flex items-center justify-center space-x-6 text-sm text-gray-600">
+            <div className="bg-card rounded-2xl p-6 shadow-lg border border-border">
+              <div className="flex items-center justify-center space-x-6 text-sm text-muted-foreground">
                 <div className="flex items-center">
-                  <div className="w-2 h-2 bg-emerald-500 rounded-full mr-2"></div>
+                  <div className="w-2 h-2 bg-primary rounded-full mr-2"></div>
                   <span>7-day free trial</span>
                 </div>
                 <div className="flex items-center">
-                  <div className="w-2 h-2 bg-emerald-500 rounded-full mr-2"></div>
+                  <div className="w-2 h-2 bg-primary rounded-full mr-2"></div>
                   <span>No credit card required</span>
                 </div>
                 <div className="flex items-center">
-                  <div className="w-2 h-2 bg-emerald-500 rounded-full mr-2"></div>
+                  <div className="w-2 h-2 bg-primary rounded-full mr-2"></div>
                   <span>Cancel anytime</span>
                 </div>
               </div>

@@ -34,7 +34,7 @@ function UserMenu() {
       <>
         <Link
           href="/pricing"
-          className="text-sm font-medium text-gray-700 hover:text-gray-900"
+          className="text-sm font-medium text-muted-foreground hover:text-foreground"
         >
           Pricing
         </Link>
@@ -80,7 +80,7 @@ function UserMenu() {
 
 function Header() {
   return (
-    <header className="border-b border-gray-200 bg-white">
+    <header className="border-b border-border bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
         <Link href="/" className="flex items-center group">
           <div className="w-8 h-8 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform duration-200">

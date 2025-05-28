@@ -10,16 +10,15 @@ export default function NotFound() {
             <ChefHat className="h-8 w-8 text-white" />
           </div>
         </div>
-        <h1 className="text-4xl font-bold text-gray-900 tracking-tight">
-          Page Not Found
+        <h1 className="text-4xl font-bold text-foreground tracking-tight">
+          404 - Page Not Found
         </h1>
-        <p className="text-base text-gray-600">
-          The page you are looking for might have been removed, had its name
-          changed, or is temporarily unavailable.
+        <p className="text-base text-muted-foreground">
+          Sorry, we couldn't find the page you're looking for.
         </p>
         <Link
           href="/"
-          className="inline-flex items-center justify-center px-6 py-3 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-all duration-200"
+          className="mt-6 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-primary-foreground bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring transition-all duration-200"
         >
           Back to Home
         </Link>

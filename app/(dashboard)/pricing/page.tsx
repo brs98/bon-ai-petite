@@ -26,10 +26,10 @@ export default async function PricingPage() {
             <ChefHat className="h-6 w-6 text-white" />
           </div>
         </div>
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">
+        <h1 className="text-4xl font-bold text-foreground mb-4">
           Choose Your <span className="bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">AI Petite</span> Plan
         </h1>
-        <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+        <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
           Start your journey to healthier eating with personalized meal plans and seamless grocery delivery integration.
         </p>
       </div>
@@ -73,20 +73,20 @@ export default async function PricingPage() {
       </div>
 
       <div className="text-center mt-16">
-        <p className="text-gray-600 mb-4">
+        <p className="text-muted-foreground mb-4">
           All plans include a 7-day free trial. No credit card required to start.
         </p>
-        <div className="flex items-center justify-center space-x-8 text-sm text-gray-500">
+        <div className="flex items-center justify-center space-x-8 text-sm text-muted-foreground">
           <div className="flex items-center">
-            <Check className="h-4 w-4 text-emerald-500 mr-2" />
+            <Check className="h-4 w-4 text-primary mr-2" />
             <span>Cancel anytime</span>
           </div>
           <div className="flex items-center">
-            <Check className="h-4 w-4 text-emerald-500 mr-2" />
+            <Check className="h-4 w-4 text-primary mr-2" />
             <span>No setup fees</span>
           </div>
           <div className="flex items-center">
-            <Check className="h-4 w-4 text-emerald-500 mr-2" />
+            <Check className="h-4 w-4 text-primary mr-2" />
             <span>30-day money back guarantee</span>
           </div>
         </div>
@@ -115,33 +115,32 @@ function PricingCard({
   popular?: boolean;
 }) {
   return (
-    <div className={`relative bg-white rounded-3xl shadow-xl border ${popular ? 'border-emerald-200 ring-2 ring-emerald-500' : 'border-gray-200'} p-8`}>
+    <div className={`relative bg-white rounded-3xl shadow-xl border ${popular ? 'border-primary/20 ring-2 ring-primary' : 'border-border'} p-8`}>
       {popular && (
         <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-          <div className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-4 py-2 rounded-full text-sm font-medium flex items-center">
-            <Sparkles className="h-4 w-4 mr-1" />
+          <span className="bg-primary text-primary-foreground px-4 py-1 rounded-full text-sm font-medium">
             Most Popular
-          </div>
+          </span>
         </div>
       )}
       
       <div className="text-center mb-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">{name}</h2>
-        <p className="text-sm text-gray-600 mb-4">
+        <h2 className="text-2xl font-bold text-foreground mb-2">{name}</h2>
+        <p className="text-sm text-muted-foreground mb-4">
           {trialDays} day free trial included
         </p>
         <div className="mb-4">
-          <span className="text-5xl font-bold text-gray-900">${price / 100}</span>
-          <span className="text-xl text-gray-600 ml-1">/{interval}</span>
+          <span className="text-5xl font-bold text-foreground">${price / 100}</span>
+          <span className="text-xl text-muted-foreground ml-1">/{interval}</span>
         </div>
-        <p className="text-sm text-gray-500">per person</p>
+        <p className="text-sm text-muted-foreground">per person</p>
       </div>
 
       <ul className="space-y-4 mb-8">
         {features.map((feature, index) => (
           <li key={index} className="flex items-start">
-            <Check className="h-5 w-5 text-emerald-500 mr-3 mt-0.5 flex-shrink-0" />
-            <span className="text-gray-700">{feature}</span>
+            <Check className="h-5 w-5 text-primary mr-3 mt-0.5 flex-shrink-0" />
+            <span className="text-foreground">{feature}</span>
           </li>
         ))}
       </ul>

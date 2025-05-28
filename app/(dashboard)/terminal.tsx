@@ -32,33 +32,33 @@ export function Terminal() {
   };
 
   return (
-    <div className="w-full rounded-lg shadow-lg overflow-hidden bg-gray-900 text-white font-mono text-sm relative">
-      <div className="p-4">
-        <div className="flex justify-between items-center mb-4">
-          <div className="flex space-x-2">
-            <div className="w-3 h-3 rounded-full bg-red-500"></div>
-            <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-            <div className="w-3 h-3 rounded-full bg-green-500"></div>
-          </div>
-          <button
-            onClick={copyToClipboard}
-            className="text-gray-400 hover:text-white transition-colors"
-            aria-label="Copy to clipboard"
-          >
-            {copied ? (
-              <Check className="h-5 w-5" />
-            ) : (
-              <Copy className="h-5 w-5" />
-            )}
-          </button>
+    <div className="w-full rounded-lg shadow-lg overflow-hidden bg-slate-900 text-white font-mono text-sm relative">
+      <div className="flex items-center justify-between px-4 py-2 bg-slate-800">
+        <div className="flex space-x-2">
+          <div className="w-3 h-3 rounded-full bg-destructive"></div>
+          <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+          <div className="w-3 h-3 rounded-full bg-primary"></div>
         </div>
+        <button
+          onClick={copyToClipboard}
+          className="text-muted-foreground hover:text-white transition-colors"
+          aria-label="Copy to clipboard"
+        >
+          {copied ? (
+            <Check className="h-5 w-5" />
+          ) : (
+            <Copy className="h-5 w-5" />
+          )}
+        </button>
+      </div>
+      <div className="p-4">
         <div className="space-y-2">
           {terminalSteps.map((step, index) => (
             <div
               key={index}
               className={`${index > terminalStep ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}
             >
-              <span className="text-green-400">$</span> {step}
+              <span className="text-primary">$</span> {step}
             </div>
           ))}
         </div>
