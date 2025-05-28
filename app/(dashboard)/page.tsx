@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { ArrowRight, ChefHat, ShoppingCart, Sparkles, Clock, Heart, Users, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function HomePage() {
   return (
@@ -78,28 +79,58 @@ export default function HomePage() {
                     </div>
                     
                     <div className="space-y-4">
-                      <div className="bg-gradient-to-r from-emerald-50 to-emerald-100/50 rounded-xl p-4 border border-emerald-200/50">
-                        <div className="flex justify-between items-center mb-2">
-                          <span className="font-medium text-foreground">Breakfast</span>
-                          <span className="text-sm text-primary font-semibold">320 cal</span>
+                      <div className="bg-gradient-to-r from-emerald-50 to-emerald-100/50 rounded-xl p-4 border border-emerald-200/50 flex items-center space-x-4">
+                        <div className="relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
+                          <Image
+                            src="https://images.unsplash.com/photo-1525351484163-7529414344d8?w=400&h=400&fit=crop&crop=center"
+                            alt="Avocado Toast with Poached Egg"
+                            fill
+                            className="object-cover"
+                          />
                         </div>
-                        <p className="text-muted-foreground text-sm">Avocado Toast with Poached Egg</p>
+                        <div className="flex-1">
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="font-medium text-foreground">Breakfast</span>
+                            <span className="text-sm text-primary font-semibold">320 cal</span>
+                          </div>
+                          <p className="text-muted-foreground text-sm">Avocado Toast with Poached Egg</p>
+                        </div>
                       </div>
                       
-                      <div className="bg-gradient-to-r from-blue-50 to-blue-100/50 rounded-xl p-4 border border-blue-200/50">
-                        <div className="flex justify-between items-center mb-2">
-                          <span className="font-medium text-foreground">Lunch</span>
-                          <span className="text-sm text-accent font-semibold">450 cal</span>
+                      <div className="bg-gradient-to-r from-blue-50 to-blue-100/50 rounded-xl p-4 border border-blue-200/50 flex items-center space-x-4">
+                        <div className="relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
+                          <Image
+                            src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400&h=400&fit=crop&crop=center"
+                            alt="Mediterranean Quinoa Bowl"
+                            fill
+                            className="object-cover"
+                          />
                         </div>
-                        <p className="text-muted-foreground text-sm">Mediterranean Quinoa Bowl</p>
+                        <div className="flex-1">
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="font-medium text-foreground">Lunch</span>
+                            <span className="text-sm text-accent font-semibold">450 cal</span>
+                          </div>
+                          <p className="text-muted-foreground text-sm">Mediterranean Quinoa Bowl</p>
+                        </div>
                       </div>
                       
-                      <div className="bg-gradient-to-r from-emerald-50 to-emerald-100/50 rounded-xl p-4 border border-emerald-200/50">
-                        <div className="flex justify-between items-center mb-2">
-                          <span className="font-medium text-foreground">Dinner</span>
-                          <span className="text-sm text-primary font-semibold">520 cal</span>
+                      <div className="bg-gradient-to-r from-emerald-50 to-emerald-100/50 rounded-xl p-4 border border-emerald-200/50 flex items-center space-x-4">
+                        <div className="relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
+                          <Image
+                            src="https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=400&h=400&fit=crop&crop=center"
+                            alt="Grilled Salmon with Roasted Vegetables"
+                            fill
+                            className="object-cover"
+                          />
                         </div>
-                        <p className="text-muted-foreground text-sm">Grilled Salmon with Roasted Vegetables</p>
+                        <div className="flex-1">
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="font-medium text-foreground">Dinner</span>
+                            <span className="text-sm text-primary font-semibold">520 cal</span>
+                          </div>
+                          <p className="text-muted-foreground text-sm">Grilled Salmon with Roasted Vegetables</p>
+                        </div>
                       </div>
                     </div>
                     
@@ -115,8 +146,76 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Features Section */}
+      {/* Food Gallery Section */}
       <section className="py-20 bg-gradient-to-b from-background to-emerald-50/30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-foreground mb-4">
+              Discover Delicious, Healthy Meals
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+              From vibrant breakfast bowls to gourmet dinners, our AI creates meal plans featuring fresh, nutritious ingredients that you'll actually love eating.
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-16">
+            <div className="relative aspect-square rounded-2xl overflow-hidden group">
+              <Image
+                src="https://images.unsplash.com/photo-1511690743698-d9d85f2fbf38?w=600&h=600&fit=crop&crop=center"
+                alt="Healthy breakfast bowl with berries"
+                fill
+                className="object-cover transition-transform duration-300 group-hover:scale-110"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="absolute bottom-4 left-4 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <p className="font-semibold">Breakfast Bowls</p>
+              </div>
+            </div>
+            
+            <div className="relative aspect-square rounded-2xl overflow-hidden group">
+              <Image
+                src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600&h=600&fit=crop&crop=center"
+                alt="Fresh salad with vegetables"
+                fill
+                className="object-cover transition-transform duration-300 group-hover:scale-110"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="absolute bottom-4 left-4 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <p className="font-semibold">Fresh Salads</p>
+              </div>
+            </div>
+            
+            <div className="relative aspect-square rounded-2xl overflow-hidden group">
+              <Image
+                src="https://images.unsplash.com/photo-1513104890138-7c749659a591?w=600&h=600&fit=crop&crop=center"
+                alt="Gourmet pizza with fresh ingredients"
+                fill
+                className="object-cover transition-transform duration-300 group-hover:scale-110"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="absolute bottom-4 left-4 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <p className="font-semibold">Comfort Foods</p>
+              </div>
+            </div>
+            
+            <div className="relative aspect-square rounded-2xl overflow-hidden group">
+              <Image
+                src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&h=600&fit=crop&crop=center"
+                alt="Gourmet dinner plate"
+                fill
+                className="object-cover transition-transform duration-300 group-hover:scale-110"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="absolute bottom-4 left-4 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <p className="font-semibold">Gourmet Dinners</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="py-20 bg-gradient-to-b from-emerald-50/30 to-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-foreground mb-4">
