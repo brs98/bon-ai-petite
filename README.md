@@ -1,13 +1,14 @@
-# Next.js SaaS Starter
+# AI Petite - Next.js SaaS Starter
 
-This is a starter template for building a SaaS application using **Next.js** with support for authentication, Stripe integration for payments, and a dashboard for logged-in users.
+This is a starter template for building a SaaS application using **Next.js** with support for authentication, Stripe integration for payments, and a dashboard for logged-in users. This version has been customized for AI Petite, an AI-powered nutrition and meal planning service.
 
 **Demo: [https://next-saas-start.vercel.app/](https://next-saas-start.vercel.app/)**
 
 ## Features
 
-- Marketing landing page (`/`) with animated Terminal element
-- Pricing page (`/pricing`) which connects to Stripe Checkout
+- Marketing landing page (`/`) with animated elements and modern design
+- Publicly accessible pricing page (`/pricing`) with plan selection
+- Streamlined payment flow: Landing → Pricing → Sign-up → Stripe → Profile
 - Dashboard pages with CRUD operations on users/teams
 - Basic RBAC with Owner and Member roles
 - Subscription management with Stripe Customer Portal
@@ -15,6 +16,24 @@ This is a starter template for building a SaaS application using **Next.js** wit
 - Global middleware to protect logged-in routes
 - Local middleware to protect Server Actions or validate Zod schemas
 - Activity logging system for any user events
+- User profile page (`/profile`) for account and subscription management
+
+## Payment Flow
+
+The application implements a complete payment flow:
+
+1. **Landing Page** (`/`) - Call-to-action buttons redirect to pricing
+2. **Pricing Page** (`/pricing`) - Publicly accessible plan selection (Essential/Premium)
+3. **Sign-Up** (`/sign-up?plan=essential|premium`) - User registration with selected plan preview
+4. **Stripe Checkout** - Automatic redirect to Stripe for payment processing
+5. **Profile Page** (`/profile`) - Success page with account and subscription details
+
+### Key Features:
+- Dynamic Stripe price lookup (no hardcoded environment variables)
+- Plan selection with query parameters
+- Comprehensive error handling and fallbacks
+- Mobile-responsive design throughout
+- Real-time plan preview during sign-up
 
 ## Tech Stack
 
@@ -23,6 +42,8 @@ This is a starter template for building a SaaS application using **Next.js** wit
 - **ORM**: [Drizzle](https://orm.drizzle.team/)
 - **Payments**: [Stripe](https://stripe.com/)
 - **UI Library**: [shadcn/ui](https://ui.shadcn.com/)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+- **Animations**: [Framer Motion](https://www.framer.com/motion/)
 
 ## Getting Started
 
@@ -76,11 +97,28 @@ stripe listen --forward-to localhost:3000/api/stripe/webhook
 
 ## Testing Payments
 
-To test Stripe payments, use the following test card details:
+To test the complete payment flow:
 
+1. Visit the landing page at `http://localhost:3000`
+2. Click "Start Your Journey" to go to pricing
+3. Select either Essential or Premium plan
+4. Sign up with test credentials
+5. Use Stripe test card details for payment
+
+### Stripe Test Card Details:
 - Card Number: `4242 4242 4242 4242`
 - Expiration: Any future date
 - CVC: Any 3-digit number
+
+## Stripe Setup
+
+The application dynamically fetches Stripe products and prices, so you need to set up products in your Stripe dashboard:
+
+1. Create two products in Stripe:
+   - **Base** (for Essential plan)
+   - **Plus** (for Premium plan)
+2. Add recurring prices to each product
+3. The application will automatically map plan selections to the correct Stripe prices
 
 ## Going to Production
 
@@ -107,6 +145,24 @@ In your Vercel project settings (or during deployment), add all the necessary en
 3. `STRIPE_WEBHOOK_SECRET`: Use the webhook secret from the production webhook you created in step 1.
 4. `POSTGRES_URL`: Set this to your production database URL.
 5. `AUTH_SECRET`: Set this to a random string. `openssl rand -base64 32` will generate one.
+
+## Project Structure
+
+```
+├── app/
+│   ├── (dashboard)/          # Protected dashboard routes
+│   ├── (login)/             # Authentication routes
+│   ├── pricing/             # Public pricing page
+│   ├── profile/             # User profile page
+│   └── api/                 # API routes
+├── components/
+│   └── ui/                  # Reusable UI components
+├── lib/
+│   ├── auth/               # Authentication logic
+│   ├── db/                 # Database schema and queries
+│   └── payments/           # Stripe integration
+└── middleware.ts           # Route protection
+```
 
 ## Other Templates
 
