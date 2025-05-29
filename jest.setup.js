@@ -8,7 +8,7 @@ const originalEnv = process.env;
 beforeEach(() => {
   // Reset modules before each test to ensure clean state
   jest.resetModules();
-  
+
   // Restore default test environment
   process.env = {
     ...originalEnv,
@@ -22,4 +22,4 @@ afterEach(() => {
 });
 
 // Configure longer timeout for AI service tests
-jest.setTimeout(10000); 
+jest.setTimeout(10000);

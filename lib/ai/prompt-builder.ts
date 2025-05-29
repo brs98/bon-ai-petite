@@ -1,4 +1,4 @@
-import { RecipeGenerationRequest } from './recipe-generator';
+import { type RecipeGenerationRequest } from '../../types/recipe';
 
 export interface PromptTemplate {
   system: string;

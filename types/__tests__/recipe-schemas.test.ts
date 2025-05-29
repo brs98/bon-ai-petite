@@ -1,13 +1,13 @@
 import {
-    IngredientSchema,
-    NutritionProfileSchema,
-    NutritionSchema,
-    RecipeFeedbackSchema,
-    RecipeGenerationRequestSchema,
-    RecipeSchema,
-    type NutritionProfile,
-    type Recipe,
-    type RecipeGenerationRequest
+  IngredientSchema,
+  NutritionProfileSchema,
+  NutritionSchema,
+  RecipeFeedbackSchema,
+  RecipeGenerationRequestSchema,
+  RecipeSchema,
+  type NutritionProfile,
+  type Recipe,
+  type RecipeGenerationRequest,
 } from '../recipe';
 
 describe('Recipe Schemas', () => {
@@ -17,25 +17,25 @@ describe('Recipe Schemas', () => {
       description: 'A delicious test recipe',
       ingredients: [
         { name: 'flour', quantity: 2, unit: 'cups' },
-        { name: 'eggs', quantity: 3, unit: 'whole' }
+        { name: 'eggs', quantity: 3, unit: 'whole' },
       ],
       instructions: ['Mix ingredients', 'Cook for 20 minutes'],
       nutrition: {
         calories: 300,
         protein: 10,
         carbs: 45,
-        fat: 8
+        fat: 8,
       },
       prepTime: 15,
       cookTime: 25,
       servings: 4,
       difficulty: 'medium' as const,
-      mealType: 'dinner' as const
+      mealType: 'dinner' as const,
     };
 
     it('should validate complete recipe object', () => {
       expect(() => RecipeSchema.parse(validRecipe)).not.toThrow();
-      
+
       const parsed = RecipeSchema.parse(validRecipe);
       expect(parsed).toEqual(validRecipe);
     });
@@ -49,7 +49,7 @@ describe('Recipe Schemas', () => {
         isSaved: true,
         rating: 4.5,
         userId: 456,
-        createdAt: new Date()
+        createdAt: new Date(),
       };
 
       expect(() => RecipeSchema.parse(recipeWithOptionals)).not.toThrow();
@@ -57,7 +57,7 @@ describe('Recipe Schemas', () => {
 
     it('should reject recipe with missing required fields', () => {
       const incompleteRecipe = {
-        name: 'Incomplete Recipe'
+        name: 'Incomplete Recipe',
         // Missing other required fields
       };
 
@@ -67,37 +67,45 @@ describe('Recipe Schemas', () => {
     it('should reject recipe with empty name', () => {
       const invalidRecipe = {
         ...validRecipe,
-        name: ''
+        name: '',
       };
 
-      expect(() => RecipeSchema.parse(invalidRecipe)).toThrow('Recipe name is required');
+      expect(() => RecipeSchema.parse(invalidRecipe)).toThrow(
+        'Recipe name is required',
+      );
     });
 
     it('should reject recipe with empty description', () => {
       const invalidRecipe = {
         ...validRecipe,
-        description: ''
+        description: '',
       };
 
-      expect(() => RecipeSchema.parse(invalidRecipe)).toThrow('Recipe description is required');
+      expect(() => RecipeSchema.parse(invalidRecipe)).toThrow(
+        'Recipe description is required',
+      );
     });
 
     it('should reject recipe with empty ingredients array', () => {
       const invalidRecipe = {
         ...validRecipe,
-        ingredients: []
+        ingredients: [],
       };
 
-      expect(() => RecipeSchema.parse(invalidRecipe)).toThrow('At least one ingredient is required');
+      expect(() => RecipeSchema.parse(invalidRecipe)).toThrow(
+        'At least one ingredient is required',
+      );
     });
 
     it('should reject recipe with empty instructions array', () => {
       const invalidRecipe = {
         ...validRecipe,
-        instructions: []
+        instructions: [],
       };
 
-      expect(() => RecipeSchema.parse(invalidRecipe)).toThrow('At least one instruction is required');
+      expect(() => RecipeSchema.parse(invalidRecipe)).toThrow(
+        'At least one instruction is required',
+      );
     });
 
     it('should reject recipe with invalid nutrition values', () => {
@@ -107,8 +115,8 @@ describe('Recipe Schemas', () => {
           calories: -100, // Invalid negative calories
           protein: 10,
           carbs: 20,
-          fat: 5
-        }
+          fat: 5,
+        },
       };
 
       expect(() => RecipeSchema.parse(invalidRecipe)).toThrow();
@@ -119,8 +127,8 @@ describe('Recipe Schemas', () => {
         ...validRecipe,
         nutrition: {
           ...validRecipe.nutrition,
-          calories: 0
-        }
+          calories: 0,
+        },
       };
 
       expect(() => RecipeSchema.parse(invalidRecipe)).toThrow();
@@ -133,8 +141,8 @@ describe('Recipe Schemas', () => {
           calories: 100,
           protein: 0,
           carbs: 0,
-          fat: 0
-        }
+          fat: 0,
+        },
       };
 
       expect(() => RecipeSchema.parse(recipeWithZeros)).not.toThrow();
@@ -143,7 +151,7 @@ describe('Recipe Schemas', () => {
     it('should reject negative prep time', () => {
       const invalidRecipe = {
         ...validRecipe,
-        prepTime: -5
+        prepTime: -5,
       };
 
       expect(() => RecipeSchema.parse(invalidRecipe)).toThrow();
@@ -152,7 +160,7 @@ describe('Recipe Schemas', () => {
     it('should reject negative cook time', () => {
       const invalidRecipe = {
         ...validRecipe,
-        cookTime: -10
+        cookTime: -10,
       };
 
       expect(() => RecipeSchema.parse(invalidRecipe)).toThrow();
@@ -161,7 +169,7 @@ describe('Recipe Schemas', () => {
     it('should reject zero or negative servings', () => {
       const invalidRecipe = {
         ...validRecipe,
-        servings: 0
+        servings: 0,
       };
 
       expect(() => RecipeSchema.parse(invalidRecipe)).toThrow();
@@ -170,7 +178,7 @@ describe('Recipe Schemas', () => {
     it('should reject invalid difficulty level', () => {
       const invalidRecipe = {
         ...validRecipe,
-        difficulty: 'impossible' as any
+        difficulty: 'impossible' as any,
       };
 
       expect(() => RecipeSchema.parse(invalidRecipe)).toThrow();
@@ -179,7 +187,7 @@ describe('Recipe Schemas', () => {
     it('should reject invalid meal type', () => {
       const invalidRecipe = {
         ...validRecipe,
-        mealType: 'midnight_snack' as any
+        mealType: 'midnight_snack' as any,
       };
 
       expect(() => RecipeSchema.parse(invalidRecipe)).toThrow();
@@ -189,8 +197,8 @@ describe('Recipe Schemas', () => {
       const invalidRecipe = {
         ...validRecipe,
         ingredients: [
-          { name: 'flour', quantity: -1, unit: 'cups' } // Invalid negative quantity
-        ]
+          { name: 'flour', quantity: -1, unit: 'cups' }, // Invalid negative quantity
+        ],
       };
 
       expect(() => RecipeSchema.parse(invalidRecipe)).toThrow();
@@ -199,7 +207,7 @@ describe('Recipe Schemas', () => {
     it('should reject invalid rating values', () => {
       const invalidRecipe = {
         ...validRecipe,
-        rating: 6 // Rating should be between 1 and 5
+        rating: 6, // Rating should be between 1 and 5
       };
 
       expect(() => RecipeSchema.parse(invalidRecipe)).toThrow();
@@ -208,7 +216,7 @@ describe('Recipe Schemas', () => {
     it('should accept valid rating values', () => {
       const recipeWithRating = {
         ...validRecipe,
-        rating: 3.5
+        rating: 3.5,
       };
 
       expect(() => RecipeSchema.parse(recipeWithRating)).not.toThrow();
@@ -218,10 +226,12 @@ describe('Recipe Schemas', () => {
   describe('RecipeGenerationRequestSchema', () => {
     it('should validate generation request with only meal type', () => {
       const validRequest = {
-        mealType: 'breakfast' as const
+        mealType: 'breakfast' as const,
       };
 
-      expect(() => RecipeGenerationRequestSchema.parse(validRequest)).not.toThrow();
+      expect(() =>
+        RecipeGenerationRequestSchema.parse(validRequest),
+      ).not.toThrow();
     });
 
     it('should validate complete generation request', () => {
@@ -239,28 +249,34 @@ describe('Recipe Schemas', () => {
           weight: 70,
           height: 175,
           activityLevel: 'moderately_active',
-          goals: 'gain_muscle'
-        }
+          goals: 'gain_muscle',
+        },
       };
 
-      expect(() => RecipeGenerationRequestSchema.parse(validRequest)).not.toThrow();
+      expect(() =>
+        RecipeGenerationRequestSchema.parse(validRequest),
+      ).not.toThrow();
     });
 
     it('should reject invalid meal type', () => {
       const invalidRequest = {
-        mealType: 'invalid_meal' as any
+        mealType: 'invalid_meal' as any,
       };
 
-      expect(() => RecipeGenerationRequestSchema.parse(invalidRequest)).toThrow();
+      expect(() =>
+        RecipeGenerationRequestSchema.parse(invalidRequest),
+      ).toThrow();
     });
 
     it('should reject negative nutritional values', () => {
       const invalidRequest = {
         mealType: 'lunch' as const,
-        calories: -500
+        calories: -500,
       };
 
-      expect(() => RecipeGenerationRequestSchema.parse(invalidRequest)).toThrow();
+      expect(() =>
+        RecipeGenerationRequestSchema.parse(invalidRequest),
+      ).toThrow();
     });
 
     it('should accept zero nutritional values', () => {
@@ -268,21 +284,25 @@ describe('Recipe Schemas', () => {
         mealType: 'snack' as const,
         protein: 0,
         carbs: 0,
-        fat: 0
+        fat: 0,
       };
 
-      expect(() => RecipeGenerationRequestSchema.parse(validRequest)).not.toThrow();
+      expect(() =>
+        RecipeGenerationRequestSchema.parse(validRequest),
+      ).not.toThrow();
     });
 
     it('should validate user profile structure', () => {
       const requestWithInvalidProfile = {
         mealType: 'dinner' as const,
         userProfile: {
-          age: -25 // Invalid negative age
-        }
+          age: -25, // Invalid negative age
+        },
       };
 
-      expect(() => RecipeGenerationRequestSchema.parse(requestWithInvalidProfile)).toThrow();
+      expect(() =>
+        RecipeGenerationRequestSchema.parse(requestWithInvalidProfile),
+      ).toThrow();
     });
 
     it('should accept empty arrays for optional array fields', () => {
@@ -290,10 +310,12 @@ describe('Recipe Schemas', () => {
         mealType: 'lunch' as const,
         allergies: [],
         dietaryRestrictions: [],
-        cuisinePreferences: []
+        cuisinePreferences: [],
       };
 
-      expect(() => RecipeGenerationRequestSchema.parse(validRequest)).not.toThrow();
+      expect(() =>
+        RecipeGenerationRequestSchema.parse(validRequest),
+      ).not.toThrow();
     });
   });
 
@@ -311,7 +333,7 @@ describe('Recipe Schemas', () => {
       macroFat: 65,
       allergies: ['nuts'],
       dietaryRestrictions: ['vegetarian'],
-      cuisinePreferences: ['Mediterranean']
+      cuisinePreferences: ['Mediterranean'],
     };
 
     it('should validate complete nutrition profile', () => {
@@ -320,7 +342,7 @@ describe('Recipe Schemas', () => {
 
     it('should require userId', () => {
       const invalidProfile = {
-        ...validProfile
+        ...validProfile,
       };
       delete (invalidProfile as any).userId;
 
@@ -330,7 +352,7 @@ describe('Recipe Schemas', () => {
     it('should reject negative physical measurements', () => {
       const invalidProfile = {
         ...validProfile,
-        weight: -70
+        weight: -70,
       };
 
       expect(() => NutritionProfileSchema.parse(invalidProfile)).toThrow();
@@ -339,7 +361,7 @@ describe('Recipe Schemas', () => {
     it('should reject invalid activity level', () => {
       const invalidProfile = {
         ...validProfile,
-        activityLevel: 'couch_potato' as any
+        activityLevel: 'couch_potato' as any,
       };
 
       expect(() => NutritionProfileSchema.parse(invalidProfile)).toThrow();
@@ -348,7 +370,7 @@ describe('Recipe Schemas', () => {
     it('should reject invalid goals', () => {
       const invalidProfile = {
         ...validProfile,
-        goals: 'become_superhuman' as any
+        goals: 'become_superhuman' as any,
       };
 
       expect(() => NutritionProfileSchema.parse(invalidProfile)).toThrow();
@@ -356,7 +378,7 @@ describe('Recipe Schemas', () => {
 
     it('should validate with minimal required fields', () => {
       const minimalProfile = {
-        userId: 456
+        userId: 456,
       };
 
       expect(() => NutritionProfileSchema.parse(minimalProfile)).not.toThrow();
@@ -369,7 +391,7 @@ describe('Recipe Schemas', () => {
       userId: 456,
       liked: true,
       feedback: 'Great recipe!',
-      reportedIssues: ['too_salty']
+      reportedIssues: ['too_salty'],
     };
 
     it('should validate complete feedback', () => {
@@ -378,7 +400,7 @@ describe('Recipe Schemas', () => {
 
     it('should require recipeId and userId', () => {
       const invalidFeedback = {
-        liked: true
+        liked: true,
       };
 
       expect(() => RecipeFeedbackSchema.parse(invalidFeedback)).toThrow();
@@ -387,7 +409,7 @@ describe('Recipe Schemas', () => {
     it('should require liked boolean', () => {
       const invalidFeedback = {
         recipeId: 123,
-        userId: 456
+        userId: 456,
       };
 
       expect(() => RecipeFeedbackSchema.parse(invalidFeedback)).toThrow();
@@ -397,7 +419,7 @@ describe('Recipe Schemas', () => {
       const minimalFeedback = {
         recipeId: 789,
         userId: 101,
-        liked: false
+        liked: false,
       };
 
       expect(() => RecipeFeedbackSchema.parse(minimalFeedback)).not.toThrow();
@@ -409,7 +431,7 @@ describe('Recipe Schemas', () => {
       const validIngredient = {
         name: 'flour',
         quantity: 2.5,
-        unit: 'cups'
+        unit: 'cups',
       };
 
       expect(() => IngredientSchema.parse(validIngredient)).not.toThrow();
@@ -419,7 +441,7 @@ describe('Recipe Schemas', () => {
       const invalidIngredient = {
         name: 'salt',
         quantity: -1,
-        unit: 'tsp'
+        unit: 'tsp',
       };
 
       expect(() => IngredientSchema.parse(invalidIngredient)).toThrow();
@@ -429,7 +451,7 @@ describe('Recipe Schemas', () => {
       const invalidIngredient = {
         name: 'pepper',
         quantity: 0,
-        unit: 'tsp'
+        unit: 'tsp',
       };
 
       expect(() => IngredientSchema.parse(invalidIngredient)).toThrow();
@@ -438,7 +460,7 @@ describe('Recipe Schemas', () => {
     it('should require all fields', () => {
       const incompleteIngredient = {
         name: 'sugar',
-        quantity: 1
+        quantity: 1,
         // Missing unit
       };
 
@@ -455,7 +477,7 @@ describe('Recipe Schemas', () => {
         fat: 15,
         fiber: 8,
         sugar: 5,
-        sodium: 300
+        sodium: 300,
       };
 
       expect(() => NutritionSchema.parse(validNutrition)).not.toThrow();
@@ -466,7 +488,7 @@ describe('Recipe Schemas', () => {
         calories: 0,
         protein: 10,
         carbs: 20,
-        fat: 5
+        fat: 5,
       };
 
       expect(() => NutritionSchema.parse(invalidNutrition)).toThrow();
@@ -480,7 +502,7 @@ describe('Recipe Schemas', () => {
         fat: 0,
         fiber: 0,
         sugar: 0,
-        sodium: 0
+        sodium: 0,
       };
 
       expect(() => NutritionSchema.parse(validNutrition)).not.toThrow();
@@ -491,7 +513,7 @@ describe('Recipe Schemas', () => {
         calories: 300,
         protein: 20,
         carbs: 30,
-        fat: -5 // Invalid negative fat
+        fat: -5, // Invalid negative fat
       };
 
       expect(() => NutritionSchema.parse(invalidNutrition)).toThrow();
@@ -502,7 +524,7 @@ describe('Recipe Schemas', () => {
         calories: 250,
         protein: 15,
         carbs: 30,
-        fat: 10
+        fat: 10,
       };
 
       expect(() => NutritionSchema.parse(minimalNutrition)).not.toThrow();
@@ -521,7 +543,7 @@ describe('Recipe Schemas', () => {
         cookTime: 15,
         servings: 2,
         difficulty: 'easy',
-        mealType: 'snack'
+        mealType: 'snack',
       };
 
       expect(recipe.name).toBe('Type Test Recipe');
@@ -533,7 +555,7 @@ describe('Recipe Schemas', () => {
       const request: RecipeGenerationRequest = {
         mealType: 'breakfast',
         calories: 400,
-        allergies: ['dairy']
+        allergies: ['dairy'],
       };
 
       expect(request.mealType).toBe('breakfast');
@@ -545,7 +567,7 @@ describe('Recipe Schemas', () => {
       const profile: NutritionProfile = {
         userId: 123,
         activityLevel: 'very_active',
-        goals: 'gain_muscle'
+        goals: 'gain_muscle',
       };
 
       expect(profile.userId).toBe(123);
@@ -565,13 +587,13 @@ describe('Recipe Schemas', () => {
           calories: 999999,
           protein: 50000,
           carbs: 100000,
-          fat: 25000
+          fat: 25000,
         },
         prepTime: 0,
         cookTime: 0,
         servings: 1000,
         difficulty: 'hard' as const,
-        mealType: 'dinner' as const
+        mealType: 'dinner' as const,
       };
 
       expect(() => RecipeSchema.parse(extremeRecipe)).not.toThrow();
@@ -581,19 +603,21 @@ describe('Recipe Schemas', () => {
       const decimalRecipe = {
         name: 'Decimal Recipe',
         description: 'Testing decimal nutrition values',
-        ingredients: [{ name: 'precise ingredient', quantity: 0.5, unit: 'cups' }],
+        ingredients: [
+          { name: 'precise ingredient', quantity: 0.5, unit: 'cups' },
+        ],
         instructions: ['Be precise'],
         nutrition: {
           calories: 123.45,
           protein: 12.7,
           carbs: 15.3,
-          fat: 8.9
+          fat: 8.9,
         },
         prepTime: 5,
         cookTime: 10,
         servings: 1,
         difficulty: 'easy' as const,
-        mealType: 'snack' as const
+        mealType: 'snack' as const,
       };
 
       expect(() => RecipeSchema.parse(decimalRecipe)).not.toThrow();
@@ -611,10 +635,10 @@ describe('Recipe Schemas', () => {
         cookTime: 15,
         servings: 1,
         difficulty: 'medium' as const,
-        mealType: 'lunch' as const
+        mealType: 'lunch' as const,
       };
 
       expect(() => RecipeSchema.parse(longStringRecipe)).not.toThrow();
     });
   });
-}); 
+});

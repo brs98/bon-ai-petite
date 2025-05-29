@@ -2,10 +2,10 @@ import { openai } from '@ai-sdk/openai';
 import { generateText } from 'ai';
 import * as dotenv from 'dotenv';
 import {
-    RecipeGenerationRequestSchema,
-    RecipeSchema,
-    type Recipe,
-    type RecipeGenerationRequest
+  RecipeGenerationRequestSchema,
+  RecipeSchema,
+  type Recipe,
+  type RecipeGenerationRequest,
 } from '../../types/recipe';
 
 // Load environment variables
@@ -24,7 +24,7 @@ export class RecipeGeneratorService {
     try {
       // Validate the input request
       const validatedRequest = RecipeGenerationRequestSchema.parse(request);
-      
+
       const prompt = this.buildPrompt(validatedRequest);
 
       const { text } = await generateText({
@@ -53,12 +53,14 @@ export class RecipeGeneratorService {
       }
     } catch (error) {
       // Re-throw specific errors we've already handled
-      if (error instanceof Error && 
-          (error.message.includes('Invalid JSON response from AI service') ||
-           error.message.includes('Recipe validation failed'))) {
+      if (
+        error instanceof Error &&
+        (error.message.includes('Invalid JSON response from AI service') ||
+          error.message.includes('Recipe validation failed'))
+      ) {
         throw error;
       }
-      
+
       console.error('Recipe generation failed:', error);
       throw new Error('Failed to generate recipe. Please try again.');
     }

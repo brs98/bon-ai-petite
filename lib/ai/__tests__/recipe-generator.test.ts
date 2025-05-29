@@ -6,28 +6,28 @@ jest.mock('ai', () => ({
   generateText: jest.fn(),
 }));
 
-const mockedGenerateText = generateText as jest.MockedFunction<typeof generateText>;
+const mockedGenerateText = generateText as jest.MockedFunction<
+  typeof generateText
+>;
 
 // Test utilities for creating mock recipes
 const createMockRecipe = (overrides = {}) => ({
   name: 'Mock Recipe',
   description: 'A mock recipe for testing',
-  ingredients: [
-    { name: 'mock ingredient', quantity: 1, unit: 'cup' }
-  ],
+  ingredients: [{ name: 'mock ingredient', quantity: 1, unit: 'cup' }],
   instructions: ['Mock instruction 1', 'Mock instruction 2'],
   nutrition: {
     calories: 300,
     protein: 15,
     carbs: 30,
-    fat: 10
+    fat: 10,
   },
   prepTime: 10,
   cookTime: 20,
   servings: 2,
   difficulty: 'easy' as const,
   mealType: 'lunch' as const,
-  ...overrides
+  ...overrides,
 });
 
 const mockSuccessfulGeneration = (recipe = createMockRecipe()) => {
@@ -42,7 +42,7 @@ const mockSuccessfulGeneration = (recipe = createMockRecipe()) => {
     reasoningDetails: undefined,
     sources: [],
     files: [],
-    warnings: undefined
+    warnings: undefined,
   } as any);
 };
 
@@ -62,7 +62,7 @@ const mockInvalidJsonResponse = () => {
     reasoningDetails: undefined,
     sources: [],
     files: [],
-    warnings: undefined
+    warnings: undefined,
   } as any);
 };
 
@@ -78,7 +78,7 @@ const mockInvalidSchemaResponse = () => {
     reasoningDetails: undefined,
     sources: [],
     files: [],
-    warnings: undefined
+    warnings: undefined,
   } as any);
 };
 
@@ -94,7 +94,7 @@ describe('RecipeGeneratorService', () => {
     it('should throw error when OPENAI_API_KEY is missing', () => {
       delete process.env.OPENAI_API_KEY;
       expect(() => new RecipeGeneratorService()).toThrow(
-        'OPENAI_API_KEY environment variable is required'
+        'OPENAI_API_KEY environment variable is required',
       );
     });
 
@@ -115,12 +115,12 @@ describe('RecipeGeneratorService', () => {
         calories: 600,
         protein: 30,
         carbs: 45,
-        fat: 20
+        fat: 20,
       };
-      
+
       // Use reflection to access private method for testing
       const prompt = (service as any).buildPrompt(request);
-      
+
       expect(prompt).toContain('Target calories: 600');
       expect(prompt).toContain('Protein: at least 30g');
       expect(prompt).toContain('Carbohydrates: around 45g');
@@ -130,22 +130,22 @@ describe('RecipeGeneratorService', () => {
     it('should prioritize allergies in prompt', () => {
       const request = {
         mealType: 'breakfast' as const,
-        allergies: ['nuts', 'dairy']
+        allergies: ['nuts', 'dairy'],
       };
-      
+
       const prompt = (service as any).buildPrompt(request);
-      
+
       expect(prompt).toContain('MUST AVOID (allergies): nuts, dairy');
     });
 
     it('should include dietary restrictions', () => {
       const request = {
         mealType: 'lunch' as const,
-        dietaryRestrictions: ['vegan', 'gluten-free']
+        dietaryRestrictions: ['vegan', 'gluten-free'],
       };
-      
+
       const prompt = (service as any).buildPrompt(request);
-      
+
       expect(prompt).toContain('Dietary restrictions: vegan, gluten-free');
     });
 
@@ -153,22 +153,22 @@ describe('RecipeGeneratorService', () => {
       const request = {
         mealType: 'dinner' as const,
         userProfile: {
-          goals: 'gain_muscle'
-        }
+          goals: 'gain_muscle',
+        },
       };
-      
+
       const prompt = (service as any).buildPrompt(request);
-      
+
       expect(prompt).toContain('User goal: gain_muscle');
     });
 
     it('should include meal type in JSON structure requirement', () => {
       const request = {
-        mealType: 'snack' as const
+        mealType: 'snack' as const,
       };
-      
+
       const prompt = (service as any).buildPrompt(request);
-      
+
       expect(prompt).toContain('"mealType": "snack"');
     });
   });
@@ -190,13 +190,13 @@ describe('RecipeGeneratorService', () => {
         cookTime: 10,
         servings: 1,
         difficulty: 'easy' as const,
-        mealType: 'breakfast' as const
+        mealType: 'breakfast' as const,
       });
 
       mockSuccessfulGeneration(mockResponse);
 
       const result = await service.generateRecipe({
-        mealType: 'breakfast'
+        mealType: 'breakfast',
       });
 
       expect(result).toEqual(mockResponse);
@@ -205,25 +205,31 @@ describe('RecipeGeneratorService', () => {
     it('should handle invalid JSON response', async () => {
       mockInvalidJsonResponse();
 
-      await expect(service.generateRecipe({
-        mealType: 'breakfast'
-      })).rejects.toThrow('Invalid JSON response from AI service');
+      await expect(
+        service.generateRecipe({
+          mealType: 'breakfast',
+        }),
+      ).rejects.toThrow('Invalid JSON response from AI service');
     });
 
     it('should handle schema validation errors', async () => {
       mockInvalidSchemaResponse();
 
-      await expect(service.generateRecipe({
-        mealType: 'breakfast'
-      })).rejects.toThrow('Recipe validation failed');
+      await expect(
+        service.generateRecipe({
+          mealType: 'breakfast',
+        }),
+      ).rejects.toThrow('Recipe validation failed');
     });
 
     it('should handle API errors gracefully', async () => {
       mockFailedGeneration(new Error('Network timeout'));
 
-      await expect(service.generateRecipe({
-        mealType: 'lunch'
-      })).rejects.toThrow('Failed to generate recipe');
+      await expect(
+        service.generateRecipe({
+          mealType: 'lunch',
+        }),
+      ).rejects.toThrow('Failed to generate recipe');
     });
 
     it('should validate required nutrition values are positive', async () => {
@@ -232,42 +238,48 @@ describe('RecipeGeneratorService', () => {
           calories: -100, // Invalid negative calories
           protein: 10,
           carbs: 20,
-          fat: 5
+          fat: 5,
         },
-        mealType: 'dinner' as const
+        mealType: 'dinner' as const,
       });
 
       mockSuccessfulGeneration(invalidRecipe);
 
-      await expect(service.generateRecipe({
-        mealType: 'dinner'
-      })).rejects.toThrow('Recipe validation failed');
+      await expect(
+        service.generateRecipe({
+          mealType: 'dinner',
+        }),
+      ).rejects.toThrow('Recipe validation failed');
     });
 
     it('should validate ingredients array is not empty', async () => {
       const invalidRecipe = createMockRecipe({
         ingredients: [], // Invalid empty ingredients
-        mealType: 'dinner' as const
+        mealType: 'dinner' as const,
       });
 
       mockSuccessfulGeneration(invalidRecipe);
 
-      await expect(service.generateRecipe({
-        mealType: 'dinner'
-      })).rejects.toThrow('Recipe validation failed');
+      await expect(
+        service.generateRecipe({
+          mealType: 'dinner',
+        }),
+      ).rejects.toThrow('Recipe validation failed');
     });
 
     it('should validate instructions array is not empty', async () => {
       const invalidRecipe = createMockRecipe({
         instructions: [], // Invalid empty instructions
-        mealType: 'dinner' as const
+        mealType: 'dinner' as const,
       });
 
       mockSuccessfulGeneration(invalidRecipe);
 
-      await expect(service.generateRecipe({
-        mealType: 'dinner'
-      })).rejects.toThrow('Recipe validation failed');
+      await expect(
+        service.generateRecipe({
+          mealType: 'dinner',
+        }),
+      ).rejects.toThrow('Recipe validation failed');
     });
   });
-}); 
+});

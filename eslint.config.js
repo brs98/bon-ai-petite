@@ -21,17 +21,19 @@ export default tseslint.config(
       '**/drizzle/**',
       '**/*.config.js',
       '**/*.config.ts',
+      '**/*.config.mjs',
+      '**/*.config.cjs',
       '**/components.json',
     ],
   },
 
-  // Base ESLint recommended rules
+  // Base ESLint recommended rules for all files
   eslint.configs.recommended,
 
-  // TypeScript ESLint recommended configuration with type checking
-  ...tseslint.configs.recommendedTypeChecked,
+  // TypeScript ESLint recommended configuration WITHOUT type checking (for basic rules)
+  ...tseslint.configs.recommended,
 
-  // Core configuration for TypeScript files
+  // TypeScript ESLint configuration WITH type checking - ONLY for TypeScript files
   {
     files: ['**/*.{ts,tsx}'],
     languageOptions: {
@@ -55,6 +57,13 @@ export default tseslint.config(
       '@typescript-eslint': tseslint.plugin,
     },
     rules: {
+      // Add type-aware rules manually for TypeScript files
+      '@typescript-eslint/no-floating-promises': 'error',
+      '@typescript-eslint/await-thenable': 'error',
+      '@typescript-eslint/no-misused-promises': 'error',
+      '@typescript-eslint/prefer-promise-reject-errors': 'error',
+      '@typescript-eslint/require-await': 'error',
+
       // TypeScript specific rules
       '@typescript-eslint/no-unused-vars': [
         'warn',
@@ -64,9 +73,6 @@ export default tseslint.config(
         },
       ],
       '@typescript-eslint/no-explicit-any': 'error',
-      '@typescript-eslint/no-floating-promises': 'error',
-      '@typescript-eslint/await-thenable': 'error',
-      '@typescript-eslint/no-misused-promises': 'error',
 
       // General ESLint rules (formatting rules removed - handled by Prettier)
       'no-console': 'off',
@@ -82,9 +88,9 @@ export default tseslint.config(
     },
   },
 
-  // Disable type-aware linting on JavaScript files
+  // Configuration for JavaScript files (disable type-aware linting)
   {
-    files: ['**/*.js', '**/*.mjs'],
+    files: ['**/*.js', '**/*.mjs', '**/*.cjs'],
     languageOptions: {
       globals: {
         ...globals.browser,
@@ -93,20 +99,15 @@ export default tseslint.config(
       },
     },
     ...tseslint.configs.disableTypeChecked,
-  },
-
-  // Special configuration for configuration files
-  {
-    files: ['**/*.config.{js,ts,mjs}', '**/middleware.ts'],
-    languageOptions: {
-      globals: {
-        ...globals.node,
-        ...globals.es2022,
-      },
-    },
     rules: {
       'no-console': 'off',
-      '@typescript-eslint/no-var-requires': 'off',
+      'no-debugger': 'error',
+      'no-duplicate-imports': 'error',
+      'prefer-const': 'error',
+      'no-var': 'error',
+      'no-case-declarations': 'error',
+      'no-undef': 'error',
+      'no-unused-expressions': 'error',
     },
   },
 
@@ -130,6 +131,8 @@ export default tseslint.config(
       '**/*.test.{ts,tsx,js}',
       '**/*.spec.{ts,tsx,js}',
       '**/__tests__/**',
+      '**/jest.setup.js',
+      '**/jest.config.{js,cjs}',
     ],
     languageOptions: {
       globals: {
