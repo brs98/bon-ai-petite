@@ -1,7 +1,7 @@
-import { generateText } from 'ai';
 import { openai } from '@ai-sdk/openai';
-import { z } from 'zod';
+import { generateText } from 'ai';
 import * as dotenv from 'dotenv';
+import { z } from 'zod';
 
 // Load environment variables
 dotenv.config();
@@ -72,10 +72,22 @@ export class RecipeGeneratorService {
       });
 
       // Parse the AI response and validate against our schema
-      const parsedRecipe = JSON.parse(text);
+      let parsedRecipe: unknown;
+      try {
+        parsedRecipe = JSON.parse(text) as unknown;
+      } catch (parseError) {
+        console.error('Failed to parse AI response as JSON:', parseError);
+        throw new Error('Invalid JSON response from AI service');
+      }
+
       return RecipeSchema.parse(parsedRecipe);
     } catch (error) {
       console.error('Recipe generation failed:', error);
+      if (error instanceof z.ZodError) {
+        throw new Error(
+          'Recipe validation failed: AI response does not match expected format',
+        );
+      }
       throw new Error('Failed to generate recipe. Please try again.');
     }
   }
