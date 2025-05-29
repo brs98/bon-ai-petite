@@ -1,19 +1,19 @@
 'use client';
 
-import Link from 'next/link';
-import { useState, Suspense } from 'react';
-import { Button } from '@/components/ui/button';
-import { ChefHat, Home, LogOut } from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { signOut } from '@/app/(login)/actions';
-import { useRouter } from 'next/navigation';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { User } from '@/lib/db/schema';
+import { BookOpen, ChefHat, Home, LogOut } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { Suspense, useState } from 'react';
 import useSWR from 'swr';
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
@@ -66,6 +66,12 @@ function UserMenu() {
           <Link href='/dashboard' className='flex w-full items-center'>
             <Home className='mr-2 h-4 w-4' />
             <span>Dashboard</span>
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem className='cursor-pointer'>
+          <Link href='/dashboard/recipes' className='flex w-full items-center'>
+            <BookOpen className='mr-2 h-4 w-4' />
+            <span>Recipes</span>
           </Link>
         </DropdownMenuItem>
         <form action={handleSignOut} className='w-full'>
