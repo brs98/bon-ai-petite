@@ -68,30 +68,30 @@
 
 ### Core API Routes
 
-- [ ] **Create recipe generation API endpoint** ⚠️ BLOCKS: Recipe generator UI,
+- [x] **Create recipe generation API endpoint** ⚠️ BLOCKS: Recipe generator UI,
       recipe generation flow 🔗 DEPENDS ON: Recipes table migration, AI service
       structure, recipe types
 
-  - [ ] Create `app/api/recipes/generate/route.ts`
-  - [ ] Implement POST handler with user authentication
-  - [ ] Add basic request validation with Zod schemas
-  - [ ] Integrate with AI SDK generateText function
-  - [ ] Add error handling and response formatting
+  - [x] Create `app/api/recipes/generate/route.ts`
+  - [x] Implement POST handler with user authentication
+  - [x] Add basic request validation with Zod schemas
+  - [x] Integrate with AI SDK generateText function
+  - [x] Add error handling and response formatting
 
-- [ ] **Create recipe save API endpoint** ⚠️ BLOCKS: Save recipe functionality
+- [x] **Create recipe save API endpoint** ⚠️ BLOCKS: Save recipe functionality
       in UI 🔗 DEPENDS ON: Recipes table migration, recipe types
 
-  - [ ] Create `app/api/recipes/save/route.ts`
-  - [ ] Implement POST handler to save recipes to database
-  - [ ] Add validation for recipe data structure
-  - [ ] Handle duplicate recipe checking
+  - [x] Create `app/api/recipes/save/route.ts`
+  - [x] Implement POST handler to save recipes to database
+  - [x] Add validation for recipe data structure
+  - [x] Handle duplicate recipe checking
 
-- [ ] **Create recipe feedback API endpoint** ⚠️ BLOCKS: Feedback buttons,
+- [x] **Create recipe feedback API endpoint** ⚠️ BLOCKS: Feedback buttons,
       feedback system 🔗 DEPENDS ON: Recipe feedback table migration, recipe
       types
-  - [ ] Create `app/api/recipes/feedback/route.ts`
-  - [ ] Implement POST handler for like/dislike actions
-  - [ ] Store feedback in database with proper relationships
+  - [x] Create `app/api/recipes/feedback/route.ts`
+  - [x] Implement POST handler for like/dislike actions
+  - [x] Store feedback in database with proper relationships
 
 ### Basic UI Foundation
 
