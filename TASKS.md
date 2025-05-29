@@ -16,10 +16,10 @@
   - [x] Add indexes on `userId`, `mealType`, `createdAt`, `isSaved`
   - [x] Add text search index on `name` and `description` fields
 
-- [ ] **Create recipe feedback table migration** ⚠️ BLOCKS: Recipe feedback API, feedback components
-  - [ ] Add `recipe_feedback` table with recipe and user relationships
-  - [ ] Set up foreign keys to `recipes` and `users` tables
-  - [ ] Add composite index on `(recipeId, userId)`
+- [x] **Create recipe feedback table migration** ⚠️ BLOCKS: Recipe feedback API, feedback components
+  - [x] Add `recipe_feedback` table with recipe and user relationships
+  - [x] Set up foreign keys to `recipes` and `users` tables
+  - [x] Add composite index on `(recipeId, userId)`
 
 - [ ] **Create usage tracking table migration** ⚠️ BLOCKS: Usage limit system, subscription enforcement
   - [ ] Add `usage_tracking` table for subscription limit enforcement

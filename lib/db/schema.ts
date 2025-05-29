@@ -124,6 +124,22 @@ export const recipes = pgTable('recipes', {
   descriptionSearchIdx: index('recipes_description_search_idx').on(table.description),
 }));
 
+export const recipeFeedback = pgTable('recipe_feedback', {
+  id: serial('id').primaryKey(),
+  recipeId: integer('recipe_id')
+    .notNull()
+    .references(() => recipes.id),
+  userId: integer('user_id')
+    .notNull()
+    .references(() => users.id),
+  liked: boolean('liked'),
+  feedback: text('feedback'), // reasons for dislike
+  reportedIssues: text('reported_issues').array(), // too_complex, bad_ingredients, etc
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+}, (table) => ({
+  recipeUserIdx: index('recipe_feedback_recipe_user_idx').on(table.recipeId, table.userId),
+}));
+
 export const teamsRelations = relations(teams, ({ many }) => ({
   teamMembers: many(teamMembers),
   activityLogs: many(activityLogs),
@@ -135,6 +151,7 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   invitationsSent: many(invitations),
   nutritionProfile: one(nutritionProfiles),
   recipes: many(recipes),
+  recipeFeedback: many(recipeFeedback),
 }));
 
 export const invitationsRelations = relations(invitations, ({ one }) => ({
@@ -177,9 +194,21 @@ export const nutritionProfilesRelations = relations(nutritionProfiles, ({ one })
   }),
 }));
 
-export const recipesRelations = relations(recipes, ({ one }) => ({
+export const recipesRelations = relations(recipes, ({ one, many }) => ({
   user: one(users, {
     fields: [recipes.userId],
+    references: [users.id],
+  }),
+  recipeFeedback: many(recipeFeedback),
+}));
+
+export const recipeFeedbackRelations = relations(recipeFeedback, ({ one }) => ({
+  recipe: one(recipes, {
+    fields: [recipeFeedback.recipeId],
+    references: [recipes.id],
+  }),
+  user: one(users, {
+    fields: [recipeFeedback.userId],
     references: [users.id],
   }),
 }));
@@ -217,3 +246,5 @@ export type NutritionProfile = typeof nutritionProfiles.$inferSelect;
 export type NewNutritionProfile = typeof nutritionProfiles.$inferInsert;
 export type Recipe = typeof recipes.$inferSelect;
 export type NewRecipe = typeof recipes.$inferInsert;
+export type RecipeFeedback = typeof recipeFeedback.$inferSelect;
+export type NewRecipeFeedback = typeof recipeFeedback.$inferInsert;
