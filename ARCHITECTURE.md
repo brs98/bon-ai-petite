@@ -3,6 +3,7 @@
 ## 🔍 Current App Context
 
 **Existing Tech Stack:**
+
 - Next.js 15 with App Router
 - TypeScript + Zod validation
 - Drizzle ORM + PostgreSQL
@@ -12,10 +13,11 @@
 - Protected dashboard routes
 
 **Current Structure:**
+
 ```
 app/
 ├── (dashboard)/          # Protected routes
-├── (login)/             # Auth routes  
+├── (login)/             # Auth routes
 ├── pricing/             # Public pricing
 ├── profile/             # User management
 └── api/                 # API endpoints
@@ -28,15 +30,18 @@ app/
 ### A. Service Integration Points
 
 **1. User Experience Flow:**
+
 ```
 Dashboard → Recipe Generator → Generated Recipe → Shopping List Integration
 ```
 
 **2. Subscription-Based Access:**
+
 - **Essential Plan**: Basic recipe generation (3 recipes/day)
 - **Premium Plan**: Advanced features (unlimited + meal planning)
 
 **3. Data Flow Integration:**
+
 ```
 User Profile (existing) → Recipe Preferences → AI Generation → Recipe Storage → Shopping Integration
 ```
@@ -200,6 +205,7 @@ New User → Nutrition Profile Setup → Preference Selection → First Recipe G
 ```
 
 **Pages:**
+
 - `/dashboard/settings/nutrition` - Initial profile setup
 - `/dashboard/recipes/generate/preferences` - Dietary preferences
 - `/dashboard/recipes/generate` - First generation experience
@@ -211,6 +217,7 @@ Dashboard → Recipe Generator → AI Processing → Nutrition Validation → Re
 ```
 
 **API Flow:**
+
 ```typescript
 // API Route: /api/recipes/generate
 POST {
@@ -247,11 +254,13 @@ Recipe View → Add to Shopping List → Instacart Integration → Order Placeme
 ### Subscription Tiers
 
 **Essential Plan:**
+
 - 3 recipe generations per day
 - Basic nutrition tracking
 - Save up to 20 recipes
 
 **Premium Plan:**
+
 - Unlimited recipe generation
 - Weekly meal planning
 - Shopping list integration
@@ -262,17 +271,22 @@ Recipe View → Add to Shopping List → Instacart Integration → Order Placeme
 
 ```typescript
 // lib/subscriptions/usage-limits.ts
-export async function checkUsageLimit(userId: string, action: string): Promise<boolean> {
+export async function checkUsageLimit(
+  userId: string,
+  action: string,
+): Promise<boolean> {
   const subscription = await getSubscription(userId);
   const todayUsage = await getTodayUsage(userId, action);
-  
+
   const limits = {
     essential: { recipe_generation: 3 },
-    premium: { recipe_generation: -1 } // unlimited
+    premium: { recipe_generation: -1 }, // unlimited
   };
-  
-  return limits[subscription.plan][action] === -1 || 
-         todayUsage < limits[subscription.plan][action];
+
+  return (
+    limits[subscription.plan][action] === -1 ||
+    todayUsage < limits[subscription.plan][action]
+  );
 }
 ```
 
@@ -283,18 +297,21 @@ export async function checkUsageLimit(userId: string, action: string): Promise<b
 ### Key Metrics to Track
 
 **User Engagement:**
+
 - Recipe generation frequency
 - Save/like rates
 - Time spent on recipe pages
 - Shopping list usage (Premium)
 
 **AI Performance:**
+
 - Generation success rate
 - Nutrition accuracy
 - User satisfaction scores
 - Common feedback patterns
 
 **Business Metrics:**
+
 - Feature usage by subscription tier
 - Conversion from Essential to Premium
 - Recipe-related churn analysis
@@ -304,10 +321,10 @@ export async function checkUsageLimit(userId: string, action: string): Promise<b
 ```typescript
 // lib/analytics/recipe-events.ts
 export const trackRecipeEvent = (event: {
-  userId: string,
-  action: 'generated' | 'saved' | 'liked' | 'shopping_list',
-  recipeId?: string,
-  metadata?: Record<string, any>
+  userId: string;
+  action: 'generated' | 'saved' | 'liked' | 'shopping_list';
+  recipeId?: string;
+  metadata?: Record<string, any>;
 }) => {
   // Track in existing analytics system
 };
@@ -318,24 +335,28 @@ export const trackRecipeEvent = (event: {
 ## 🚀 Implementation Phases
 
 ### Phase 1: Core Infrastructure (Week 1-2)
+
 - Database schema migration
 - Basic AI integration setup
 - Recipe generation API endpoint
 - Simple recipe display UI
 
 ### Phase 2: User Experience (Week 3-4)
+
 - Nutrition profile setup
 - Recipe generator interface
 - Save/feedback functionality
 - Basic nutrition validation
 
 ### Phase 3: Premium Features (Week 5-6)
+
 - Meal planning interface
 - Shopping integration
 - Advanced nutrition analysis
 - Usage limit enforcement
 
 ### Phase 4: Optimization (Week 7-8)
+
 - Performance optimization
 - Advanced prompt engineering
 - Analytics implementation
@@ -374,4 +395,6 @@ export class RecipeGeneratorService {
 - Optimistic UI updates
 - Background recipe pre-generation for power users
 
-This architecture leverages your existing Next.js SaaS foundation while adding sophisticated AI-powered recipe generation that scales with your subscription model. 
+This architecture leverages your existing Next.js SaaS foundation while adding
+sophisticated AI-powered recipe generation that scales with your subscription
+model.

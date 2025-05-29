@@ -72,86 +72,113 @@ export const invitations = pgTable('invitations', {
   status: varchar('status', { length: 20 }).notNull().default('pending'),
 });
 
-export const nutritionProfiles = pgTable('nutrition_profiles', {
-  id: serial('id').primaryKey(),
-  userId: integer('user_id')
-    .notNull()
-    .references(() => users.id),
-  age: integer('age'),
-  height: integer('height_cm'),
-  weight: integer('weight_kg'),
-  activityLevel: varchar('activity_level', { length: 20 }),
-  goals: varchar('goals', { length: 50 }), // lose_weight, gain_muscle, maintain
-  dailyCalories: integer('daily_calories'),
-  macroProtein: integer('macro_protein_g'),
-  macroCarbs: integer('macro_carbs_g'),
-  macroFat: integer('macro_fat_g'),
-  allergies: text('allergies').array(),
-  dietaryRestrictions: text('dietary_restrictions').array(),
-  cuisinePreferences: text('cuisine_preferences').array(),
-  createdAt: timestamp('created_at').notNull().defaultNow(),
-  updatedAt: timestamp('updated_at').notNull().defaultNow(),
-}, (table) => ({
-  userIdIdx: index('nutrition_profiles_user_id_idx').on(table.userId),
-  createdAtIdx: index('nutrition_profiles_created_at_idx').on(table.createdAt),
-}));
+export const nutritionProfiles = pgTable(
+  'nutrition_profiles',
+  {
+    id: serial('id').primaryKey(),
+    userId: integer('user_id')
+      .notNull()
+      .references(() => users.id),
+    age: integer('age'),
+    height: integer('height_cm'),
+    weight: integer('weight_kg'),
+    activityLevel: varchar('activity_level', { length: 20 }),
+    goals: varchar('goals', { length: 50 }), // lose_weight, gain_muscle, maintain
+    dailyCalories: integer('daily_calories'),
+    macroProtein: integer('macro_protein_g'),
+    macroCarbs: integer('macro_carbs_g'),
+    macroFat: integer('macro_fat_g'),
+    allergies: text('allergies').array(),
+    dietaryRestrictions: text('dietary_restrictions').array(),
+    cuisinePreferences: text('cuisine_preferences').array(),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  table => ({
+    userIdIdx: index('nutrition_profiles_user_id_idx').on(table.userId),
+    createdAtIdx: index('nutrition_profiles_created_at_idx').on(
+      table.createdAt,
+    ),
+  }),
+);
 
-export const recipes = pgTable('recipes', {
-  id: serial('id').primaryKey(),
-  userId: integer('user_id')
-    .notNull()
-    .references(() => users.id),
-  name: varchar('name', { length: 255 }).notNull(),
-  description: text('description'),
-  ingredients: jsonb('ingredients').notNull(), // [{ name, quantity, unit }]
-  instructions: text('instructions').array().notNull(),
-  nutrition: jsonb('nutrition').notNull(), // { calories, protein, carbs, fat }
-  prepTime: integer('prep_time_minutes'),
-  cookTime: integer('cook_time_minutes'),
-  servings: integer('servings'),
-  difficulty: varchar('difficulty', { length: 20 }),
-  cuisineType: varchar('cuisine_type', { length: 50 }),
-  mealType: varchar('meal_type', { length: 20 }).notNull(), // breakfast, lunch, dinner, snack
-  tags: text('tags').array(),
-  isSaved: boolean('is_saved').notNull().default(false),
-  rating: integer('rating'), // 1-5 stars
-  createdAt: timestamp('created_at').notNull().defaultNow(),
-}, (table) => ({
-  userIdIdx: index('recipes_user_id_idx').on(table.userId),
-  mealTypeIdx: index('recipes_meal_type_idx').on(table.mealType),
-  createdAtIdx: index('recipes_created_at_idx').on(table.createdAt),
-  isSavedIdx: index('recipes_is_saved_idx').on(table.isSaved),
-  nameSearchIdx: index('recipes_name_search_idx').on(table.name),
-  descriptionSearchIdx: index('recipes_description_search_idx').on(table.description),
-}));
+export const recipes = pgTable(
+  'recipes',
+  {
+    id: serial('id').primaryKey(),
+    userId: integer('user_id')
+      .notNull()
+      .references(() => users.id),
+    name: varchar('name', { length: 255 }).notNull(),
+    description: text('description'),
+    ingredients: jsonb('ingredients').notNull(), // [{ name, quantity, unit }]
+    instructions: text('instructions').array().notNull(),
+    nutrition: jsonb('nutrition').notNull(), // { calories, protein, carbs, fat }
+    prepTime: integer('prep_time_minutes'),
+    cookTime: integer('cook_time_minutes'),
+    servings: integer('servings'),
+    difficulty: varchar('difficulty', { length: 20 }),
+    cuisineType: varchar('cuisine_type', { length: 50 }),
+    mealType: varchar('meal_type', { length: 20 }).notNull(), // breakfast, lunch, dinner, snack
+    tags: text('tags').array(),
+    isSaved: boolean('is_saved').notNull().default(false),
+    rating: integer('rating'), // 1-5 stars
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+  },
+  table => ({
+    userIdIdx: index('recipes_user_id_idx').on(table.userId),
+    mealTypeIdx: index('recipes_meal_type_idx').on(table.mealType),
+    createdAtIdx: index('recipes_created_at_idx').on(table.createdAt),
+    isSavedIdx: index('recipes_is_saved_idx').on(table.isSaved),
+    nameSearchIdx: index('recipes_name_search_idx').on(table.name),
+    descriptionSearchIdx: index('recipes_description_search_idx').on(
+      table.description,
+    ),
+  }),
+);
 
-export const recipeFeedback = pgTable('recipe_feedback', {
-  id: serial('id').primaryKey(),
-  recipeId: integer('recipe_id')
-    .notNull()
-    .references(() => recipes.id),
-  userId: integer('user_id')
-    .notNull()
-    .references(() => users.id),
-  liked: boolean('liked'),
-  feedback: text('feedback'), // reasons for dislike
-  reportedIssues: text('reported_issues').array(), // too_complex, bad_ingredients, etc
-  createdAt: timestamp('created_at').notNull().defaultNow(),
-}, (table) => ({
-  recipeUserIdx: index('recipe_feedback_recipe_user_idx').on(table.recipeId, table.userId),
-}));
+export const recipeFeedback = pgTable(
+  'recipe_feedback',
+  {
+    id: serial('id').primaryKey(),
+    recipeId: integer('recipe_id')
+      .notNull()
+      .references(() => recipes.id),
+    userId: integer('user_id')
+      .notNull()
+      .references(() => users.id),
+    liked: boolean('liked'),
+    feedback: text('feedback'), // reasons for dislike
+    reportedIssues: text('reported_issues').array(), // too_complex, bad_ingredients, etc
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+  },
+  table => ({
+    recipeUserIdx: index('recipe_feedback_recipe_user_idx').on(
+      table.recipeId,
+      table.userId,
+    ),
+  }),
+);
 
-export const usageTracking = pgTable('usage_tracking', {
-  id: serial('id').primaryKey(),
-  userId: integer('user_id')
-    .notNull()
-    .references(() => users.id),
-  action: varchar('action', { length: 50 }).notNull(), // recipe_generation, meal_plan_creation
-  date: date('date').notNull(),
-  count: integer('count').notNull().default(1),
-}, (table) => ({
-  userDateActionIdx: index('usage_tracking_user_date_action_idx').on(table.userId, table.date, table.action),
-}));
+export const usageTracking = pgTable(
+  'usage_tracking',
+  {
+    id: serial('id').primaryKey(),
+    userId: integer('user_id')
+      .notNull()
+      .references(() => users.id),
+    action: varchar('action', { length: 50 }).notNull(), // recipe_generation, meal_plan_creation
+    date: date('date').notNull(),
+    count: integer('count').notNull().default(1),
+  },
+  table => ({
+    userDateActionIdx: index('usage_tracking_user_date_action_idx').on(
+      table.userId,
+      table.date,
+      table.action,
+    ),
+  }),
+);
 
 export const teamsRelations = relations(teams, ({ many }) => ({
   teamMembers: many(teamMembers),
@@ -201,12 +228,15 @@ export const activityLogsRelations = relations(activityLogs, ({ one }) => ({
   }),
 }));
 
-export const nutritionProfilesRelations = relations(nutritionProfiles, ({ one }) => ({
-  user: one(users, {
-    fields: [nutritionProfiles.userId],
-    references: [users.id],
+export const nutritionProfilesRelations = relations(
+  nutritionProfiles,
+  ({ one }) => ({
+    user: one(users, {
+      fields: [nutritionProfiles.userId],
+      references: [users.id],
+    }),
   }),
-}));
+);
 
 export const recipesRelations = relations(recipes, ({ one, many }) => ({
   user: one(users, {

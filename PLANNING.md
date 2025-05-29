@@ -4,7 +4,8 @@
 
 ### Goal
 
-Build a robust AI-powered recipe generation pipeline tailored to individual user profiles, ensuring nutritional accuracy, variety, and personalization.
+Build a robust AI-powered recipe generation pipeline tailored to individual user
+profiles, ensuring nutritional accuracy, variety, and personalization.
 
 ### Key Features
 
@@ -107,31 +108,34 @@ import { z } from 'zod';
 
 const RecipeSchema = z.object({
   name: z.string(),
-  ingredients: z.array(z.object({
-    name: z.string(),
-    quantity: z.number(),
-    unit: z.string()
-  })),
+  ingredients: z.array(
+    z.object({
+      name: z.string(),
+      quantity: z.number(),
+      unit: z.string(),
+    }),
+  ),
   instructions: z.array(z.string()),
   nutrition: z.object({
     calories: z.number(),
     protein: z.number(),
     carbs: z.number(),
-    fat: z.number()
-  })
+    fat: z.number(),
+  }),
 });
 
 async function generateRecipe(userProfile: UserProfile): Promise<Recipe> {
   const prompt = buildPrompt(userProfile);
-  
+
   const { text } = await generateText({
     model: openai('gpt-4o'),
-    system: 'You are a professional chef and nutritionist. Generate recipes that match exact nutritional requirements.',
+    system:
+      'You are a professional chef and nutritionist. Generate recipes that match exact nutritional requirements.',
     prompt,
   });
 
   const recipe = parseRecipe(text);
-  
+
   if (!validateNutrition(recipe, userProfile.goals)) {
     return generateRecipe(userProfile); // retry or tweak
   }

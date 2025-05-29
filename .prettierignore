@@ -1,0 +1,49 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+.next/
+out/
+dist/
+build/
+
+# Database
+drizzle/
+
+# Environment
+.env*
+
+# Cache
+.cache/
+.turbo/
+
+# Coverage
+coverage/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Auto-generated
+components.json
+pnpm-lock.yaml
+yarn.lock
+package-lock.json
+
+# Public assets (selective)
+public/
+
+# Documentation (if you want to preserve original formatting)
+# CHANGELOG.md
+# README.md
+
+# Git
+.git/
+.gitignore 

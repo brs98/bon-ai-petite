@@ -107,25 +107,34 @@ export async function GET(request: NextRequest) {
 
       // Set a 10-second timeout for database operations
       const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Database operation timeout')), 10000);
+        setTimeout(
+          () => reject(new Error('Database operation timeout')),
+          10000,
+        );
       });
 
       await Promise.race([dbOperationPromise, timeoutPromise]);
       console.log('Successfully updated database for user:', userId);
     } catch (dbError) {
       console.error('Database error during checkout processing:', dbError);
-      console.log('Continuing with redirect - webhook will handle subscription update');
+      console.log(
+        'Continuing with redirect - webhook will handle subscription update',
+      );
       // Continue to redirect even if database update fails
       // The webhook will handle the subscription update later
     }
 
     console.log('Redirecting to profile with success status');
     // Always redirect to profile, even if database update failed
-    return NextResponse.redirect(new URL('/profile?payment=success', request.url));
+    return NextResponse.redirect(
+      new URL('/profile?payment=success', request.url),
+    );
   } catch (error) {
     console.error('Error handling successful checkout:', error);
     console.log('Redirecting to profile with error status');
     // Still redirect to profile with an error flag so user isn't stuck
-    return NextResponse.redirect(new URL('/profile?payment=error', request.url));
+    return NextResponse.redirect(
+      new URL('/profile?payment=error', request.url),
+    );
   }
 }

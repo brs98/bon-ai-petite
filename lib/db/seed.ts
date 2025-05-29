@@ -50,7 +50,7 @@ async function seed() {
       {
         email: email,
         passwordHash: passwordHash,
-        role: "owner",
+        role: 'owner',
       },
     ])
     .returning();
@@ -74,7 +74,7 @@ async function seed() {
 }
 
 seed()
-  .catch((error) => {
+  .catch(error => {
     console.error('Seed process failed:', error);
     process.exit(1);
   })

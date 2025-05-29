@@ -1,5 +1,5 @@
-@import "tailwindcss";
-@import "tw-animate-css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
 
 @custom-variant dark (&:is(.dark *));
 @variant dark (&:is(.dark *));
@@ -369,7 +369,7 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: "Manrope", Arial, Helvetica, sans-serif;
+    font-family: 'Manrope', Arial, Helvetica, sans-serif;
   }
 }
 

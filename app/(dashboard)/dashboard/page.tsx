@@ -1,20 +1,19 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-  CardFooter
+  CardFooter,
 } from '@/components/ui/card';
 import { customerPortalAction } from '@/lib/payments/actions';
-import { useActionState } from 'react';
+import { useActionState, Suspense } from 'react';
 import { TeamDataWithMembers, User } from '@/lib/db/schema';
 import { removeTeamMember, inviteTeamMember } from '@/app/(login)/actions';
 import useSWR from 'swr';
-import { Suspense } from 'react';
 import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
@@ -25,11 +24,11 @@ type ActionState = {
   success?: string;
 };
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
+const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 function SubscriptionSkeleton() {
   return (
-    <Card className="mb-8 h-[140px]">
+    <Card className='mb-8 h-[140px]'>
       <CardHeader>
         <CardTitle>Team Subscription</CardTitle>
       </CardHeader>
@@ -41,27 +40,27 @@ function ManageSubscription() {
   const { data: teamData } = useSWR<TeamDataWithMembers>('/api/team', fetcher);
 
   return (
-    <Card className="mb-8">
+    <Card className='mb-8'>
       <CardHeader>
         <CardTitle>Team Subscription</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
-            <div className="mb-4 sm:mb-0">
-              <p className="font-medium">
+        <div className='space-y-4'>
+          <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center'>
+            <div className='mb-4 sm:mb-0'>
+              <p className='font-medium'>
                 Current Plan: {teamData?.planName || 'Free'}
               </p>
-              <p className="text-sm text-muted-foreground">
+              <p className='text-sm text-muted-foreground'>
                 {teamData?.subscriptionStatus === 'active'
                   ? 'Billed monthly'
                   : teamData?.subscriptionStatus === 'trialing'
-                  ? 'Trial period'
-                  : 'No active subscription'}
+                    ? 'Trial period'
+                    : 'No active subscription'}
               </p>
             </div>
             <form action={customerPortalAction}>
-              <Button type="submit" variant="outline">
+              <Button type='submit' variant='outline'>
                 Manage Subscription
               </Button>
             </form>
@@ -74,17 +73,17 @@ function ManageSubscription() {
 
 function TeamMembersSkeleton() {
   return (
-    <Card className="mb-8 h-[140px]">
+    <Card className='mb-8 h-[140px]'>
       <CardHeader>
         <CardTitle>Team Members</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="animate-pulse space-y-4 mt-1">
-          <div className="flex items-center space-x-4">
-            <div className="size-8 rounded-full bg-muted"></div>
-            <div className="space-y-2">
-              <div className="h-4 w-32 bg-muted rounded"></div>
-              <div className="h-3 w-14 bg-muted rounded"></div>
+        <div className='animate-pulse space-y-4 mt-1'>
+          <div className='flex items-center space-x-4'>
+            <div className='size-8 rounded-full bg-muted'></div>
+            <div className='space-y-2'>
+              <div className='h-4 w-32 bg-muted rounded'></div>
+              <div className='h-3 w-14 bg-muted rounded'></div>
             </div>
           </div>
         </div>
@@ -106,27 +105,27 @@ function TeamMembers() {
 
   if (!teamData?.teamMembers?.length) {
     return (
-      <Card className="mb-8">
+      <Card className='mb-8'>
         <CardHeader>
           <CardTitle>Team Members</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground">No team members yet.</p>
+          <p className='text-muted-foreground'>No team members yet.</p>
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <Card className="mb-8">
+    <Card className='mb-8'>
       <CardHeader>
         <CardTitle>Team Members</CardTitle>
       </CardHeader>
       <CardContent>
-        <ul className="space-y-4">
+        <ul className='space-y-4'>
           {teamData.teamMembers.map((member, index) => (
-            <li key={member.id} className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
+            <li key={member.id} className='flex items-center justify-between'>
+              <div className='flex items-center space-x-4'>
                 <Avatar>
                   {/* 
                     This app doesn't save profile images, but here
@@ -140,26 +139,26 @@ function TeamMembers() {
                   <AvatarFallback>
                     {getUserDisplayName(member.user)
                       .split(' ')
-                      .map((n) => n[0])
+                      .map(n => n[0])
                       .join('')}
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="font-medium">
+                  <p className='font-medium'>
                     {getUserDisplayName(member.user)}
                   </p>
-                  <p className="text-sm text-muted-foreground capitalize">
+                  <p className='text-sm text-muted-foreground capitalize'>
                     {member.role}
                   </p>
                 </div>
               </div>
               {index > 1 ? (
                 <form action={removeAction}>
-                  <input type="hidden" name="memberId" value={member.id} />
+                  <input type='hidden' name='memberId' value={member.id} />
                   <Button
-                    type="submit"
-                    variant="outline"
-                    size="sm"
+                    type='submit'
+                    variant='outline'
+                    size='sm'
                     disabled={isRemovePending}
                   >
                     {isRemovePending ? 'Removing...' : 'Remove'}
@@ -170,7 +169,7 @@ function TeamMembers() {
           ))}
         </ul>
         {removeState?.error && (
-          <p className="text-destructive mt-4">{removeState.error}</p>
+          <p className='text-destructive mt-4'>{removeState.error}</p>
         )}
       </CardContent>
     </Card>
@@ -179,7 +178,7 @@ function TeamMembers() {
 
 function InviteTeamMemberSkeleton() {
   return (
-    <Card className="h-[260px]">
+    <Card className='h-[260px]'>
       <CardHeader>
         <CardTitle>Invite Team Member</CardTitle>
       </CardHeader>
@@ -201,16 +200,16 @@ function InviteTeamMember() {
         <CardTitle>Invite Team Member</CardTitle>
       </CardHeader>
       <CardContent>
-        <form action={inviteAction} className="space-y-4">
+        <form action={inviteAction} className='space-y-4'>
           <div>
-            <Label htmlFor="email" className="mb-2">
+            <Label htmlFor='email' className='mb-2'>
               Email
             </Label>
             <Input
-              id="email"
-              name="email"
-              type="email"
-              placeholder="Enter email"
+              id='email'
+              name='email'
+              type='email'
+              placeholder='Enter email'
               required
               disabled={!isOwner}
             />
@@ -218,40 +217,40 @@ function InviteTeamMember() {
           <div>
             <Label>Role</Label>
             <RadioGroup
-              defaultValue="member"
-              name="role"
-              className="flex space-x-4"
+              defaultValue='member'
+              name='role'
+              className='flex space-x-4'
               disabled={!isOwner}
             >
-              <div className="flex items-center space-x-2 mt-2">
-                <RadioGroupItem value="member" id="member" />
-                <Label htmlFor="member">Member</Label>
+              <div className='flex items-center space-x-2 mt-2'>
+                <RadioGroupItem value='member' id='member' />
+                <Label htmlFor='member'>Member</Label>
               </div>
-              <div className="flex items-center space-x-2 mt-2">
-                <RadioGroupItem value="owner" id="owner" />
-                <Label htmlFor="owner">Owner</Label>
+              <div className='flex items-center space-x-2 mt-2'>
+                <RadioGroupItem value='owner' id='owner' />
+                <Label htmlFor='owner'>Owner</Label>
               </div>
             </RadioGroup>
           </div>
           {inviteState?.error && (
-            <p className="text-destructive">{inviteState.error}</p>
+            <p className='text-destructive'>{inviteState.error}</p>
           )}
           {inviteState?.success && (
-            <p className="text-primary">{inviteState.success}</p>
+            <p className='text-primary'>{inviteState.success}</p>
           )}
           <Button
-            type="submit"
-            className="bg-accent hover:bg-accent/90 text-accent-foreground"
+            type='submit'
+            className='bg-accent hover:bg-accent/90 text-accent-foreground'
             disabled={isInvitePending}
           >
             {isInvitePending ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className='mr-2 h-4 w-4 animate-spin' />
                 Inviting...
               </>
             ) : (
               <>
-                <PlusCircle className="mr-2 h-4 w-4" />
+                <PlusCircle className='mr-2 h-4 w-4' />
                 Send Invitation
               </>
             )}
@@ -260,7 +259,7 @@ function InviteTeamMember() {
       </CardContent>
       {!isOwner && (
         <CardFooter>
-          <p className="text-sm text-muted-foreground">
+          <p className='text-sm text-muted-foreground'>
             You must be a team owner to invite new members.
           </p>
         </CardFooter>
@@ -271,8 +270,8 @@ function InviteTeamMember() {
 
 export default function SettingsPage() {
   return (
-    <section className="flex-1 p-4 lg:p-8">
-      <h1 className="text-lg lg:text-2xl font-medium mb-6">Team Settings</h1>
+    <section className='flex-1 p-4 lg:p-8'>
+      <h1 className='text-lg lg:text-2xl font-medium mb-6'>Team Settings</h1>
       <Suspense fallback={<SubscriptionSkeleton />}>
         <ManageSubscription />
       </Suspense>

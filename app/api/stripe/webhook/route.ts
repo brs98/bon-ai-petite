@@ -16,16 +16,17 @@ export async function POST(request: NextRequest) {
     console.error('Webhook signature verification failed.', err);
     return NextResponse.json(
       { error: 'Webhook signature verification failed.' },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
   switch (event.type) {
     case 'customer.subscription.updated':
-    case 'customer.subscription.deleted':
-      const subscription = event.data.object as Stripe.Subscription;
+    case 'customer.subscription.deleted': {
+      const subscription = event.data.object;
       await handleSubscriptionChange(subscription);
       break;
+    }
     default:
       console.log(`Unhandled event type ${event.type}`);
   }

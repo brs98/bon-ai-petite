@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState } from 'react';
+import { useActionState, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,9 +9,8 @@ import { Loader2 } from 'lucide-react';
 import { updateAccount } from '@/app/(login)/actions';
 import { User } from '@/lib/db/schema';
 import useSWR from 'swr';
-import { Suspense } from 'react';
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
+const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 type ActionState = {
   name?: string;
@@ -28,31 +27,31 @@ type AccountFormProps = {
 function AccountForm({
   state,
   nameValue = '',
-  emailValue = ''
+  emailValue = '',
 }: AccountFormProps) {
   return (
     <>
       <div>
-        <Label htmlFor="name" className="mb-2">
+        <Label htmlFor='name' className='mb-2'>
           Name
         </Label>
         <Input
-          id="name"
-          name="name"
-          placeholder="Enter your name"
+          id='name'
+          name='name'
+          placeholder='Enter your name'
           defaultValue={state.name || nameValue}
           required
         />
       </div>
       <div>
-        <Label htmlFor="email" className="mb-2">
+        <Label htmlFor='email' className='mb-2'>
           Email
         </Label>
         <Input
-          id="email"
-          name="email"
-          type="email"
-          placeholder="Enter your email"
+          id='email'
+          name='email'
+          type='email'
+          placeholder='Enter your email'
           defaultValue={emailValue}
           required
         />
@@ -75,12 +74,12 @@ function AccountFormWithData({ state }: { state: ActionState }) {
 export default function GeneralPage() {
   const [state, formAction, isPending] = useActionState<ActionState, FormData>(
     updateAccount,
-    {}
+    {},
   );
 
   return (
-    <section className="flex-1 p-4 lg:p-8">
-      <h1 className="text-lg lg:text-2xl font-medium text-foreground mb-6">
+    <section className='flex-1 p-4 lg:p-8'>
+      <h1 className='text-lg lg:text-2xl font-medium text-foreground mb-6'>
         General Settings
       </h1>
 
@@ -89,24 +88,24 @@ export default function GeneralPage() {
           <CardTitle>Account Information</CardTitle>
         </CardHeader>
         <CardContent>
-          <form className="space-y-4" action={formAction}>
+          <form className='space-y-4' action={formAction}>
             <Suspense fallback={<AccountForm state={state} />}>
               <AccountFormWithData state={state} />
             </Suspense>
             {state.error && (
-              <p className="text-destructive text-sm">{state.error}</p>
+              <p className='text-destructive text-sm'>{state.error}</p>
             )}
             {state.success && (
-              <p className="text-primary text-sm">{state.success}</p>
+              <p className='text-primary text-sm'>{state.success}</p>
             )}
             <Button
-              type="submit"
-              className="bg-accent hover:bg-accent/90 text-accent-foreground"
+              type='submit'
+              className='bg-accent hover:bg-accent/90 text-accent-foreground'
               disabled={isPending}
             >
               {isPending ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className='mr-2 h-4 w-4 animate-spin' />
                   Saving...
                 </>
               ) : (

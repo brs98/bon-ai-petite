@@ -1,6 +1,8 @@
 # Best Practices Guide for Next.js SaaS Starter
 
-This document outlines the best practices, patterns, and conventions used in this Next.js SaaS starter application. Follow these guidelines when extending or modifying the codebase to maintain consistency, security, and performance.
+This document outlines the best practices, patterns, and conventions used in
+this Next.js SaaS starter application. Follow these guidelines when extending or
+modifying the codebase to maintain consistency, security, and performance.
 
 ## Tech Stack Overview
 
@@ -99,7 +101,7 @@ export async function hashPassword(password: string) {
 
 export async function comparePasswords(
   plainTextPassword: string,
-  hashedPassword: string
+  hashedPassword: string,
 ) {
   return compare(plainTextPassword, hashedPassword);
 }
@@ -150,7 +152,7 @@ export async function getUserWithTeam(userId: number) {
       user: users,
       teamId: teamMembers.teamId,
       teamRole: teamMembers.role,
-      team: teams
+      team: teams,
     })
     .from(users)
     .leftJoin(teamMembers, eq(users.id, teamMembers.userId))
@@ -173,7 +175,7 @@ export async function getUserWithTeam(userId: number) {
 ```typescript
 export function validatedAction<S extends z.ZodType<any, any>, T>(
   schema: S,
-  action: ValidatedActionFunction<S, T>
+  action: ValidatedActionFunction<S, T>,
 ) {
   return async (prevState: ActionState, formData: FormData) => {
     const result = schema.safeParse(Object.fromEntries(formData));
@@ -193,13 +195,13 @@ export function validatedAction<S extends z.ZodType<any, any>, T>(
 ```typescript
 const signInSchema = z.object({
   email: z.string().email().min(3).max(255),
-  password: z.string().min(8).max(100)
+  password: z.string().min(8).max(100),
 });
 
 const updatePasswordSchema = z.object({
   currentPassword: z.string().min(8).max(100),
   newPassword: z.string().min(8).max(100),
-  confirmPassword: z.string().min(8).max(100)
+  confirmPassword: z.string().min(8).max(100),
 });
 ```
 
@@ -212,12 +214,12 @@ const updatePasswordSchema = z.object({
 ```typescript
 export const signIn = validatedAction(signInSchema, async (data, formData) => {
   const { email, password } = data;
-  
+
   // Validation logic...
-  
+
   await Promise.all([
     setSession(foundUser),
-    logActivity(foundTeam?.id, foundUser.id, ActivityType.SIGN_IN)
+    logActivity(foundTeam?.id, foundUser.id, ActivityType.SIGN_IN),
   ]);
 
   redirect('/dashboard');
@@ -234,25 +236,28 @@ export const signIn = validatedAction(signInSchema, async (data, formData) => {
 
 ```typescript
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50",
+  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50',
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground shadow-xs hover:bg-primary/90",
-        destructive: "bg-destructive text-white shadow-xs hover:bg-destructive/90",
-        outline: "border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground",
+        default:
+          'bg-primary text-primary-foreground shadow-xs hover:bg-primary/90',
+        destructive:
+          'bg-destructive text-white shadow-xs hover:bg-destructive/90',
+        outline:
+          'border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground',
       },
       size: {
-        default: "h-9 px-4 py-2",
-        sm: "h-8 rounded-md gap-1.5 px-3",
-        lg: "h-10 rounded-md px-6",
-      }
+        default: 'h-9 px-4 py-2',
+        sm: 'h-8 rounded-md gap-1.5 px-3',
+        lg: 'h-10 rounded-md px-6',
+      },
     },
     defaultVariants: {
-      variant: "default",
-      size: "default"
-    }
-  }
+      variant: 'default',
+      size: 'default',
+    },
+  },
 );
 ```
 
@@ -289,11 +294,11 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
 - Use the `cn()` utility for conditional classes
 
 ```typescript
-import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+  return twMerge(clsx(inputs));
 }
 ```
 
@@ -335,7 +340,7 @@ export async function POST(request: NextRequest) {
     console.error('Webhook signature verification failed.', err);
     return NextResponse.json(
       { error: 'Webhook signature verification failed.' },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -351,7 +356,7 @@ export async function POST(request: NextRequest) {
 
 ```typescript
 export async function handleSubscriptionChange(
-  subscription: Stripe.Subscription
+  subscription: Stripe.Subscription,
 ) {
   const customerId = subscription.customer as string;
   const team = await getTeamByStripeCustomerId(customerId);
@@ -359,7 +364,7 @@ export async function handleSubscriptionChange(
   if (subscription.status === 'active' || subscription.status === 'trialing') {
     await updateTeamSubscription(team.id, {
       stripeSubscriptionId: subscription.id,
-      subscriptionStatus: subscription.status
+      subscriptionStatus: subscription.status,
     });
   }
 }
@@ -382,7 +387,7 @@ export async function GET(request: NextRequest) {
     console.error('API Error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -425,10 +430,10 @@ const requiredEnvVars = [
   'AUTH_SECRET',
   'STRIPE_SECRET_KEY',
   'STRIPE_WEBHOOK_SECRET',
-  'BASE_URL'
+  'BASE_URL',
 ];
 
-requiredEnvVars.forEach((envVar) => {
+requiredEnvVars.forEach(envVar => {
   if (!process.env[envVar]) {
     throw new Error(`Missing required environment variable: ${envVar}`);
   }
@@ -514,7 +519,7 @@ await db
   .update(users)
   .set({
     deletedAt: sql`CURRENT_TIMESTAMP`,
-    email: sql`CONCAT(email, '-', id, '-deleted')` // Ensure email uniqueness
+    email: sql`CONCAT(email, '-', id, '-deleted')`, // Ensure email uniqueness
   })
   .where(eq(users.id, user.id));
 ```
@@ -582,15 +587,15 @@ async function logActivity(
   teamId: number | null | undefined,
   userId: number,
   type: ActivityType,
-  ipAddress?: string
+  ipAddress?: string,
 ) {
   if (teamId === null || teamId === undefined) return;
-  
+
   const newActivity: NewActivityLog = {
     teamId,
     userId,
     action: type,
-    ipAddress: ipAddress || ''
+    ipAddress: ipAddress || '',
   };
   await db.insert(activityLogs).values(newActivity);
 }
@@ -620,4 +625,5 @@ Following these best practices ensures:
 - **Scalability**: Proper architecture and separation of concerns
 - **User Experience**: Responsive design, loading states, and error handling
 
-When extending this codebase, always refer back to these patterns and maintain consistency with the established conventions. 
+When extending this codebase, always refer back to these patterns and maintain
+consistency with the established conventions.
