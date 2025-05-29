@@ -4,11 +4,11 @@
 
 ### Database Schema & Migrations
 
-- [ ] **Create nutrition profiles table migration** ⚠️ BLOCKS: Nutrition profile API routes, nutrition components
-  - [ ] Add `nutrition_profiles` table with all fields from architecture
-  - [ ] Set up foreign key relationship to existing `users` table
-  - [ ] Add indexes on `userId` and `createdAt`
-  - [ ] Test migration in development environment
+- [x] **Create nutrition profiles table migration** ⚠️ BLOCKS: Nutrition profile API routes, nutrition components
+  - [x] Add `nutrition_profiles` table with all fields from architecture
+  - [x] Set up foreign key relationship to existing `users` table
+  - [x] Add indexes on `userId` and `createdAt`
+  - [x] Test migration in development environment
 
 - [ ] **Create recipes table migration** ⚠️ BLOCKS: All recipe API routes, recipe components, recipe pages
   - [ ] Add `recipes` table with all fields including JSONB for ingredients/nutrition

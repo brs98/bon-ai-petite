@@ -1,0 +1,2 @@
+CREATE INDEX "nutrition_profiles_user_id_idx" ON "nutrition_profiles" USING btree ("user_id");--> statement-breakpoint
+CREATE INDEX "nutrition_profiles_created_at_idx" ON "nutrition_profiles" USING btree ("created_at");

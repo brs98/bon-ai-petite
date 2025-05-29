@@ -5,6 +5,8 @@ import {
   text,
   timestamp,
   integer,
+  boolean,
+  index,
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
@@ -68,15 +70,40 @@ export const invitations = pgTable('invitations', {
   status: varchar('status', { length: 20 }).notNull().default('pending'),
 });
 
+export const nutritionProfiles = pgTable('nutrition_profiles', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id')
+    .notNull()
+    .references(() => users.id),
+  age: integer('age'),
+  height: integer('height_cm'),
+  weight: integer('weight_kg'),
+  activityLevel: varchar('activity_level', { length: 20 }),
+  goals: varchar('goals', { length: 50 }), // lose_weight, gain_muscle, maintain
+  dailyCalories: integer('daily_calories'),
+  macroProtein: integer('macro_protein_g'),
+  macroCarbs: integer('macro_carbs_g'),
+  macroFat: integer('macro_fat_g'),
+  allergies: text('allergies').array(),
+  dietaryRestrictions: text('dietary_restrictions').array(),
+  cuisinePreferences: text('cuisine_preferences').array(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+}, (table) => ({
+  userIdIdx: index('nutrition_profiles_user_id_idx').on(table.userId),
+  createdAtIdx: index('nutrition_profiles_created_at_idx').on(table.createdAt),
+}));
+
 export const teamsRelations = relations(teams, ({ many }) => ({
   teamMembers: many(teamMembers),
   activityLogs: many(activityLogs),
   invitations: many(invitations),
 }));
 
-export const usersRelations = relations(users, ({ many }) => ({
+export const usersRelations = relations(users, ({ many, one }) => ({
   teamMembers: many(teamMembers),
   invitationsSent: many(invitations),
+  nutritionProfile: one(nutritionProfiles),
 }));
 
 export const invitationsRelations = relations(invitations, ({ one }) => ({
@@ -112,6 +139,13 @@ export const activityLogsRelations = relations(activityLogs, ({ one }) => ({
   }),
 }));
 
+export const nutritionProfilesRelations = relations(nutritionProfiles, ({ one }) => ({
+  user: one(users, {
+    fields: [nutritionProfiles.userId],
+    references: [users.id],
+  }),
+}));
+
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type Team = typeof teams.$inferSelect;
@@ -140,3 +174,6 @@ export enum ActivityType {
   INVITE_TEAM_MEMBER = 'INVITE_TEAM_MEMBER',
   ACCEPT_INVITATION = 'ACCEPT_INVITATION',
 }
+
+export type NutritionProfile = typeof nutritionProfiles.$inferSelect;
+export type NewNutritionProfile = typeof nutritionProfiles.$inferInsert;
