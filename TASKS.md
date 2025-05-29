@@ -26,12 +26,12 @@
   - [x] Set up foreign key to `users` table
   - [x] Add composite index on `(userId, date, action)`
 
-- [ ] **Update Drizzle schema files** ⚠️ BLOCKS: All database operations, API routes, components
+- [x] **Update Drizzle schema files** ⚠️ BLOCKS: All database operations, API routes, components
   🔗 DEPENDS ON: All table migrations above
-  - [ ] Add all new table definitions to `lib/db/schema.ts`
-  - [ ] Export new table types for TypeScript usage
-  - [ ] Run `pnpm db:generate` to create migration files
-  - [ ] Run `pnpm db:migrate` to apply migrations
+  - [x] Add all new table definitions to `lib/db/schema.ts`
+  - [x] Export new table types for TypeScript usage
+  - [x] Run `pnpm db:generate` to create migration files
+  - [x] Run `pnpm db:migrate` to apply migrations
 
 ### AI SDK Integration Setup
 
