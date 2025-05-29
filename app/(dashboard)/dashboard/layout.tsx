@@ -23,7 +23,7 @@ export default function DashboardLayout({
   ];
 
   return (
-    <div className='flex flex-col min-h-[calc(100dvh-68px)] max-w-7xl mx-auto w-full'>
+    <div className='flex flex-col min-h-[calc(100vh-73px)] w-full'>
       {/* Mobile header */}
       <div className='lg:hidden flex items-center justify-between bg-background border-b border-border p-4'>
         <div className='flex items-center'>
@@ -42,23 +42,25 @@ export default function DashboardLayout({
       <div className='flex flex-1 overflow-hidden h-full'>
         {/* Sidebar */}
         <aside
-          className={`w-64 bg-background lg:bg-muted border-r border-border lg:block ${
+          className={`w-64 bg-background border-r border-border/40 lg:block ${
             isSidebarOpen ? 'block' : 'hidden'
           } lg:relative absolute inset-y-0 left-0 z-40 transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${
             isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
-          <nav className='h-full overflow-y-auto p-4'>
+          <nav className='h-full overflow-y-auto p-4 space-y-1'>
             {navItems.map(item => (
               <Link key={item.href} href={item.href} passHref>
                 <Button
                   variant={pathname === item.href ? 'secondary' : 'ghost'}
-                  className={`shadow-none my-1 w-full justify-start ${
-                    pathname === item.href ? 'bg-muted' : ''
+                  className={`w-full justify-start h-10 ${
+                    pathname === item.href 
+                      ? 'bg-primary/10 text-primary border border-primary/20' 
+                      : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
                   }`}
                   onClick={() => setIsSidebarOpen(false)}
                 >
-                  <item.icon className='h-4 w-4' />
+                  <item.icon className='h-4 w-4 mr-3' />
                   {item.label}
                 </Button>
               </Link>

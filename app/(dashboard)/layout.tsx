@@ -89,8 +89,8 @@ function UserMenu() {
 
 function Header() {
   return (
-    <header className='border-b border-border bg-background'>
-      <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center'>
+    <header className='border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/95'>
+      <div className='px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center'>
         <Link href='/' className='flex items-center group'>
           <div className='w-8 h-8 bg-gradient-to-r from-primary to-primary rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform duration-200'>
             <ChefHat className='h-5 w-5 text-primary-foreground' />
@@ -111,7 +111,7 @@ function Header() {
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <section className='flex flex-col min-h-screen'>
+    <section className='flex flex-col min-h-screen bg-background'>
       <Header />
       {children}
     </section>
