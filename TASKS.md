@@ -21,10 +21,10 @@
   - [x] Set up foreign keys to `recipes` and `users` tables
   - [x] Add composite index on `(recipeId, userId)`
 
-- [ ] **Create usage tracking table migration** ⚠️ BLOCKS: Usage limit system, subscription enforcement
-  - [ ] Add `usage_tracking` table for subscription limit enforcement
-  - [ ] Set up foreign key to `users` table
-  - [ ] Add composite index on `(userId, date, action)`
+- [x] **Create usage tracking table migration** ⚠️ BLOCKS: Usage limit system, subscription enforcement
+  - [x] Add `usage_tracking` table for subscription limit enforcement
+  - [x] Set up foreign key to `users` table
+  - [x] Add composite index on `(userId, date, action)`
 
 - [ ] **Update Drizzle schema files** ⚠️ BLOCKS: All database operations, API routes, components
   🔗 DEPENDS ON: All table migrations above

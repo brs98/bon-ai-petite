@@ -8,6 +8,7 @@ import {
   boolean,
   index,
   jsonb,
+  date,
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
@@ -140,6 +141,18 @@ export const recipeFeedback = pgTable('recipe_feedback', {
   recipeUserIdx: index('recipe_feedback_recipe_user_idx').on(table.recipeId, table.userId),
 }));
 
+export const usageTracking = pgTable('usage_tracking', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id')
+    .notNull()
+    .references(() => users.id),
+  action: varchar('action', { length: 50 }).notNull(), // recipe_generation, meal_plan_creation
+  date: date('date').notNull(),
+  count: integer('count').notNull().default(1),
+}, (table) => ({
+  userDateActionIdx: index('usage_tracking_user_date_action_idx').on(table.userId, table.date, table.action),
+}));
+
 export const teamsRelations = relations(teams, ({ many }) => ({
   teamMembers: many(teamMembers),
   activityLogs: many(activityLogs),
@@ -152,6 +165,7 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   nutritionProfile: one(nutritionProfiles),
   recipes: many(recipes),
   recipeFeedback: many(recipeFeedback),
+  usageTracking: many(usageTracking),
 }));
 
 export const invitationsRelations = relations(invitations, ({ one }) => ({
@@ -213,6 +227,13 @@ export const recipeFeedbackRelations = relations(recipeFeedback, ({ one }) => ({
   }),
 }));
 
+export const usageTrackingRelations = relations(usageTracking, ({ one }) => ({
+  user: one(users, {
+    fields: [usageTracking.userId],
+    references: [users.id],
+  }),
+}));
+
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type Team = typeof teams.$inferSelect;
@@ -248,3 +269,5 @@ export type Recipe = typeof recipes.$inferSelect;
 export type NewRecipe = typeof recipes.$inferInsert;
 export type RecipeFeedback = typeof recipeFeedback.$inferSelect;
 export type NewRecipeFeedback = typeof recipeFeedback.$inferInsert;
+export type UsageTracking = typeof usageTracking.$inferSelect;
+export type NewUsageTracking = typeof usageTracking.$inferInsert;
