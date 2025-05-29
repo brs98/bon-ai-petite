@@ -7,6 +7,7 @@ import {
   integer,
   boolean,
   index,
+  jsonb,
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
@@ -94,6 +95,35 @@ export const nutritionProfiles = pgTable('nutrition_profiles', {
   createdAtIdx: index('nutrition_profiles_created_at_idx').on(table.createdAt),
 }));
 
+export const recipes = pgTable('recipes', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id')
+    .notNull()
+    .references(() => users.id),
+  name: varchar('name', { length: 255 }).notNull(),
+  description: text('description'),
+  ingredients: jsonb('ingredients').notNull(), // [{ name, quantity, unit }]
+  instructions: text('instructions').array().notNull(),
+  nutrition: jsonb('nutrition').notNull(), // { calories, protein, carbs, fat }
+  prepTime: integer('prep_time_minutes'),
+  cookTime: integer('cook_time_minutes'),
+  servings: integer('servings'),
+  difficulty: varchar('difficulty', { length: 20 }),
+  cuisineType: varchar('cuisine_type', { length: 50 }),
+  mealType: varchar('meal_type', { length: 20 }).notNull(), // breakfast, lunch, dinner, snack
+  tags: text('tags').array(),
+  isSaved: boolean('is_saved').notNull().default(false),
+  rating: integer('rating'), // 1-5 stars
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+}, (table) => ({
+  userIdIdx: index('recipes_user_id_idx').on(table.userId),
+  mealTypeIdx: index('recipes_meal_type_idx').on(table.mealType),
+  createdAtIdx: index('recipes_created_at_idx').on(table.createdAt),
+  isSavedIdx: index('recipes_is_saved_idx').on(table.isSaved),
+  nameSearchIdx: index('recipes_name_search_idx').on(table.name),
+  descriptionSearchIdx: index('recipes_description_search_idx').on(table.description),
+}));
+
 export const teamsRelations = relations(teams, ({ many }) => ({
   teamMembers: many(teamMembers),
   activityLogs: many(activityLogs),
@@ -104,6 +134,7 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   teamMembers: many(teamMembers),
   invitationsSent: many(invitations),
   nutritionProfile: one(nutritionProfiles),
+  recipes: many(recipes),
 }));
 
 export const invitationsRelations = relations(invitations, ({ one }) => ({
@@ -146,6 +177,13 @@ export const nutritionProfilesRelations = relations(nutritionProfiles, ({ one })
   }),
 }));
 
+export const recipesRelations = relations(recipes, ({ one }) => ({
+  user: one(users, {
+    fields: [recipes.userId],
+    references: [users.id],
+  }),
+}));
+
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type Team = typeof teams.$inferSelect;
@@ -177,3 +215,5 @@ export enum ActivityType {
 
 export type NutritionProfile = typeof nutritionProfiles.$inferSelect;
 export type NewNutritionProfile = typeof nutritionProfiles.$inferInsert;
+export type Recipe = typeof recipes.$inferSelect;
+export type NewRecipe = typeof recipes.$inferInsert;

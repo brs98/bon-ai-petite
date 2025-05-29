@@ -10,11 +10,11 @@
   - [x] Add indexes on `userId` and `createdAt`
   - [x] Test migration in development environment
 
-- [ ] **Create recipes table migration** ⚠️ BLOCKS: All recipe API routes, recipe components, recipe pages
-  - [ ] Add `recipes` table with all fields including JSONB for ingredients/nutrition
-  - [ ] Set up foreign key relationship to existing `users` table
-  - [ ] Add indexes on `userId`, `mealType`, `createdAt`, `isSaved`
-  - [ ] Add text search index on `name` and `description` fields
+- [x] **Create recipes table migration** ⚠️ BLOCKS: All recipe API routes, recipe components, recipe pages
+  - [x] Add `recipes` table with all fields including JSONB for ingredients/nutrition
+  - [x] Set up foreign key relationship to existing `users` table
+  - [x] Add indexes on `userId`, `mealType`, `createdAt`, `isSaved`
+  - [x] Add text search index on `name` and `description` fields
 
 - [ ] **Create recipe feedback table migration** ⚠️ BLOCKS: Recipe feedback API, feedback components
   - [ ] Add `recipe_feedback` table with recipe and user relationships
