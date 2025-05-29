@@ -1,55 +1,15 @@
 import { openai } from '@ai-sdk/openai';
 import { generateText } from 'ai';
 import * as dotenv from 'dotenv';
-import { z } from 'zod';
+import {
+    RecipeGenerationRequestSchema,
+    RecipeSchema,
+    type Recipe,
+    type RecipeGenerationRequest
+} from '../../types/recipe';
 
 // Load environment variables
 dotenv.config();
-
-// Validation schemas
-const RecipeSchema = z.object({
-  name: z.string(),
-  description: z.string(),
-  ingredients: z.array(
-    z.object({
-      name: z.string(),
-      quantity: z.number(),
-      unit: z.string(),
-    }),
-  ),
-  instructions: z.array(z.string()),
-  nutrition: z.object({
-    calories: z.number(),
-    protein: z.number(),
-    carbs: z.number(),
-    fat: z.number(),
-  }),
-  prepTime: z.number(),
-  cookTime: z.number(),
-  servings: z.number(),
-  difficulty: z.enum(['easy', 'medium', 'hard']),
-  mealType: z.enum(['breakfast', 'lunch', 'dinner', 'snack']),
-});
-
-export type Recipe = z.infer<typeof RecipeSchema>;
-
-export interface RecipeGenerationRequest {
-  mealType: 'breakfast' | 'lunch' | 'dinner' | 'snack';
-  calories?: number;
-  protein?: number;
-  carbs?: number;
-  fat?: number;
-  allergies?: string[];
-  dietaryRestrictions?: string[];
-  cuisinePreferences?: string[];
-  userProfile?: {
-    age?: number;
-    weight?: number;
-    height?: number;
-    activityLevel?: string;
-    goals?: string;
-  };
-}
 
 export class RecipeGeneratorService {
   private model = openai('gpt-4o');
@@ -62,7 +22,10 @@ export class RecipeGeneratorService {
 
   async generateRecipe(request: RecipeGenerationRequest): Promise<Recipe> {
     try {
-      const prompt = this.buildPrompt(request);
+      // Validate the input request
+      const validatedRequest = RecipeGenerationRequestSchema.parse(request);
+      
+      const prompt = this.buildPrompt(validatedRequest);
 
       const { text } = await generateText({
         model: this.model,
@@ -80,14 +43,23 @@ export class RecipeGeneratorService {
         throw new Error('Invalid JSON response from AI service');
       }
 
-      return RecipeSchema.parse(parsedRecipe);
-    } catch (error) {
-      console.error('Recipe generation failed:', error);
-      if (error instanceof z.ZodError) {
+      try {
+        return RecipeSchema.parse(parsedRecipe);
+      } catch (validationError) {
+        console.error('Recipe generation failed:', validationError);
         throw new Error(
           'Recipe validation failed: AI response does not match expected format',
         );
       }
+    } catch (error) {
+      // Re-throw specific errors we've already handled
+      if (error instanceof Error && 
+          (error.message.includes('Invalid JSON response from AI service') ||
+           error.message.includes('Recipe validation failed'))) {
+        throw error;
+      }
+      
+      console.error('Recipe generation failed:', error);
       throw new Error('Failed to generate recipe. Please try again.');
     }
   }
