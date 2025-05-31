@@ -9,7 +9,8 @@ import { useEffect, useState } from 'react';
 
 export default function PreferencesSetupPage() {
   const router = useRouter();
-  const [existingProfile, setExistingProfile] = useState<NutritionProfile | null>(null);
+  const [existingProfile, setExistingProfile] =
+    useState<NutritionProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -39,7 +40,7 @@ export default function PreferencesSetupPage() {
     setIsSaving(true);
     try {
       // Merge with existing profile if it exists
-      const profileData = existingProfile 
+      const profileData = existingProfile
         ? { ...existingProfile, ...preferences }
         : preferences;
 
@@ -69,55 +70,58 @@ export default function PreferencesSetupPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center space-y-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="text-muted-foreground">Loading your preferences...</p>
+      <div className='flex items-center justify-center min-h-[400px]'>
+        <div className='text-center space-y-4'>
+          <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto'></div>
+          <p className='text-muted-foreground'>Loading your preferences...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto py-6 space-y-8">
+    <div className='container mx-auto py-6 space-y-8'>
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+      <div className='flex items-center justify-between'>
+        <div className='flex items-center gap-4'>
           <Button
-            variant="ghost"
-            size="sm"
+            variant='ghost'
+            size='sm'
             onClick={() => router.push('/dashboard/recipes/generate')}
-            className="gap-2"
+            className='gap-2'
           >
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className='h-4 w-4' />
             Back to Generator
           </Button>
         </div>
         <Button
-          variant="outline"
-          size="sm"
+          variant='outline'
+          size='sm'
           onClick={() => router.push('/dashboard/settings/nutrition')}
-          className="gap-2"
+          className='gap-2'
         >
-          <Settings className="h-4 w-4" />
+          <Settings className='h-4 w-4' />
           Full Profile Settings
         </Button>
       </div>
 
       {/* Title */}
-      <div className="text-center space-y-4">
-        <h1 className="text-3xl font-bold">Recipe Preferences Setup</h1>
-        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          Let's personalize your recipe experience. This will help us suggest recipes that match your taste and dietary needs.
+      <div className='text-center space-y-4'>
+        <h1 className='text-3xl font-bold'>Recipe Preferences Setup</h1>
+        <p className='text-lg text-muted-foreground max-w-2xl mx-auto'>
+          Let's personalize your recipe experience. This will help us suggest
+          recipes that match your taste and dietary needs.
         </p>
       </div>
 
       {/* Preferences Wizard */}
       <PreferencesWizard
-        onComplete={handleComplete}
+        onComplete={preferences => {
+          void handleComplete(preferences);
+        }}
         isLoading={isSaving}
         initialData={existingProfile || undefined}
       />
     </div>
   );
-} 
+}

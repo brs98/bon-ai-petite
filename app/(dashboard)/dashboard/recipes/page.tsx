@@ -1,19 +1,19 @@
 import { NutritionProfileBanner } from '@/components/nutrition/NutritionProfileBanner';
 import { Button } from '@/components/ui/button';
 import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
 } from '@/components/ui/card';
 import {
-    BookOpen,
-    ChefHat,
-    Clock,
-    Plus,
-    TrendingUp,
-    Utensils,
+  BookOpen,
+  ChefHat,
+  Clock,
+  Plus,
+  TrendingUp,
+  Utensils,
 } from 'lucide-react';
 import Link from 'next/link';
 
