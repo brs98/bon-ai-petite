@@ -1,20 +1,12 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import {
-  Activity,
-  ChefHat,
-  Menu,
-  Settings,
-  Shield,
-  Users,
-  Utensils,
-} from 'lucide-react';
+import { Activity, Menu, Settings, Shield, Utensils } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 
-export default function DashboardLayout({
+export default function SettingsLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -23,11 +15,9 @@ export default function DashboardLayout({
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const navItems = [
-    { href: '/dashboard', icon: Users, label: 'Team' },
     { href: '/dashboard/general', icon: Settings, label: 'General' },
-    { href: '/dashboard/activity', icon: Activity, label: 'Activity' },
     { href: '/dashboard/security', icon: Shield, label: 'Security' },
-    { href: '/dashboard/recipes', icon: ChefHat, label: 'Recipes' },
+    { href: '/dashboard/activity', icon: Activity, label: 'Activity' },
     { href: '/settings/nutrition', icon: Utensils, label: 'Nutrition Profile' },
   ];
 
@@ -78,7 +68,7 @@ export default function DashboardLayout({
         </aside>
 
         {/* Main content */}
-        <main className='flex-1 overflow-y-auto p-0 lg:p-4'>{children}</main>
+        <main className='flex-1 overflow-y-auto p-4'>{children}</main>
       </div>
     </div>
   );

@@ -1,19 +1,20 @@
 'use client';
 
+import { NutritionProfileBanner } from '@/components/nutrition/NutritionProfileBanner';
 import { Button } from '@/components/ui/button';
 import {
   ArrowRight,
+  CheckCircle,
   ChefHat,
-  ShoppingCart,
-  Sparkles,
   Clock,
   Heart,
+  ShoppingCart,
+  Sparkles,
   Users,
-  CheckCircle,
 } from 'lucide-react';
-import Link from 'next/link';
-import Image from 'next/image';
 import { motion } from 'motion/react';
+import Image from 'next/image';
+import Link from 'next/link';
 import { useState } from 'react';
 
 const fadeInLeft = {
@@ -402,6 +403,19 @@ export default function HomePage() {
               </motion.div>
             ))}
           </motion.div>
+        </div>
+      </motion.section>
+
+      {/* Nutrition Profile Banner */}
+      <motion.section
+        className='py-8'
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6 }}
+      >
+        <div className='max-w-4xl mx-auto px-4 sm:px-6 lg:px-8'>
+          <NutritionProfileBanner />
         </div>
       </motion.section>
 

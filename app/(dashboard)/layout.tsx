@@ -4,10 +4,10 @@ import { signOut } from '@/app/(login)/actions';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { User } from '@/lib/db/schema';
 import { BookOpen, ChefHat, Home, LogOut } from 'lucide-react';

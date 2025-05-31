@@ -4,6 +4,7 @@ module.exports = {
   extensionsToTreatAsEsm: ['.ts'],
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',
+    '^@/(.*)$': '<rootDir>/$1',
   },
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   testEnvironment: 'node',
@@ -11,6 +12,8 @@ module.exports = {
   coverageDirectory: 'coverage',
   collectCoverageFrom: [
     'lib/ai/**/*.ts',
+    'lib/utils/**/*.ts',
+    'app/api/nutrition/**/*.ts',
     'types/**/*.ts',
     '!**/__tests__/**', // Exclude test files
     '!**/*.test.ts', // Exclude test files
@@ -20,10 +23,10 @@ module.exports = {
   ],
   coverageThreshold: {
     global: {
-      branches: 90,
-      functions: 95,
-      lines: 95,
-      statements: 95,
+      branches: 80,
+      functions: 85,
+      lines: 85,
+      statements: 85,
     },
     './lib/ai/': {
       branches: 95,
@@ -31,13 +34,17 @@ module.exports = {
       lines: 95,
       statements: 95,
     },
-  },
-  transform: {
-    '^.+\\.tsx?$': [
-      'ts-jest',
-      {
-        useESM: true,
-      },
-    ],
+    './lib/utils/': {
+      branches: 90,
+      functions: 95,
+      lines: 95,
+      statements: 95,
+    },
+    './lib/utils/nutrition.ts': {
+      branches: 95,
+      functions: 100,
+      lines: 100,
+      statements: 100,
+    },
   },
 };

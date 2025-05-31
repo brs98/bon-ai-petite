@@ -120,28 +120,28 @@
 
 ### Nutrition Profile System
 
-- [ ] **Create nutrition profile API routes** ⚠️ BLOCKS: Nutrition profile
+- [x] **Create nutrition profile API routes** ⚠️ BLOCKS: Nutrition profile
       components and pages 🔗 DEPENDS ON: Nutrition profiles table migration
 
-  - [ ] Create `app/api/nutrition/profile/route.ts`
-  - [ ] Implement GET/POST/PUT handlers for profile management
-  - [ ] Add validation for nutrition data
-  - [ ] Handle profile creation and updates
+  - [x] Create `app/api/nutrition/profile/route.ts`
+  - [x] Implement GET/POST/PUT handlers for profile management
+  - [x] Add validation for nutrition data
+  - [x] Handle profile creation and updates
 
-- [ ] **Create nutrition profile components** ⚠️ BLOCKS: Nutrition profile pages
+- [x] **Create nutrition profile components** ⚠️ BLOCKS: Nutrition profile pages
       🔗 DEPENDS ON: Nutrition profile API routes, recipe types
 
-  - [ ] Create `components/nutrition/ProfileSetup.tsx`
-  - [ ] Create `components/nutrition/GoalsSelector.tsx` with preset options
-  - [ ] Create `components/nutrition/MacroTracker.tsx` visual component
-  - [ ] Add form components for height, weight, activity level
+  - [x] Create `components/nutrition/ProfileSetup.tsx`
+  - [x] Create `components/nutrition/GoalsSelector.tsx` with preset options
+  - [x] Create `components/nutrition/MacroTracker.tsx` visual component
+  - [x] Add form components for height, weight, activity level
 
-- [ ] **Create nutrition profile setup pages** 🔗 DEPENDS ON: Nutrition profile
+- [x] **Create nutrition profile setup pages** 🔗 DEPENDS ON: Nutrition profile
       components, nutrition profile API
-  - [ ] Create `app/(dashboard)/settings/nutrition/page.tsx`
-  - [ ] Build multi-step form for user profile setup
-  - [ ] Add form validation with Zod schemas
-  - [ ] Integrate with database to store/update profiles
+  - [x] Create `app/(dashboard)/settings/nutrition/page.tsx`
+  - [x] Build multi-step form for user profile setup
+  - [x] Add form validation with Zod schemas
+  - [x] Integrate with database to store/update profiles
 
 ### Recipe Generator Interface
 
