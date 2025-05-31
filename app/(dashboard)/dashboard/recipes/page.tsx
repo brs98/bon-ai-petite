@@ -1,19 +1,19 @@
 import { NutritionProfileBanner } from '@/components/nutrition/NutritionProfileBanner';
 import { Button } from '@/components/ui/button';
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
 } from '@/components/ui/card';
 import {
-  BookOpen,
-  ChefHat,
-  Clock,
-  Plus,
-  TrendingUp,
-  Utensils,
+    BookOpen,
+    ChefHat,
+    Clock,
+    Plus,
+    TrendingUp,
+    Utensils,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -67,7 +67,7 @@ export default function RecipesPage() {
 
           {/* Nutrition Profile Card */}
           <Card className='hover:shadow-lg transition-shadow duration-200 cursor-pointer'>
-            <Link href='/settings/nutrition'>
+            <Link href='/dashboard/settings/nutrition'>
               <CardHeader className='pb-3'>
                 <div className='flex items-center space-x-3'>
                   <div className='p-2 bg-green-100 dark:bg-green-900/20 rounded-lg'>
@@ -154,6 +154,11 @@ export default function RecipesPage() {
                   <p className='text-sm'>
                     Generate your first recipe to get started!
                   </p>
+                  <Button asChild className='mt-4'>
+                    <Link href='/dashboard/recipes/generate'>
+                      Generate Your First Recipe
+                    </Link>
+                  </Button>
                 </div>
               </div>
             </CardContent>
@@ -199,6 +204,13 @@ export default function RecipesPage() {
                     Remaining Today
                   </div>
                 </div>
+              </div>
+              <div className='mt-4 text-center'>
+                <Button asChild variant='outline' size='sm'>
+                  <Link href='/dashboard/recipes/generate/preferences'>
+                    Setup Preferences
+                  </Link>
+                </Button>
               </div>
             </CardContent>
           </Card>
