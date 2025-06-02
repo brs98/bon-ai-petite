@@ -57,12 +57,30 @@ export default function PreferencesSetupPage() {
         // Redirect to recipe generation page
         router.push('/dashboard/recipes/generate');
       } else {
-        const error = await response.json();
-        console.error('Error saving preferences:', error);
-        // Could add toast notification here
+        let errorMessage = 'Unknown error occurred';
+        try {
+          const errorData = await response.json();
+          errorMessage =
+            errorData.error || errorData.message || JSON.stringify(errorData);
+
+          // Log validation details if available
+          if (errorData.details) {
+            console.error('Validation errors:', errorData.details);
+          }
+        } catch (parseError) {
+          console.error('Failed to parse error response:', parseError);
+          errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+        }
+        console.error('Error saving preferences:', errorMessage);
+
+        // TODO: Add toast notification here for user feedback
+        alert(`Failed to save preferences: ${errorMessage}`);
       }
     } catch (error) {
-      console.error('Error saving preferences:', error);
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      console.error('Error saving preferences:', errorMessage);
+      alert(`Failed to save preferences: ${errorMessage}`);
     } finally {
       setIsSaving(false);
     }
