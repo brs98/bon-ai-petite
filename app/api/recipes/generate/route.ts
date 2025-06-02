@@ -17,9 +17,58 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validatedRequest = RecipeGenerationRequestSchema.parse(body);
 
-    // Generate recipe using AI service
-    const generatedRecipe =
-      await recipeGenerator.generateRecipe(validatedRequest);
+    // Generate recipe using enhanced AI service
+    const generationResult = await recipeGenerator.generateRecipe(
+      { ...validatedRequest, learningEnabled: true },
+      undefined, // userRecipes - could be fetched from DB
+      undefined, // userFeedbacks - could be fetched from DB
+      undefined, // nutritionProfile - could be fetched from DB
+    );
+
+    const generatedRecipe = generationResult.recipe;
+
+    // Comprehensive validation that we have a proper recipe before saving
+    if (
+      !generatedRecipe ||
+      !generatedRecipe.name ||
+      !generatedRecipe.description ||
+      !generatedRecipe.ingredients ||
+      !generatedRecipe.instructions ||
+      !Array.isArray(generatedRecipe.ingredients) ||
+      !Array.isArray(generatedRecipe.instructions) ||
+      generatedRecipe.ingredients.length === 0 ||
+      generatedRecipe.instructions.length === 0 ||
+      !generatedRecipe.nutrition ||
+      !generatedRecipe.mealType
+    ) {
+      console.error('Generated recipe missing required fields:', {
+        hasRecipe: !!generatedRecipe,
+        hasName: !!generatedRecipe?.name,
+        hasDescription: !!generatedRecipe?.description,
+        hasIngredients: !!generatedRecipe?.ingredients,
+        ingredientsIsArray: Array.isArray(generatedRecipe?.ingredients),
+        ingredientsLength: generatedRecipe?.ingredients?.length,
+        hasInstructions: !!generatedRecipe?.instructions,
+        instructionsIsArray: Array.isArray(generatedRecipe?.instructions),
+        instructionsLength: generatedRecipe?.instructions?.length,
+        hasNutrition: !!generatedRecipe?.nutrition,
+        hasMealType: !!generatedRecipe?.mealType,
+        generationResult,
+      });
+      return Response.json(
+        { error: 'Generated recipe is incomplete. Please try again.' },
+        { status: 500 },
+      );
+    }
+
+    console.log('Recipe validation passed, saving to database:', {
+      name: generatedRecipe.name,
+      description: generatedRecipe.description?.substring(0, 50) + '...',
+      ingredientsCount: generatedRecipe.ingredients.length,
+      instructionsCount: generatedRecipe.instructions.length,
+      nutrition: generatedRecipe.nutrition,
+      mealType: generatedRecipe.mealType,
+    });
 
     // Store recipe in database
     const [savedRecipe] = await db
@@ -43,7 +92,7 @@ export async function POST(request: NextRequest) {
       })
       .returning();
 
-    // Return the generated recipe with database ID
+    // Return the generated recipe with database ID and generation metadata
     return Response.json({
       success: true,
       recipe: {
@@ -52,6 +101,12 @@ export async function POST(request: NextRequest) {
         userId: savedRecipe.userId,
         isSaved: savedRecipe.isSaved,
         createdAt: savedRecipe.createdAt,
+      },
+      metadata: {
+        confidence: generationResult.confidence,
+        issues: generationResult.issues,
+        nutritionAccuracy: generationResult.nutritionAccuracy,
+        processingTime: generationResult.generationMetadata.processingTime,
       },
     });
   } catch (error) {
@@ -68,7 +123,9 @@ export async function POST(request: NextRequest) {
     // Handle AI service errors
     if (
       error instanceof Error &&
-      error.message.includes('Recipe validation failed')
+      (error.message.includes('Recipe validation failed') ||
+        error.message.includes('Failed to parse AI response') ||
+        error.message.includes('No valid JSON found'))
     ) {
       return Response.json(
         { error: 'Failed to generate valid recipe. Please try again.' },
@@ -83,6 +140,20 @@ export async function POST(request: NextRequest) {
       return Response.json(
         { error: 'AI service returned invalid response. Please try again.' },
         { status: 500 },
+      );
+    }
+
+    // Handle recipe generation complete failure
+    if (
+      error instanceof Error &&
+      error.message.includes('Recipe generation failed completely')
+    ) {
+      return Response.json(
+        {
+          error:
+            'Recipe generation service is temporarily unavailable. Please try again.',
+        },
+        { status: 503 },
       );
     }
 

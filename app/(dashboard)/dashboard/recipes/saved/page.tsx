@@ -4,11 +4,11 @@ import { RecipeCard } from '@/components/recipes/RecipeCard/RecipeCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from '@/components/ui/select';
 import { Recipe } from '@/types/recipe';
 import { Filter, Search } from 'lucide-react';
@@ -51,7 +51,8 @@ export default function SavedRecipesPage() {
 
       if (search) params.append('search', search);
       if (mealType && mealType !== 'all') params.append('mealType', mealType);
-      if (difficulty && difficulty !== 'all') params.append('difficulty', difficulty);
+      if (difficulty && difficulty !== 'all')
+        params.append('difficulty', difficulty);
 
       const response = await fetch(`/api/recipes/saved?${params.toString()}`);
       const result = await response.json();
@@ -207,7 +208,10 @@ export default function SavedRecipesPage() {
         </div>
 
         {/* Active filters and clear button */}
-        {(search || mealType !== 'all' || difficulty !== 'all' || sort !== 'newest') && (
+        {(search ||
+          mealType !== 'all' ||
+          difficulty !== 'all' ||
+          sort !== 'newest') && (
           <div className='flex items-center gap-2'>
             <Filter className='h-4 w-4 text-muted-foreground' />
             <span className='text-sm text-muted-foreground'>
