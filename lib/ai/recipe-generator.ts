@@ -12,7 +12,7 @@ import {
 dotenv.config();
 
 export class RecipeGeneratorService {
-  private model = openai('gpt-4o');
+  private model = openai('gpt-4.1-nano');
 
   constructor() {
     if (!process.env.OPENAI_API_KEY) {

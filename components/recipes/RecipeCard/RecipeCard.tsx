@@ -3,15 +3,37 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Recipe } from '@/types/recipe';
 import { ChefHat, Clock, Users } from 'lucide-react';
+import { FeedbackButtons } from './FeedbackButtons';
 import { NutritionBadge } from './NutritionBadge';
 
 interface RecipeCardProps {
   recipe: Recipe;
   onSave?: (recipeId: number) => void;
   onView?: (recipeId: number) => void;
+  onFeedback?: (
+    recipeId: number,
+    liked: boolean,
+    feedback?: string,
+  ) => void | Promise<void>;
+  onRegenerate?: (recipeId: number) => void;
+  onShare?: (recipeId: number) => void;
+  userFeedback?: {
+    liked: boolean;
+    feedback?: string;
+  };
+  showFeedback?: boolean;
 }
 
-export function RecipeCard({ recipe, onSave, onView }: RecipeCardProps) {
+export function RecipeCard({
+  recipe,
+  onSave,
+  onView,
+  onFeedback,
+  onRegenerate,
+  onShare,
+  userFeedback,
+  showFeedback = false,
+}: RecipeCardProps) {
   const totalTime = (recipe.prepTime || 0) + (recipe.cookTime || 0);
 
   const handleSave = () => {
@@ -101,6 +123,19 @@ export function RecipeCard({ recipe, onSave, onView }: RecipeCardProps) {
             {recipe.isSaved ? 'Saved' : 'Save'}
           </Button>
         </div>
+
+        {/* Feedback Buttons */}
+        {showFeedback && (
+          <div className='pt-2 border-t'>
+            <FeedbackButtons
+              recipe={recipe}
+              onFeedback={onFeedback}
+              onRegenerate={onRegenerate}
+              onShare={onShare}
+              userFeedback={userFeedback}
+            />
+          </div>
+        )}
       </CardContent>
     </Card>
   );

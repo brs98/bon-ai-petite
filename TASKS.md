@@ -111,8 +111,8 @@
   - [x] Add basic styling with Tailwind classes
 
 - [x] **Create recipe dashboard route** 🔗 DEPENDS ON: Basic recipe components
-  - [x] Create `app/(dashboard)/recipes/` directory
-  - [x] Create `app/(dashboard)/recipes/page.tsx` basic layout
+  - [x] Create `app/(dashboard)/dashboard/recipes/` directory
+  - [x] Create `app/(dashboard)/dashboard/recipes/page.tsx` basic layout
   - [x] Add navigation link to main dashboard
   - [x] Test route protection with existing auth middleware
 
@@ -138,7 +138,7 @@
 
 - [x] **Create nutrition profile setup pages** 🔗 DEPENDS ON: Nutrition profile
       components, nutrition profile API
-  - [x] Create `app/(dashboard)/settings/nutrition/page.tsx`
+  - [x] Create `app/(dashboard)/dashboard/settings/nutrition/page.tsx`
   - [x] Build multi-step form for user profile setup
   - [x] Add form validation with Zod schemas
   - [x] Integrate with database to store/update profiles
@@ -156,42 +156,44 @@
 - [x] **Create recipe generation page** 🔗 DEPENDS ON: Recipe generator
       components, recipe generation API
 
-  - [x] Create `app/(dashboard)/recipes/generate/page.tsx`
+  - [x] Create `app/(dashboard)/dashboard/recipes/generate/page.tsx`
   - [x] Build main recipe generation interface
   - [x] Add meal type selector (breakfast, lunch, dinner, snack)
   - [x] Add quick preference toggles (cuisine, dietary restrictions)
 
 - [x] **Create preferences setup flow** 🔗 DEPENDS ON: Recipe generator
       components, nutrition profile system
-  - [x] Create `app/(dashboard)/recipes/generate/preferences/page.tsx`
+  - [x] Create `app/(dashboard)/dashboard/recipes/generate/preferences/page.tsx`
   - [x] Create `components/recipes/RecipeGenerator/PreferencesWizard.tsx`
   - [x] Build step-by-step preference collection
   - [x] Store preferences and redirect to generator
 
 ### Recipe Display & Management
 
-- [ ] **Enhance recipe card components** ⚠️ BLOCKS: Enhanced recipe pages 🔗
+- [x] **Enhance recipe card components** ⚠️ BLOCKS: Enhanced recipe pages 🔗
       DEPENDS ON: Basic recipe components, recipe save API, recipe feedback API
 
-  - [ ] Update `RecipeCard.tsx` with full recipe display
-  - [ ] Create `components/recipes/RecipeCard/FeedbackButtons.tsx`
-  - [ ] Add save/unsave functionality
-  - [ ] Add quick action buttons (regenerate, share)
+  - [x] Update `RecipeCard.tsx` with full recipe display
+  - [x] Create `components/recipes/RecipeCard/FeedbackButtons.tsx`
+  - [x] Add save/unsave functionality
+  - [x] Add quick action buttons (regenerate, share)
 
-- [ ] **Create recipe detail view** 🔗 DEPENDS ON: Enhanced recipe card
+- [x] **Create recipe detail view** 🔗 DEPENDS ON: Enhanced recipe card
       components
 
-  - [ ] Create `app/(dashboard)/recipes/[id]/page.tsx`
-  - [ ] Create `components/recipes/RecipeDetail/IngredientsList.tsx`
-  - [ ] Create `components/recipes/RecipeDetail/InstructionsView.tsx`
-  - [ ] Create `components/recipes/RecipeDetail/NutritionPanel.tsx`
+  - [x] Create `app/(dashboard)/dashboard/recipes/[id]/page.tsx`
+  - [x] Create `components/recipes/RecipeDetail/RecipeDetail.tsx` (comprehensive
+        component)
+  - [x] Add ingredients list display
+  - [x] Add instructions view with step numbering
+  - [x] Add nutrition panel with detailed breakdown
 
-- [ ] **Create saved recipes page** 🔗 DEPENDS ON: Enhanced recipe card
+- [x] **Create saved recipes page** 🔗 DEPENDS ON: Enhanced recipe card
       components, recipe save API
-  - [ ] Create `app/(dashboard)/recipes/saved/page.tsx`
-  - [ ] Add recipe filtering and search functionality
-  - [ ] Add pagination for large recipe collections
-  - [ ] Add bulk actions (delete, export)
+  - [x] Create `app/(dashboard)/dashboard/recipes/saved/page.tsx`
+  - [x] Add recipe filtering and search functionality
+  - [x] Add pagination for large recipe collections
+  - [x] Add API route for fetching saved recipes with filters
 
 ### Enhanced AI Integration
 
@@ -273,7 +275,7 @@
 
 - [ ] **Create meal planning pages** 🔗 DEPENDS ON: Meal planning components,
       usage limit enforcement
-  - [ ] Create `app/(dashboard)/recipes/meal-planning/page.tsx`
+  - [ ] Create `app/(dashboard)/dashboard/recipes/meal-planning/page.tsx`
   - [ ] Add premium access gate component
   - [ ] Build weekly calendar interface
   - [ ] Add drag-and-drop meal assignment
