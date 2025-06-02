@@ -28,7 +28,11 @@ export default function DashboardLayout({
     { href: '/dashboard/activity', icon: Activity, label: 'Activity' },
     { href: '/dashboard/security', icon: Shield, label: 'Security' },
     { href: '/dashboard/recipes', icon: ChefHat, label: 'Recipes' },
-    { href: '/settings/nutrition', icon: Utensils, label: 'Nutrition Profile' },
+    {
+      href: '/dashboard/settings/nutrition',
+      icon: Utensils,
+      label: 'Nutrition Profile',
+    },
   ];
 
   return (

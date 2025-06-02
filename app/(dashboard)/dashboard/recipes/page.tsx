@@ -1,4 +1,5 @@
-import { NutritionProfileBanner } from '@/components/nutrition/NutritionProfileBanner';
+'use client';
+
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -7,224 +8,148 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import {
-  BookOpen,
-  ChefHat,
-  Clock,
-  Plus,
-  TrendingUp,
-  Utensils,
-} from 'lucide-react';
-import Link from 'next/link';
+import { ChefHat, PlusCircle, Settings, Sparkles } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 export default function RecipesPage() {
+  const router = useRouter();
+
   return (
-    <div className='min-h-screen bg-background'>
-      <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'>
-        {/* Header */}
-        <div className='mb-8'>
-          <div className='flex items-center justify-between'>
-            <div>
-              <h1 className='text-3xl font-bold text-foreground'>Recipe Hub</h1>
-              <p className='text-muted-foreground mt-2'>
-                Generate personalized recipes, save your favorites, and plan
-                your meals
+    <div className='container mx-auto py-6 space-y-8'>
+      {/* Header */}
+      <div className='flex items-center justify-between'>
+        <div>
+          <h1 className='text-3xl font-bold'>AI Recipe Generator</h1>
+          <p className='text-muted-foreground'>
+            Create personalized recipes tailored to your nutrition goals and
+            preferences
+          </p>
+        </div>
+        <Button
+          onClick={() => router.push('/dashboard/settings/nutrition')}
+          variant='outline'
+          size='sm'
+          className='gap-2'
+        >
+          <Settings className='h-4 w-4' />
+          Nutrition Settings
+        </Button>
+      </div>
+
+      {/* Quick Actions */}
+      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
+        <Card
+          className='hover:shadow-lg transition-shadow cursor-pointer'
+          onClick={() => router.push('/dashboard/recipes/generate')}
+        >
+          <CardHeader>
+            <CardTitle className='flex items-center gap-2'>
+              <ChefHat className='h-5 w-5 text-primary' />
+              Generate Recipe
+            </CardTitle>
+            <CardDescription>
+              Create a new personalized recipe based on your preferences
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button className='w-full gap-2'>
+              <PlusCircle className='h-4 w-4' />
+              Start Generating
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card
+          className='hover:shadow-lg transition-shadow cursor-pointer'
+          onClick={() => router.push('/dashboard/recipes/saved')}
+        >
+          <CardHeader>
+            <CardTitle className='flex items-center gap-2'>
+              <Sparkles className='h-5 w-5 text-primary' />
+              Saved Recipes
+            </CardTitle>
+            <CardDescription>
+              View and manage your collection of saved recipes
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button variant='outline' className='w-full'>
+              View Saved Recipes
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card
+          className='hover:shadow-lg transition-shadow cursor-pointer'
+          onClick={() => router.push('/dashboard/recipes/generate/preferences')}
+        >
+          <CardHeader>
+            <CardTitle className='flex items-center gap-2'>
+              <Settings className='h-5 w-5 text-primary' />
+              Recipe Preferences
+            </CardTitle>
+            <CardDescription>
+              Set up your dietary preferences and cooking style
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button variant='outline' className='w-full'>
+              Setup Preferences
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Getting Started */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Getting Started</CardTitle>
+          <CardDescription>
+            New to AI recipe generation? Here's how to get the best results
+          </CardDescription>
+        </CardHeader>
+        <CardContent className='space-y-4'>
+          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+            <div className='space-y-2'>
+              <div className='flex items-center gap-2'>
+                <div className='w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-bold'>
+                  1
+                </div>
+                <h3 className='font-medium'>Set Up Your Profile</h3>
+              </div>
+              <p className='text-sm text-muted-foreground pl-8'>
+                Tell us about your nutrition goals, dietary restrictions, and
+                preferences
               </p>
             </div>
-            <Button asChild size='lg' className='hidden sm:flex'>
-              <Link href='/dashboard/recipes/generate'>
-                <Plus className='h-5 w-5 mr-2' />
-                Generate Recipe
-              </Link>
-            </Button>
+
+            <div className='space-y-2'>
+              <div className='flex items-center gap-2'>
+                <div className='w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-bold'>
+                  2
+                </div>
+                <h3 className='font-medium'>Generate Your First Recipe</h3>
+              </div>
+              <p className='text-sm text-muted-foreground pl-8'>
+                Choose a meal type and let our AI create a personalized recipe
+                for you
+              </p>
+            </div>
+
+            <div className='space-y-2'>
+              <div className='flex items-center gap-2'>
+                <div className='w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-bold'>
+                  3
+                </div>
+                <h3 className='font-medium'>Save & Cook</h3>
+              </div>
+              <p className='text-sm text-muted-foreground pl-8'>
+                Save recipes you love and follow the step-by-step instructions
+              </p>
+            </div>
           </div>
-        </div>
-
-        {/* Nutrition Profile Banner */}
-        <div className='mb-8'>
-          <NutritionProfileBanner />
-        </div>
-
-        {/* Quick Actions Grid */}
-        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8'>
-          {/* Generate Recipe Card */}
-          <Card className='hover:shadow-lg transition-shadow duration-200 cursor-pointer'>
-            <Link href='/dashboard/recipes/generate'>
-              <CardHeader className='pb-3'>
-                <div className='flex items-center space-x-3'>
-                  <div className='p-2 bg-primary/10 rounded-lg'>
-                    <ChefHat className='h-6 w-6 text-primary' />
-                  </div>
-                  <CardTitle className='text-lg'>Generate Recipe</CardTitle>
-                </div>
-                <CardDescription>
-                  Create AI-powered recipes tailored to your nutrition goals and
-                  preferences
-                </CardDescription>
-              </CardHeader>
-            </Link>
-          </Card>
-
-          {/* Nutrition Profile Card */}
-          <Card className='hover:shadow-lg transition-shadow duration-200 cursor-pointer'>
-            <Link href='/dashboard/settings/nutrition'>
-              <CardHeader className='pb-3'>
-                <div className='flex items-center space-x-3'>
-                  <div className='p-2 bg-green-100 dark:bg-green-900/20 rounded-lg'>
-                    <Utensils className='h-6 w-6 text-green-600 dark:text-green-400' />
-                  </div>
-                  <CardTitle className='text-lg'>Nutrition Profile</CardTitle>
-                </div>
-                <CardDescription>
-                  Set your dietary goals, restrictions, and preferences for
-                  personalized recipes
-                </CardDescription>
-              </CardHeader>
-            </Link>
-          </Card>
-
-          {/* Saved Recipes Card */}
-          <Card className='hover:shadow-lg transition-shadow duration-200 cursor-pointer'>
-            <Link href='/dashboard/recipes/saved'>
-              <CardHeader className='pb-3'>
-                <div className='flex items-center space-x-3'>
-                  <div className='p-2 bg-secondary/10 rounded-lg'>
-                    <BookOpen className='h-6 w-6 text-secondary-foreground' />
-                  </div>
-                  <CardTitle className='text-lg'>Saved Recipes</CardTitle>
-                </div>
-                <CardDescription>
-                  Browse and manage your collection of saved recipes
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button variant='outline' className='w-full'>
-                  View Collection
-                </Button>
-              </CardContent>
-            </Link>
-          </Card>
-
-          {/* Meal Planning Card */}
-          <Card className='hover:shadow-lg transition-shadow duration-200 cursor-pointer'>
-            <Link href='/dashboard/recipes/meal-planning'>
-              <CardHeader className='pb-3'>
-                <div className='flex items-center space-x-3'>
-                  <div className='p-2 bg-accent/10 rounded-lg'>
-                    <Clock className='h-6 w-6 text-accent-foreground' />
-                  </div>
-                  <div>
-                    <CardTitle className='text-lg'>Meal Planning</CardTitle>
-                    <div className='bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent text-xs font-semibold'>
-                      PREMIUM
-                    </div>
-                  </div>
-                </div>
-                <CardDescription>
-                  Plan your weekly meals and generate shopping lists
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button variant='outline' className='w-full'>
-                  Plan Meals
-                </Button>
-              </CardContent>
-            </Link>
-          </Card>
-        </div>
-
-        {/* Recent Activity / Stats Section */}
-        <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
-          {/* Recent Recipes */}
-          <Card>
-            <CardHeader>
-              <CardTitle className='flex items-center gap-2'>
-                <TrendingUp className='h-5 w-5' />
-                Recent Activity
-              </CardTitle>
-              <CardDescription>
-                Your latest recipe generations and activity
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className='space-y-4'>
-                <div className='text-center py-8 text-muted-foreground'>
-                  <ChefHat className='h-12 w-12 mx-auto mb-3 opacity-50' />
-                  <p>No recent activity</p>
-                  <p className='text-sm'>
-                    Generate your first recipe to get started!
-                  </p>
-                  <Button asChild className='mt-4'>
-                    <Link href='/dashboard/recipes/generate'>
-                      Generate Your First Recipe
-                    </Link>
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Quick Stats */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Your Recipe Stats</CardTitle>
-              <CardDescription>
-                Track your recipe generation and usage
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className='grid grid-cols-2 gap-4'>
-                <div className='text-center p-4 bg-primary/5 rounded-lg'>
-                  <div className='text-2xl font-bold text-primary'>0</div>
-                  <div className='text-sm text-muted-foreground'>
-                    Recipes Generated
-                  </div>
-                </div>
-                <div className='text-center p-4 bg-secondary/5 rounded-lg'>
-                  <div className='text-2xl font-bold text-secondary-foreground'>
-                    0
-                  </div>
-                  <div className='text-sm text-muted-foreground'>
-                    Recipes Saved
-                  </div>
-                </div>
-                <div className='text-center p-4 bg-accent/5 rounded-lg'>
-                  <div className='text-2xl font-bold text-accent-foreground'>
-                    3
-                  </div>
-                  <div className='text-sm text-muted-foreground'>
-                    Daily Limit
-                  </div>
-                </div>
-                <div className='text-center p-4 bg-muted/50 rounded-lg'>
-                  <div className='text-2xl font-bold text-muted-foreground'>
-                    3
-                  </div>
-                  <div className='text-sm text-muted-foreground'>
-                    Remaining Today
-                  </div>
-                </div>
-              </div>
-              <div className='mt-4 text-center'>
-                <Button asChild variant='outline' size='sm'>
-                  <Link href='/dashboard/recipes/generate/preferences'>
-                    Setup Preferences
-                  </Link>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Mobile Generate Button */}
-        <div className='fixed bottom-6 right-6 sm:hidden'>
-          <Button asChild size='lg' className='rounded-full shadow-lg'>
-            <Link href='/dashboard/recipes/generate'>
-              <Plus className='h-6 w-6' />
-            </Link>
-          </Button>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
