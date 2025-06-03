@@ -467,3 +467,269 @@
 - Database migration rollback plans
 - Feature flagging for gradual rollout
 - User data backup and recovery procedures
+
+---
+
+## 🗓️ WEEKLY MEAL PLANNER FEATURE (Premium)
+
+### 📊 Database Schema for Weekly Meal Planning
+
+- [ ] **Create weekly meal plans table migration** ⚠️ BLOCKS: All weekly meal
+      planning functionality
+
+  - [ ] Add `weekly_meal_plans` table with plan metadata
+  - [ ] Include meal counts for all categories (breakfasts, lunches, dinners,
+        snacks)
+  - [ ] Add plan status tracking (in_progress, completed, archived)
+  - [ ] Set up foreign key relationship to existing `users` table
+  - [ ] Add indexes on `userId`, `status`, and `createdAt`
+
+- [ ] **Create meal plan items table migration** ⚠️ BLOCKS: Individual meal
+      card functionality, meal generation API 🔗 DEPENDS ON: Weekly meal plans
+      table migration
+
+  - [ ] Add `meal_plan_items` table for individual meals within plans
+  - [ ] Include category, day number, and status fields
+  - [ ] Add custom preferences JSONB field for overrides
+  - [ ] Set up foreign keys to `weekly_meal_plans` and `recipes` tables
+  - [ ] Add indexes on plan_id, category, and status
+
+- [ ] **Create shopping lists table migration** ⚠️ BLOCKS: Shopping list
+      functionality 🔗 DEPENDS ON: Weekly meal plans table migration
+
+  - [ ] Add `shopping_lists` table linked to meal plans
+  - [ ] Include consolidated ingredients with quantities and categories
+  - [ ] Add export metadata for future integrations
+  - [ ] Set up foreign key to `weekly_meal_plans` table
+  - [ ] Add indexes on plan_id and category
+
+- [ ] **Update Drizzle schema for weekly meal planning** ⚠️ BLOCKS: All weekly
+      meal planning development 🔗 DEPENDS ON: All meal planning table
+      migrations
+  - [ ] Add all new table definitions to `lib/db/schema.ts`
+  - [ ] Export new types for TypeScript usage throughout application
+  - [ ] Run schema generation and migration commands
+  - [ ] Test migrations in development environment
+
+### 🎯 Weekly Meal Planning API Infrastructure
+
+- [ ] **Create weekly meal plan CRUD API routes** ⚠️ BLOCKS: Weekly meal
+      planning wizard UI 🔗 DEPENDS ON: Weekly meal planning database schema
+
+  - [ ] Create `app/api/meal-plans/weekly/route.ts` for plan creation/listing
+  - [ ] Implement POST handler for creating new weekly plans
+  - [ ] Implement GET handler for retrieving user's meal plans
+  - [ ] Add request validation with Zod schemas
+  - [ ] Include subscription limit checking for Premium feature
+
+- [ ] **Create individual meal generation API endpoint** ⚠️ BLOCKS: Meal card
+      generation, individual meal customization 🔗 DEPENDS ON: Weekly meal plan
+      CRUD API, existing recipe generation infrastructure
+
+  - [ ] Create `app/api/meal-plans/weekly/[id]/meals/[mealId]/generate/route.ts`
+  - [ ] Implement PUT handler for generating specific meal within plan
+  - [ ] Integrate with existing AI recipe generation service
+  - [ ] Handle custom preference overrides per meal
+  - [ ] Add proper error handling and status updates
+
+- [ ] **Create meal lock-in API endpoint** ⚠️ BLOCKS: Meal confirmation
+      functionality, wizard progression 🔗 DEPENDS ON: Individual meal
+      generation API
+
+  - [ ] Create `app/api/meal-plans/weekly/[id]/meals/[mealId]/lock/route.ts`
+  - [ ] Implement PUT handler for confirming meal selection
+  - [ ] Update meal status and lock timestamp
+  - [ ] Validate category completion for wizard progression
+  - [ ] Add unlocking capability for regeneration
+
+- [ ] **Create shopping list generation API endpoint** ⚠️ BLOCKS: Shopping
+      list functionality 🔗 DEPENDS ON: Shopping lists table migration, meal
+      lock-in API
+
+  - [ ] Create `app/api/meal-plans/weekly/[id]/shopping-list/route.ts`
+  - [ ] Implement POST handler for generating consolidated shopping list
+  - [ ] Create ingredient consolidation and quantity calculation logic
+  - [ ] Add grocery category organization (produce, dairy, meat, etc.)
+  - [ ] Prepare data structure for future import integrations
+
+### 🧠 Weekly Meal Planning Service Layer
+
+- [ ] **Create weekly meal planning service** ⚠️ BLOCKS: Complex meal
+      planning business logic 🔗 DEPENDS ON: Weekly meal planning API
+      infrastructure
+
+  - [ ] Create `lib/meal-planning/weekly-meal-planner.ts`
+  - [ ] Implement plan creation and management functions
+  - [ ] Add meal category processing logic (breakfast → lunch → dinner →
+        snacks)
+  - [ ] Create plan validation and completion checking
+  - [ ] Add plan archiving and cleanup functionality
+
+- [ ] **Create ingredient consolidation service** ⚠️ BLOCKS: Shopping list
+      generation 🔗 DEPENDS ON: Shopping list generation API, existing recipe
+      parsing
+
+  - [ ] Create `lib/meal-planning/ingredient-consolidator.ts`
+  - [ ] Implement ingredient parsing and normalization
+  - [ ] Add quantity summation for duplicate ingredients
+  - [ ] Create unit conversion logic (cups to oz, etc.)
+  - [ ] Add grocery category classification system
+
+- [ ] **Create meal preference override system** ⚠️ BLOCKS: Custom meal
+      preferences, flexible meal generation 🔗 DEPENDS ON: Individual meal
+      generation API, existing nutrition profile system
+
+  - [ ] Create `lib/meal-planning/preference-override.ts`
+  - [ ] Implement global override application for meal categories
+  - [ ] Add individual meal override handling
+  - [ ] Create preference merging logic with user defaults
+  - [ ] Add validation for override parameters
+
+### 🎨 Weekly Meal Planning UI Components
+
+- [ ] **Create meal count selection component** ⚠️ BLOCKS: Weekly meal
+      planning wizard entry point 🔗 DEPENDS ON: Weekly meal planning service
+
+  - [ ] Create `components/meal-planning/MealCountSelector.tsx`
+  - [ ] Add increment/decrement controls for each meal category
+  - [ ] Implement 0-7 limit validation per category
+  - [ ] Add visual feedback and total meal count display
+  - [ ] Include estimated time and complexity indicators
+
+- [ ] **Create wizard navigation component** ⚠️ BLOCKS: Wizard user
+      experience, step progression 🔗 DEPENDS ON: Meal count selection component
+
+  - [ ] Create `components/meal-planning/WizardNavigation.tsx`
+  - [ ] Implement progress bar with step indicators
+  - [ ] Add back/next navigation with validation
+  - [ ] Create skip logic for categories with 0 meals
+  - [ ] Add save progress and resume functionality
+
+- [ ] **Create meal planning card component** ⚠️ BLOCKS: Individual meal
+      display and interaction 🔗 DEPENDS ON: Individual meal generation API,
+      meal preference override system
+
+  - [ ] Create `components/meal-planning/MealPlanCard.tsx`
+  - [ ] Implement meal generation states (pending, generating, generated, locked)
+  - [ ] Add day labeling and category indicators
+  - [ ] Create generate/regenerate/lock action buttons
+  - [ ] Add custom preference override interface
+
+- [ ] **Create preference override component** ⚠️ BLOCKS: Meal customization
+      functionality 🔗 DEPENDS ON: Meal preference override system, existing
+      nutrition components
+
+  - [ ] Create `components/meal-planning/PreferenceOverride.tsx`
+  - [ ] Add global override interface for entire meal category
+  - [ ] Implement individual meal override controls
+  - [ ] Create visual distinction between default and custom preferences
+  - [ ] Add preset override combinations (low-carb day, quick meals, etc.)
+
+- [ ] **Create shopping list component** ⚠️ BLOCKS: Shopping list display and
+      management 🔗 DEPENDS ON: Shopping list generation API, ingredient
+      consolidation service
+
+  - [ ] Create `components/meal-planning/ShoppingList.tsx`
+  - [ ] Implement organized ingredient display by category
+  - [ ] Add check-off functionality for purchased items
+  - [ ] Create manual add/edit/remove ingredient capabilities
+  - [ ] Add export preparation for future integrations
+
+### 📱 Weekly Meal Planning Pages
+
+- [ ] **Create weekly meal planning entry page** ⚠️ BLOCKS: User access to
+      weekly meal planning feature 🔗 DEPENDS ON: Meal count selection
+      component, usage tracking system for Premium access
+
+  - [ ] Create `app/(dashboard)/dashboard/meal-planning/weekly/page.tsx`
+  - [ ] Add Premium access gate and subscription checking
+  - [ ] Implement meal count selection interface
+  - [ ] Add existing plan resumption functionality
+  - [ ] Create plan history and management interface
+
+- [ ] **Create weekly meal planning wizard page** ⚠️ BLOCKS: Complete wizard
+      user experience 🔗 DEPENDS ON: All weekly meal planning UI components,
+      wizard navigation component
+
+  - [ ] Create `app/(dashboard)/dashboard/meal-planning/weekly/[id]/page.tsx`
+  - [ ] Implement complete wizard flow with step management
+  - [ ] Add category processing (breakfast → lunch → dinner → snacks)
+  - [ ] Create meal card grid layouts for each category
+  - [ ] Add progress persistence and error recovery
+
+- [ ] **Create shopping list page** ⚠️ BLOCKS: Shopping list user interface 🔗
+      DEPENDS ON: Shopping list component, shopping list generation API
+
+  - [ ] Create
+        `app/(dashboard)/dashboard/meal-planning/weekly/[id]/shopping-list/page.tsx`
+  - [ ] Implement comprehensive shopping list interface
+  - [ ] Add print-friendly formatting
+  - [ ] Create export functionality for future integrations
+  - [ ] Add sharing capabilities for family meal planning
+
+### 🔐 Premium Access & Usage Tracking
+
+- [ ] **Update usage tracking for weekly meal planning** ⚠️ BLOCKS: Premium
+      feature enforcement 🔗 DEPENDS ON: Existing usage tracking system,
+      weekly meal planning API infrastructure
+
+  - [ ] Add weekly meal plan tracking to existing usage system
+  - [ ] Implement Essential plan limits (1 plan/week, 10 meals max)
+  - [ ] Add Premium plan unlimited access
+  - [ ] Create usage analytics for business metrics
+  - [ ] Add upgrade prompts for Essential users hitting limits
+
+- [ ] **Create weekly meal planning premium gates** ⚠️ BLOCKS: Premium access
+      control 🔗 DEPENDS ON: Updated usage tracking, weekly meal planning pages
+
+  - [ ] Add subscription checking to all weekly meal planning routes
+  - [ ] Implement feature limits enforcement in UI components
+  - [ ] Add upgrade call-to-action components
+  - [ ] Create graceful degradation for Essential users
+  - [ ] Add Premium feature highlighting in marketing materials
+
+### 📊 Analytics & Monitoring
+
+- [ ] **Add weekly meal planning analytics tracking** 🔗 DEPENDS ON: All weekly
+      meal planning functionality completed
+
+  - [ ] Track plan creation and completion rates
+  - [ ] Monitor meal regeneration patterns
+  - [ ] Add shopping list generation and usage metrics
+  - [ ] Create conversion tracking from Essential to Premium
+  - [ ] Implement A/B testing framework for wizard improvements
+
+- [ ] **Create weekly meal planning performance monitoring** 🔗 DEPENDS ON:
+      Weekly meal planning analytics tracking
+
+  - [ ] Add API endpoint performance monitoring
+  - [ ] Monitor AI generation success rates for batch requests
+  - [ ] Track user drop-off points in wizard
+  - [ ] Create alerts for high failure rates
+  - [ ] Add database performance monitoring for complex queries
+
+### 🧪 Testing & Quality Assurance
+
+- [ ] **Create comprehensive test suite for weekly meal planning** 🔗 DEPENDS
+      ON: All weekly meal planning functionality completed
+
+  - [ ] Add unit tests for all service functions
+  - [ ] Create integration tests for wizard flow
+  - [ ] Add component tests for UI interactions
+  - [ ] Create end-to-end tests for complete user journeys
+  - [ ] Add performance tests for batch meal generation
+
+- [ ] **Create weekly meal planning test data and fixtures** 🔗 DEPENDS ON:
+      Weekly meal planning database schema
+
+  - [ ] Add test meal plans and user scenarios
+  - [ ] Create mock meal generation responses
+  - [ ] Add test shopping list data
+  - [ ] Create subscription tier test scenarios
+  - [ ] Add edge case test data (empty plans, max limits, etc.)
+
+---
+
+## 🚀 Phase 2: User Experience (Week 3-4)
+
+// ... existing code ...
