@@ -3,6 +3,7 @@ import { db } from '@/lib/db/drizzle';
 import { getUser } from '@/lib/db/queries';
 import { recipes } from '@/lib/db/schema';
 import { RecipeGenerationRequestSchema } from '@/types/recipe';
+import { desc, eq } from 'drizzle-orm';
 import { NextRequest } from 'next/server';
 
 export async function POST(request: NextRequest) {
@@ -17,11 +18,53 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validatedRequest = RecipeGenerationRequestSchema.parse(body);
 
-    // Generate recipe using enhanced AI service
+    // Extract variety configuration from request
+    const varietyBoost = body.varietyBoost || false;
+    const avoidSimilarRecipes = body.avoidSimilarRecipes !== false; // Default to true
+    const sessionId = body.sessionId || user.id.toString(); // Use user ID as default session
+
+    // Fetch user's recent recipes for variety tracking
+    const userRecipesFromDb = await db
+      .select()
+      .from(recipes)
+      .where(eq(recipes.userId, user.id))
+      .orderBy(desc(recipes.createdAt))
+      .limit(20); // Get last 20 recipes for variety analysis
+
+    // Transform database recipes to match the Recipe type format
+    const userRecipes = userRecipesFromDb
+      .filter(recipe => recipe.description) // Filter out recipes without descriptions
+      .map(recipe => ({
+        id: recipe.id,
+        userId: recipe.userId,
+        name: recipe.name,
+        description: recipe.description!,
+        ingredients: recipe.ingredients as Array<{ name: string; quantity: number; unit: string }>,
+        instructions: recipe.instructions,
+        nutrition: recipe.nutrition as { calories: number; protein: number; carbs: number; fat: number },
+        prepTime: recipe.prepTime || 0,
+        cookTime: recipe.cookTime || 0,
+        servings: recipe.servings || 1,
+        difficulty: recipe.difficulty as 'easy' | 'medium' | 'hard',
+        cuisineType: recipe.cuisineType || undefined,
+        mealType: recipe.mealType as 'breakfast' | 'lunch' | 'dinner' | 'snack',
+        tags: recipe.tags || [],
+        isSaved: recipe.isSaved,
+        rating: recipe.rating || undefined,
+        createdAt: recipe.createdAt,
+      }));
+
+    // Generate recipe using enhanced AI service with variety features
     const generationResult = await recipeGenerator.generateRecipe(
-      { ...validatedRequest, learningEnabled: true },
-      undefined, // userRecipes - could be fetched from DB
-      undefined, // userFeedbacks - could be fetched from DB
+      { 
+        ...validatedRequest, 
+        learningEnabled: true,
+        varietyBoost,
+        avoidSimilarRecipes,
+        sessionId,
+      },
+      userRecipes, // Pass user's recipe history
+      undefined, // userFeedbacks - could be fetched from DB in the future
       undefined, // nutritionProfile - could be fetched from DB
     );
 
@@ -68,6 +111,8 @@ export async function POST(request: NextRequest) {
       instructionsCount: generatedRecipe.instructions.length,
       nutrition: generatedRecipe.nutrition,
       mealType: generatedRecipe.mealType,
+      varietyScore: generationResult.varietyScore,
+      creativitySeed: generationResult.generationMetadata.varietyConfig.creativitySeed,
     });
 
     // Store recipe in database
@@ -92,7 +137,7 @@ export async function POST(request: NextRequest) {
       })
       .returning();
 
-    // Return the generated recipe with database ID and generation metadata
+    // Return the generated recipe with database ID and enhanced generation metadata
     return Response.json({
       success: true,
       recipe: {
@@ -106,60 +151,25 @@ export async function POST(request: NextRequest) {
         confidence: generationResult.confidence,
         issues: generationResult.issues,
         nutritionAccuracy: generationResult.nutritionAccuracy,
+        varietyScore: generationResult.varietyScore,
         processingTime: generationResult.generationMetadata.processingTime,
+        varietyInfo: {
+          creativitySeed: generationResult.generationMetadata.varietyConfig.creativitySeed,
+          cuisineRotation: generationResult.generationMetadata.varietyConfig.cuisineRotation,
+          cookingTechnique: generationResult.generationMetadata.varietyConfig.cookingTechniqueSuggestion,
+          complexityTarget: generationResult.generationMetadata.varietyConfig.complexityTarget,
+          culturalFusion: generationResult.generationMetadata.varietyConfig.culturalFusion,
+          temperature: generationResult.generationMetadata.sessionInfo.temperature,
+        },
       },
     });
   } catch (error) {
-    console.error('Recipe generation error:', error);
-
-    // Handle validation errors
-    if (error instanceof Error && error.name === 'ZodError') {
-      return Response.json(
-        { error: 'Invalid request data', details: error.message },
-        { status: 400 },
-      );
-    }
-
-    // Handle AI service errors
-    if (
-      error instanceof Error &&
-      (error.message.includes('Recipe validation failed') ||
-        error.message.includes('Failed to parse AI response') ||
-        error.message.includes('No valid JSON found'))
-    ) {
-      return Response.json(
-        { error: 'Failed to generate valid recipe. Please try again.' },
-        { status: 500 },
-      );
-    }
-
-    if (
-      error instanceof Error &&
-      error.message.includes('Invalid JSON response from AI service')
-    ) {
-      return Response.json(
-        { error: 'AI service returned invalid response. Please try again.' },
-        { status: 500 },
-      );
-    }
-
-    // Handle recipe generation complete failure
-    if (
-      error instanceof Error &&
-      error.message.includes('Recipe generation failed completely')
-    ) {
-      return Response.json(
-        {
-          error:
-            'Recipe generation service is temporarily unavailable. Please try again.',
-        },
-        { status: 503 },
-      );
-    }
-
-    // Generic error
+    console.error('Recipe generation failed:', error);
     return Response.json(
-      { error: 'Failed to generate recipe. Please try again.' },
+      { 
+        error: 'Failed to generate recipe', 
+        details: error instanceof Error ? error.message : 'Unknown error' 
+      },
       { status: 500 },
     );
   }

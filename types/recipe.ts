@@ -38,6 +38,39 @@ export const RecipeSchema = z.object({
 
 export type Recipe = z.infer<typeof RecipeSchema>;
 
+// Schema specifically for AI generation (excludes database fields)
+export const RecipeGenerationSchema = z.object({
+  name: z.string().min(1, 'Recipe name is required'),
+  description: z.string().min(1, 'Recipe description is required'),
+  ingredients: z
+    .array(
+      z.object({
+        name: z.string(),
+        quantity: z.number().positive(),
+        unit: z.string(),
+      }),
+    )
+    .min(1, 'At least one ingredient is required'),
+  instructions: z
+    .array(z.string())
+    .min(1, 'At least one instruction is required'),
+  nutrition: z.object({
+    calories: z.number().positive(),
+    protein: z.number().nonnegative(),
+    carbs: z.number().nonnegative(),
+    fat: z.number().nonnegative(),
+  }),
+  prepTime: z.number().nonnegative(),
+  cookTime: z.number().nonnegative(),
+  servings: z.number().positive(),
+  difficulty: z.enum(['easy', 'medium', 'hard']),
+  mealType: z.enum(['breakfast', 'lunch', 'dinner', 'snack']),
+  cuisineType: z.string(),
+  tags: z.array(z.string()),
+});
+
+export type GeneratedRecipe = z.infer<typeof RecipeGenerationSchema>;
+
 // Recipe generation request schema
 export const RecipeGenerationRequestSchema = z.object({
   mealType: z.enum(['breakfast', 'lunch', 'dinner', 'snack']),
@@ -57,6 +90,9 @@ export const RecipeGenerationRequestSchema = z.object({
       goals: z.string().optional(),
     })
     .optional(),
+  varietyBoost: z.boolean().optional(),
+  avoidSimilarRecipes: z.boolean().optional(),
+  sessionId: z.string().optional(),
 });
 
 export type RecipeGenerationRequest = z.infer<
