@@ -27,22 +27,27 @@ type NutritionProfileUpdate = Partial<NutritionProfileInsert> & {
 };
 
 // Helper function to clean data for validation
-function cleanDataForValidation(data: Record<string, unknown>): Record<string, unknown> {
+function cleanDataForValidation(
+  data: Record<string, unknown>,
+): Record<string, unknown> {
   const cleaned: Record<string, unknown> = {};
-  
+
   // Only include non-null, non-undefined values
   Object.keys(data).forEach(key => {
     const value = data[key];
     if (value !== null && value !== undefined) {
       // Handle date fields - convert strings to dates if needed
-      if ((key === 'createdAt' || key === 'updatedAt') && typeof value === 'string') {
+      if (
+        (key === 'createdAt' || key === 'updatedAt') &&
+        typeof value === 'string'
+      ) {
         cleaned[key] = new Date(value);
       } else {
         cleaned[key] = value;
       }
     }
   });
-  
+
   return cleaned;
 }
 
@@ -80,7 +85,8 @@ export async function POST(request: NextRequest) {
     });
 
     // Validate the cleaned data with partial schema for preferences-only updates
-    const validationResult = NutritionProfileSchema.partial().safeParse(cleanedData);
+    const validationResult =
+      NutritionProfileSchema.partial().safeParse(cleanedData);
 
     if (!validationResult.success) {
       console.error('Validation failed:', validationResult.error.issues);
@@ -167,7 +173,8 @@ export async function PUT(request: NextRequest) {
     });
 
     // Validate the cleaned data with partial schema for preferences-only updates
-    const validationResult = NutritionProfileSchema.partial().safeParse(cleanedData);
+    const validationResult =
+      NutritionProfileSchema.partial().safeParse(cleanedData);
 
     if (!validationResult.success) {
       console.error('Validation failed:', validationResult.error.issues);

@@ -1,16 +1,16 @@
+import { relations } from 'drizzle-orm';
 import {
+  boolean,
+  date,
+  index,
+  integer,
+  jsonb,
   pgTable,
   serial,
-  varchar,
   text,
   timestamp,
-  integer,
-  boolean,
-  index,
-  jsonb,
-  date,
+  varchar,
 } from 'drizzle-orm/pg-core';
-import { relations } from 'drizzle-orm';
 
 export const users = pgTable('users', {
   id: serial('id').primaryKey(),
@@ -193,6 +193,7 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   recipes: many(recipes),
   recipeFeedback: many(recipeFeedback),
   usageTracking: many(usageTracking),
+  weeklyMealPlans: many(weeklyMealPlans),
 }));
 
 export const invitationsRelations = relations(invitations, ({ one }) => ({
@@ -244,6 +245,7 @@ export const recipesRelations = relations(recipes, ({ one, many }) => ({
     references: [users.id],
   }),
   recipeFeedback: many(recipeFeedback),
+  mealPlanItems: many(mealPlanItems),
 }));
 
 export const recipeFeedbackRelations = relations(recipeFeedback, ({ one }) => ({
@@ -301,3 +303,132 @@ export type RecipeFeedback = typeof recipeFeedback.$inferSelect;
 export type NewRecipeFeedback = typeof recipeFeedback.$inferInsert;
 export type UsageTracking = typeof usageTracking.$inferSelect;
 export type NewUsageTracking = typeof usageTracking.$inferInsert;
+
+// Weekly Meal Planning Tables
+export const weeklyMealPlans = pgTable(
+  'weekly_meal_plans',
+  {
+    id: serial('id').primaryKey(),
+    userId: integer('user_id')
+      .notNull()
+      .references(() => users.id),
+    name: varchar('name', { length: 255 }).notNull(),
+    description: text('description'),
+    startDate: date('start_date').notNull(),
+    endDate: date('end_date').notNull(),
+    breakfastCount: integer('breakfast_count').notNull().default(0),
+    lunchCount: integer('lunch_count').notNull().default(0),
+    dinnerCount: integer('dinner_count').notNull().default(0),
+    snackCount: integer('snack_count').notNull().default(0),
+    totalMeals: integer('total_meals').notNull().default(0),
+    status: varchar('status', { length: 20 }).notNull().default('in_progress'), // in_progress, completed, archived
+    globalPreferences: jsonb('global_preferences'), // Override preferences for entire plan
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  table => ({
+    userIdIdx: index('weekly_meal_plans_user_id_idx').on(table.userId),
+    statusIdx: index('weekly_meal_plans_status_idx').on(table.status),
+    createdAtIdx: index('weekly_meal_plans_created_at_idx').on(table.createdAt),
+    startDateIdx: index('weekly_meal_plans_start_date_idx').on(table.startDate),
+  }),
+);
+
+export const mealPlanItems = pgTable(
+  'meal_plan_items',
+  {
+    id: serial('id').primaryKey(),
+    planId: integer('plan_id')
+      .notNull()
+      .references(() => weeklyMealPlans.id),
+    recipeId: integer('recipe_id').references(() => recipes.id), // null when not yet generated
+    category: varchar('category', { length: 20 }).notNull(), // breakfast, lunch, dinner, snack
+    dayNumber: integer('day_number').notNull(), // 1-7 for days of week
+    status: varchar('status', { length: 20 }).notNull().default('pending'), // pending, generating, generated, locked
+    customPreferences: jsonb('custom_preferences'), // Override preferences for this specific meal
+    lockedAt: timestamp('locked_at'),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  table => ({
+    planIdIdx: index('meal_plan_items_plan_id_idx').on(table.planId),
+    categoryIdx: index('meal_plan_items_category_idx').on(table.category),
+    statusIdx: index('meal_plan_items_status_idx').on(table.status),
+    planCategoryDayIdx: index('meal_plan_items_plan_category_day_idx').on(
+      table.planId,
+      table.category,
+      table.dayNumber,
+    ),
+  }),
+);
+
+export const shoppingLists = pgTable(
+  'shopping_lists',
+  {
+    id: serial('id').primaryKey(),
+    planId: integer('plan_id')
+      .notNull()
+      .references(() => weeklyMealPlans.id),
+    ingredients: jsonb('ingredients').notNull(), // [{ name, quantity, unit, category, checked }]
+    totalItems: integer('total_items').notNull().default(0),
+    checkedItems: integer('checked_items').notNull().default(0),
+    exportMetadata: jsonb('export_metadata'), // For future integrations (Instacart, etc.)
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  table => ({
+    planIdIdx: index('shopping_lists_plan_id_idx').on(table.planId),
+    createdAtIdx: index('shopping_lists_created_at_idx').on(table.createdAt),
+  }),
+);
+
+// Weekly Meal Planning Relations
+export const weeklyMealPlansRelations = relations(
+  weeklyMealPlans,
+  ({ one, many }) => ({
+    user: one(users, {
+      fields: [weeklyMealPlans.userId],
+      references: [users.id],
+    }),
+    mealPlanItems: many(mealPlanItems),
+    shoppingList: one(shoppingLists),
+  }),
+);
+
+export const mealPlanItemsRelations = relations(mealPlanItems, ({ one }) => ({
+  plan: one(weeklyMealPlans, {
+    fields: [mealPlanItems.planId],
+    references: [weeklyMealPlans.id],
+  }),
+  recipe: one(recipes, {
+    fields: [mealPlanItems.recipeId],
+    references: [recipes.id],
+  }),
+}));
+
+export const shoppingListsRelations = relations(shoppingLists, ({ one }) => ({
+  plan: one(weeklyMealPlans, {
+    fields: [shoppingLists.planId],
+    references: [weeklyMealPlans.id],
+  }),
+}));
+
+// Weekly Meal Planning Types
+export type WeeklyMealPlan = typeof weeklyMealPlans.$inferSelect;
+export type NewWeeklyMealPlan = typeof weeklyMealPlans.$inferInsert;
+export type MealPlanItem = typeof mealPlanItems.$inferSelect;
+export type NewMealPlanItem = typeof mealPlanItems.$inferInsert;
+export type ShoppingList = typeof shoppingLists.$inferSelect;
+export type NewShoppingList = typeof shoppingLists.$inferInsert;
+
+// Extended types for complex queries
+export type WeeklyMealPlanWithItems = WeeklyMealPlan & {
+  mealPlanItems: (MealPlanItem & {
+    recipe?: Recipe;
+  })[];
+  shoppingList?: ShoppingList;
+};
+
+export type MealPlanItemWithRecipe = MealPlanItem & {
+  recipe?: Recipe;
+};

@@ -39,9 +39,18 @@ export async function POST(request: NextRequest) {
         userId: recipe.userId,
         name: recipe.name,
         description: recipe.description!,
-        ingredients: recipe.ingredients as Array<{ name: string; quantity: number; unit: string }>,
+        ingredients: recipe.ingredients as Array<{
+          name: string;
+          quantity: number;
+          unit: string;
+        }>,
         instructions: recipe.instructions,
-        nutrition: recipe.nutrition as { calories: number; protein: number; carbs: number; fat: number },
+        nutrition: recipe.nutrition as {
+          calories: number;
+          protein: number;
+          carbs: number;
+          fat: number;
+        },
         prepTime: recipe.prepTime || 0,
         cookTime: recipe.cookTime || 0,
         servings: recipe.servings || 1,
@@ -56,8 +65,8 @@ export async function POST(request: NextRequest) {
 
     // Generate recipe using enhanced AI service with variety features
     const generationResult = await recipeGenerator.generateRecipe(
-      { 
-        ...validatedRequest, 
+      {
+        ...validatedRequest,
         learningEnabled: true,
         varietyBoost,
         avoidSimilarRecipes,
@@ -112,7 +121,8 @@ export async function POST(request: NextRequest) {
       nutrition: generatedRecipe.nutrition,
       mealType: generatedRecipe.mealType,
       varietyScore: generationResult.varietyScore,
-      creativitySeed: generationResult.generationMetadata.varietyConfig.creativitySeed,
+      creativitySeed:
+        generationResult.generationMetadata.varietyConfig.creativitySeed,
     });
 
     // Store recipe in database
@@ -154,21 +164,28 @@ export async function POST(request: NextRequest) {
         varietyScore: generationResult.varietyScore,
         processingTime: generationResult.generationMetadata.processingTime,
         varietyInfo: {
-          creativitySeed: generationResult.generationMetadata.varietyConfig.creativitySeed,
-          cuisineRotation: generationResult.generationMetadata.varietyConfig.cuisineRotation,
-          cookingTechnique: generationResult.generationMetadata.varietyConfig.cookingTechniqueSuggestion,
-          complexityTarget: generationResult.generationMetadata.varietyConfig.complexityTarget,
-          culturalFusion: generationResult.generationMetadata.varietyConfig.culturalFusion,
-          temperature: generationResult.generationMetadata.sessionInfo.temperature,
+          creativitySeed:
+            generationResult.generationMetadata.varietyConfig.creativitySeed,
+          cuisineRotation:
+            generationResult.generationMetadata.varietyConfig.cuisineRotation,
+          cookingTechnique:
+            generationResult.generationMetadata.varietyConfig
+              .cookingTechniqueSuggestion,
+          complexityTarget:
+            generationResult.generationMetadata.varietyConfig.complexityTarget,
+          culturalFusion:
+            generationResult.generationMetadata.varietyConfig.culturalFusion,
+          temperature:
+            generationResult.generationMetadata.sessionInfo.temperature,
         },
       },
     });
   } catch (error) {
     console.error('Recipe generation failed:', error);
     return Response.json(
-      { 
-        error: 'Failed to generate recipe', 
-        details: error instanceof Error ? error.message : 'Unknown error' 
+      {
+        error: 'Failed to generate recipe',
+        details: error instanceof Error ? error.message : 'Unknown error',
       },
       { status: 500 },
     );

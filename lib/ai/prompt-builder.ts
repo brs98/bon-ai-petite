@@ -383,15 +383,21 @@ Return ONLY a valid JSON object with this exact structure:
   ): PromptTemplate {
     // Start with base prompt template
     const baseTemplate = this.buildRecipePrompt(request, userContext);
-    
+
     // Enhance system prompt with variety instructions
-    const varietySystemEnhancements = this.buildVarietySystemPrompt(varietyConfig, recentRecipes);
+    const varietySystemEnhancements = this.buildVarietySystemPrompt(
+      varietyConfig,
+      recentRecipes,
+    );
     const enhancedSystemPrompt = `${baseTemplate.system}\n\n${varietySystemEnhancements}`;
-    
+
     // Enhance user prompt with variety specifications
-    const varietyUserEnhancements = this.buildVarietyUserPrompt(varietyConfig, recentRecipes);
+    const varietyUserEnhancements = this.buildVarietyUserPrompt(
+      varietyConfig,
+      recentRecipes,
+    );
     const enhancedUserPrompt = `${baseTemplate.user}\n\n${varietyUserEnhancements}`;
-    
+
     return {
       system: enhancedSystemPrompt,
       user: enhancedUserPrompt,
@@ -401,73 +407,95 @@ Return ONLY a valid JSON object with this exact structure:
   /**
    * Build variety-specific system prompt enhancements
    */
-  private buildVarietySystemPrompt(varietyConfig?: VarietyConfig, recentRecipes?: SimpleRecipe[]): string {
+  private buildVarietySystemPrompt(
+    varietyConfig?: VarietyConfig,
+    recentRecipes?: SimpleRecipe[],
+  ): string {
     let prompt = '## VARIETY AND CREATIVITY REQUIREMENTS:\n';
-    
+
     if (varietyConfig) {
       prompt += `- Creative Theme: Apply "${varietyConfig.creativitySeed}" approach to this recipe\n`;
       prompt += `- Complexity Target: Aim for ${varietyConfig.complexityTarget} difficulty level\n`;
       prompt += `- Cooking Technique Focus: Emphasize ${varietyConfig.cookingTechniqueSuggestion} technique\n`;
-      
+
       if (varietyConfig.culturalFusion) {
-        prompt += '- Cultural Fusion: Blend elements from different culinary traditions creatively\n';
+        prompt +=
+          '- Cultural Fusion: Blend elements from different culinary traditions creatively\n';
       }
-      
+
       if (varietyConfig.ingredientFocus?.length > 0) {
         prompt += `- Unique Ingredients: Consider incorporating: ${varietyConfig.ingredientFocus.join(', ')}\n`;
       }
-      
+
       if (varietyConfig.cuisineRotation?.length > 0) {
         prompt += `- Cuisine Preferences: Draw inspiration from: ${varietyConfig.cuisineRotation.join(' or ')}\n`;
       }
     }
-    
+
     if (recentRecipes && recentRecipes.length > 0) {
       prompt += '\n## AVOID REPETITION:\n';
-      prompt += '- Create something distinctly different from recently generated recipes\n';
-      prompt += '- Use different cooking methods, ingredient combinations, and flavor profiles\n';
+      prompt +=
+        '- Create something distinctly different from recently generated recipes\n';
+      prompt +=
+        '- Use different cooking methods, ingredient combinations, and flavor profiles\n';
       prompt += '- Ensure the recipe name and concept are unique\n';
     }
-    
+
     prompt += '\n## CREATIVITY GUIDELINES:\n';
     prompt += '- Think outside conventional recipe patterns\n';
     prompt += '- Consider unexpected but harmonious ingredient combinations\n';
     prompt += '- Apply innovative cooking techniques where appropriate\n';
-    prompt += '- Focus on creating a memorable and distinctive culinary experience\n';
-    
+    prompt +=
+      '- Focus on creating a memorable and distinctive culinary experience\n';
+
     return prompt;
   }
 
   /**
    * Build variety-specific user prompt enhancements
    */
-  private buildVarietyUserPrompt(varietyConfig?: VarietyConfig, recentRecipes?: SimpleRecipe[]): string {
+  private buildVarietyUserPrompt(
+    varietyConfig?: VarietyConfig,
+    recentRecipes?: SimpleRecipe[],
+  ): string {
     let prompt = '\n## CREATIVITY AND VARIETY SPECIFICATIONS:\n';
-    
-    if (varietyConfig?.avoidanceTerms && varietyConfig.avoidanceTerms.length > 0) {
+
+    if (
+      varietyConfig?.avoidanceTerms &&
+      varietyConfig.avoidanceTerms.length > 0
+    ) {
       prompt += `\n### AVOID THESE ELEMENTS:\n`;
       prompt += `- Ingredients/themes used recently: ${varietyConfig.avoidanceTerms.join(', ')}\n`;
-      prompt += '- Ensure your recipe takes a different approach from these recent elements\n';
+      prompt +=
+        '- Ensure your recipe takes a different approach from these recent elements\n';
     }
-    
+
     if (varietyConfig?.creativitySeed) {
       prompt += `\n### CREATIVE DIRECTION:\n`;
-      const seedInstructions = this.getCreativeSeedInstructions(varietyConfig.creativitySeed);
+      const seedInstructions = this.getCreativeSeedInstructions(
+        varietyConfig.creativitySeed,
+      );
       prompt += `- ${seedInstructions}\n`;
     }
-    
+
     if (recentRecipes && recentRecipes.length > 3) {
       prompt += `\n### VARIETY REQUIREMENT:\n`;
-      prompt += '- The generated recipe must be significantly different from the user\'s recent recipes\n';
-      prompt += '- Use different primary ingredients, cooking methods, and cuisine styles\n';
-      prompt += '- Aim for maximum culinary diversity and creative innovation\n';
+      prompt +=
+        "- The generated recipe must be significantly different from the user's recent recipes\n";
+      prompt +=
+        '- Use different primary ingredients, cooking methods, and cuisine styles\n';
+      prompt +=
+        '- Aim for maximum culinary diversity and creative innovation\n';
     }
-    
+
     prompt += '\n### FINAL VARIETY CHECK:\n';
-    prompt += '- Before finalizing, ensure this recipe offers something genuinely new and exciting\n';
-    prompt += '- Verify that ingredients, techniques, and flavors create a unique culinary experience\n';
-    prompt += '- The recipe should inspire culinary exploration and discovery\n';
-    
+    prompt +=
+      '- Before finalizing, ensure this recipe offers something genuinely new and exciting\n';
+    prompt +=
+      '- Verify that ingredients, techniques, and flavors create a unique culinary experience\n';
+    prompt +=
+      '- The recipe should inspire culinary exploration and discovery\n';
+
     return prompt;
   }
 
@@ -476,27 +504,47 @@ Return ONLY a valid JSON object with this exact structure:
    */
   private getCreativeSeedInstructions(creativitySeed: string): string {
     const seedMap: Record<string, string> = {
-      'fusion-experiment': 'Blend culinary traditions from different cultures in innovative ways',
-      'comfort-food-twist': 'Take a classic comfort food and give it a modern, healthy, or international twist',
-      'health-conscious-makeover': 'Transform a traditional recipe into a nutrient-dense, wellness-focused version',
-      'seasonal-ingredients': 'Feature ingredients that are currently in peak season with fresh, vibrant flavors',
-      'one-pot-wonder': 'Create a complete, satisfying meal using minimal cookware and simple techniques',
-      'color-theme': 'Design the recipe around a specific color palette for visual appeal',
-      'texture-focus': 'Emphasize contrasting textures (creamy, crunchy, tender, etc.) for sensory interest',
-      'spice-adventure': 'Explore bold, aromatic spices and seasonings from global cuisines',
-      'ancestral-modern': 'Combine traditional cooking wisdom with contemporary ingredients and techniques',
-      'street-food-elevated': 'Take inspiration from street food but elevate it to home cooking standards',
-      'breakfast-dinner': 'Create breakfast foods suitable for dinner or vice versa',
-      'dessert-savory': 'Incorporate dessert-like elements into a savory dish or vice versa',
-      'fermented-flavors': 'Feature fermented ingredients for complex, umami-rich taste profiles',
-      'umami-bomb': 'Create intensely savory, satisfying flavors through umami-rich ingredients',
+      'fusion-experiment':
+        'Blend culinary traditions from different cultures in innovative ways',
+      'comfort-food-twist':
+        'Take a classic comfort food and give it a modern, healthy, or international twist',
+      'health-conscious-makeover':
+        'Transform a traditional recipe into a nutrient-dense, wellness-focused version',
+      'seasonal-ingredients':
+        'Feature ingredients that are currently in peak season with fresh, vibrant flavors',
+      'one-pot-wonder':
+        'Create a complete, satisfying meal using minimal cookware and simple techniques',
+      'color-theme':
+        'Design the recipe around a specific color palette for visual appeal',
+      'texture-focus':
+        'Emphasize contrasting textures (creamy, crunchy, tender, etc.) for sensory interest',
+      'spice-adventure':
+        'Explore bold, aromatic spices and seasonings from global cuisines',
+      'ancestral-modern':
+        'Combine traditional cooking wisdom with contemporary ingredients and techniques',
+      'street-food-elevated':
+        'Take inspiration from street food but elevate it to home cooking standards',
+      'breakfast-dinner':
+        'Create breakfast foods suitable for dinner or vice versa',
+      'dessert-savory':
+        'Incorporate dessert-like elements into a savory dish or vice versa',
+      'fermented-flavors':
+        'Feature fermented ingredients for complex, umami-rich taste profiles',
+      'umami-bomb':
+        'Create intensely savory, satisfying flavors through umami-rich ingredients',
       'fresh-herb-garden': 'Showcase fresh herbs as primary flavor components',
-      'smoky-charred': 'Develop deep, smoky flavors through various cooking techniques',
-      'citrus-bright': 'Feature bright, acidic elements that enhance and balance other flavors',
-      'nutty-richness': 'Incorporate nuts, seeds, or nut-based elements for richness and texture',
+      'smoky-charred':
+        'Develop deep, smoky flavors through various cooking techniques',
+      'citrus-bright':
+        'Feature bright, acidic elements that enhance and balance other flavors',
+      'nutty-richness':
+        'Incorporate nuts, seeds, or nut-based elements for richness and texture',
     };
-    
-    return seedMap[creativitySeed] || 'Create an innovative and memorable culinary experience';
+
+    return (
+      seedMap[creativitySeed] ||
+      'Create an innovative and memorable culinary experience'
+    );
   }
 
   /**

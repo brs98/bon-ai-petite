@@ -71,7 +71,7 @@ export class RecipeGeneratorService {
 
   // Session tracking for variety
   private sessions: Map<string, RecipeGenerationSession> = new Map();
-  
+
   // Global recipe variety tracking
   private globalRecipePatterns: {
     recentCuisines: string[];
@@ -88,32 +88,105 @@ export class RecipeGeneratorService {
   // Variety enhancement pools
   private readonly varietyPools = {
     cuisines: [
-      'Mediterranean', 'Asian Fusion', 'Mexican', 'Indian', 'Thai', 'Italian', 
-      'Middle Eastern', 'Moroccan', 'Ethiopian', 'Korean', 'Vietnamese', 
-      'Peruvian', 'Brazilian', 'Caribbean', 'French', 'Spanish', 'Greek',
-      'Turkish', 'Lebanese', 'Japanese', 'Chinese', 'Southern American',
-      'Nordic', 'German', 'Russian', 'African', 'Cajun', 'Tex-Mex'
+      'Mediterranean',
+      'Asian Fusion',
+      'Mexican',
+      'Indian',
+      'Thai',
+      'Italian',
+      'Middle Eastern',
+      'Moroccan',
+      'Ethiopian',
+      'Korean',
+      'Vietnamese',
+      'Peruvian',
+      'Brazilian',
+      'Caribbean',
+      'French',
+      'Spanish',
+      'Greek',
+      'Turkish',
+      'Lebanese',
+      'Japanese',
+      'Chinese',
+      'Southern American',
+      'Nordic',
+      'German',
+      'Russian',
+      'African',
+      'Cajun',
+      'Tex-Mex',
     ],
     cookingTechniques: [
-      'roasting', 'grilling', 'braising', 'sautéing', 'steaming', 'poaching',
-      'stir-frying', 'slow-cooking', 'pressure-cooking', 'smoking', 'broiling',
-      'baking', 'pan-searing', 'marinating', 'fermentation', 'pickling',
-      'caramelizing', 'reduction', 'sous-vide', 'air-frying', 'dehydrating'
+      'roasting',
+      'grilling',
+      'braising',
+      'sautéing',
+      'steaming',
+      'poaching',
+      'stir-frying',
+      'slow-cooking',
+      'pressure-cooking',
+      'smoking',
+      'broiling',
+      'baking',
+      'pan-searing',
+      'marinating',
+      'fermentation',
+      'pickling',
+      'caramelizing',
+      'reduction',
+      'sous-vide',
+      'air-frying',
+      'dehydrating',
     ],
     uniqueIngredients: [
-      'pomegranate seeds', 'sumac', 'harissa', 'miso paste', 'tahini',
-      'coconut aminos', 'nutritional yeast', 'za\'atar', 'kimchi', 'tempeh',
-      'jackfruit', 'hemp hearts', 'spirulina', 'maca powder', 'turmeric',
-      'cardamom', 'star anise', 'lemongrass', 'kaffir lime leaves', 'galangal',
-      'black garlic', 'yuzu', 'shiso leaves', 'mirin', 'bonito flakes'
+      'pomegranate seeds',
+      'sumac',
+      'harissa',
+      'miso paste',
+      'tahini',
+      'coconut aminos',
+      'nutritional yeast',
+      "za'atar",
+      'kimchi',
+      'tempeh',
+      'jackfruit',
+      'hemp hearts',
+      'spirulina',
+      'maca powder',
+      'turmeric',
+      'cardamom',
+      'star anise',
+      'lemongrass',
+      'kaffir lime leaves',
+      'galangal',
+      'black garlic',
+      'yuzu',
+      'shiso leaves',
+      'mirin',
+      'bonito flakes',
     ],
     creativitySeeds: [
-      'fusion-experiment', 'comfort-food-twist', 'health-conscious-makeover',
-      'seasonal-ingredients', 'one-pot-wonder', 'color-theme', 'texture-focus',
-      'spice-adventure', 'ancestral-modern', 'street-food-elevated', 
-      'breakfast-dinner', 'dessert-savory', 'fermented-flavors', 'umami-bomb',
-      'fresh-herb-garden', 'smoky-charred', 'citrus-bright', 'nutty-richness'
-    ]
+      'fusion-experiment',
+      'comfort-food-twist',
+      'health-conscious-makeover',
+      'seasonal-ingredients',
+      'one-pot-wonder',
+      'color-theme',
+      'texture-focus',
+      'spice-adventure',
+      'ancestral-modern',
+      'street-food-elevated',
+      'breakfast-dinner',
+      'dessert-savory',
+      'fermented-flavors',
+      'umami-bomb',
+      'fresh-herb-garden',
+      'smoky-charred',
+      'citrus-bright',
+      'nutty-richness',
+    ],
   };
 
   constructor() {
@@ -141,14 +214,17 @@ export class RecipeGeneratorService {
       const validatedRequest = RecipeGenerationRequestSchema.parse(request);
 
       // Get or create generation session for variety tracking
-      const session = this.getOrCreateSession(request.sessionId || 'default', userRecipes);
-      
+      const session = this.getOrCreateSession(
+        request.sessionId || 'default',
+        userRecipes,
+      );
+
       // Generate variety configuration
       const varietyConfig = this.generateVarietyConfig(
         validatedRequest,
         session,
         request.varietyBoost || false,
-        userRecipes
+        userRecipes,
       );
 
       // Build user context for enhanced prompting
@@ -164,7 +240,7 @@ export class RecipeGeneratorService {
         validatedRequest,
         userContext,
         varietyConfig,
-        session.recentRecipes
+        session.recentRecipes,
       );
 
       // Generate recipe using structured output with dynamic temperature
@@ -184,8 +260,14 @@ export class RecipeGeneratorService {
       // Convert generated recipe to full Recipe type
       const recipe: Recipe = {
         ...generatedRecipe,
-        cuisineType: generatedRecipe.cuisineType || varietyConfig.cuisineRotation[0] || 'American',
-        tags: this.enhanceTagsWithVariety(generatedRecipe.tags || [], varietyConfig),
+        cuisineType:
+          generatedRecipe.cuisineType ||
+          varietyConfig.cuisineRotation[0] ||
+          'American',
+        tags: this.enhanceTagsWithVariety(
+          generatedRecipe.tags || [],
+          varietyConfig,
+        ),
         id: undefined,
         isSaved: false,
         rating: undefined,
@@ -202,7 +284,10 @@ export class RecipeGeneratorService {
       );
 
       // Calculate variety score
-      const varietyScore = this.calculateVarietyScore(enhancedRecipe, session.recentRecipes);
+      const varietyScore = this.calculateVarietyScore(
+        enhancedRecipe,
+        session.recentRecipes,
+      );
 
       // Update session with new recipe
       this.updateSessionWithNewRecipe(session, enhancedRecipe);
@@ -267,8 +352,10 @@ export class RecipeGeneratorService {
 
     // Sort by variety score and confidence
     return candidates.sort((a, b) => {
-      const scoreA = a.confidence * 0.4 + a.nutritionAccuracy * 0.3 + a.varietyScore * 0.3;
-      const scoreB = b.confidence * 0.4 + b.nutritionAccuracy * 0.3 + b.varietyScore * 0.3;
+      const scoreA =
+        a.confidence * 0.4 + a.nutritionAccuracy * 0.3 + a.varietyScore * 0.3;
+      const scoreB =
+        b.confidence * 0.4 + b.nutritionAccuracy * 0.3 + b.varietyScore * 0.3;
       return scoreB - scoreA;
     });
   }
@@ -288,11 +375,14 @@ export class RecipeGeneratorService {
   /**
    * Get or create a generation session for variety tracking
    */
-  private getOrCreateSession(sessionId: string, userRecipes?: Recipe[]): RecipeGenerationSession {
+  private getOrCreateSession(
+    sessionId: string,
+    _userRecipes?: Recipe[],
+  ): RecipeGenerationSession {
     if (!this.sessions.has(sessionId)) {
       this.sessions.set(sessionId, {
         sessionId,
-        recentRecipes: userRecipes?.slice(-10) || [], // Last 10 recipes for context
+        recentRecipes: _userRecipes?.slice(-10) || [], // Last 10 recipes for context
         varietyConfig: this.createBaseVarietyConfig(),
         lastGenerationTime: new Date(),
       });
@@ -307,9 +397,10 @@ export class RecipeGeneratorService {
     request: RecipeGenerationRequest,
     session: RecipeGenerationSession,
     varietyBoost: boolean,
-    userRecipes?: Recipe[]
+    _userRecipes?: Recipe[],
   ): VarietyConfig {
-    const timeSinceLastGeneration = Date.now() - session.lastGenerationTime.getTime();
+    const timeSinceLastGeneration =
+      Date.now() - session.lastGenerationTime.getTime();
     const minutesSinceLastGeneration = timeSinceLastGeneration / (1000 * 60);
 
     // Dynamic temperature based on variety needs
@@ -320,43 +411,65 @@ export class RecipeGeneratorService {
     temperature = Math.min(temperature, 1.4); // Cap at reasonable maximum
 
     // Get recent ingredients/cuisines to avoid
-    const recentIngredients = this.extractRecentIngredients(session.recentRecipes);
+    const recentIngredients = this.extractRecentIngredients(
+      session.recentRecipes,
+    );
     const recentCuisines = this.extractRecentCuisines(session.recentRecipes);
 
     // Select diverse cuisines
-    const availableCuisines = this.varietyPools.cuisines.filter(c => 
-      !recentCuisines.includes(c) && 
-      (!request.cuisinePreferences?.length || request.cuisinePreferences.includes(c))
+    const availableCuisines = this.varietyPools.cuisines.filter(
+      c =>
+        !recentCuisines.includes(c) &&
+        (!request.cuisinePreferences?.length ||
+          request.cuisinePreferences.includes(c)),
     );
     const cuisineRotation = this.shuffleArray([
       ...availableCuisines.slice(0, 3),
-      ...(request.cuisinePreferences || [])
+      ...(request.cuisinePreferences || []),
     ]).slice(0, 2);
 
     // Select unique ingredients to suggest
-    const availableUniqueIngredients = this.varietyPools.uniqueIngredients.filter(i => 
-      !recentIngredients.some(ri => ri.toLowerCase().includes(i.toLowerCase()))
+    const availableUniqueIngredients =
+      this.varietyPools.uniqueIngredients.filter(
+        i =>
+          !recentIngredients.some(ri =>
+            ri.toLowerCase().includes(i.toLowerCase()),
+          ),
+      );
+    const ingredientFocus = this.shuffleArray(availableUniqueIngredients).slice(
+      0,
+      2,
     );
-    const ingredientFocus = this.shuffleArray(availableUniqueIngredients).slice(0, 2);
 
     // Select cooking technique
-    const recentTechniques = this.extractRecentCookingTechniques(session.recentRecipes);
-    const availableTechniques = this.varietyPools.cookingTechniques.filter(t => 
-      !recentTechniques.includes(t)
+    const recentTechniques = this.extractRecentCookingTechniques(
+      session.recentRecipes,
     );
-    const cookingTechniqueSuggestion = this.shuffleArray(availableTechniques)[0] || 'sautéing';
+    const availableTechniques = this.varietyPools.cookingTechniques.filter(
+      t => !recentTechniques.includes(t),
+    );
+    const cookingTechniqueSuggestion =
+      this.shuffleArray(availableTechniques)[0] || 'sautéing';
 
     // Select creativity seed
-    const creativitySeed = this.shuffleArray(this.varietyPools.creativitySeeds)[0];
+    const creativitySeed = this.shuffleArray(
+      this.varietyPools.creativitySeeds,
+    )[0];
 
     // Determine complexity target based on recent recipes
-    const recentComplexities = session.recentRecipes.map(r => r.difficulty || 'medium');
-    const complexityTarget = this.selectAlternatingComplexity(recentComplexities);
+    const recentComplexities = session.recentRecipes.map(
+      r => r.difficulty || 'medium',
+    );
+    const complexityTarget =
+      this.selectAlternatingComplexity(recentComplexities);
 
     return {
       temperature,
       creativitySeed,
-      avoidanceTerms: [...recentIngredients.slice(0, 5), ...recentCuisines.slice(0, 3)],
+      avoidanceTerms: [
+        ...recentIngredients.slice(0, 5),
+        ...recentCuisines.slice(0, 3),
+      ],
       cuisineRotation,
       ingredientFocus,
       cookingTechniqueSuggestion,
@@ -384,24 +497,35 @@ export class RecipeGeneratorService {
   /**
    * Enhance tags with variety considerations
    */
-  private enhanceTagsWithVariety(baseTags: string[], varietyConfig: VarietyConfig): string[] {
+  private enhanceTagsWithVariety(
+    baseTags: string[],
+    varietyConfig: VarietyConfig,
+  ): string[] {
     const tags = [...baseTags];
-    
+
     // Add creativity-based tags
-    if (varietyConfig.creativitySeed.includes('fusion')) tags.push('fusion-cuisine');
-    if (varietyConfig.creativitySeed.includes('comfort')) tags.push('comfort-food');
-    if (varietyConfig.creativitySeed.includes('health')) tags.push('health-focused');
-    if (varietyConfig.creativitySeed.includes('one-pot')) tags.push('one-pot-meal');
+    if (varietyConfig.creativitySeed.includes('fusion'))
+      tags.push('fusion-cuisine');
+    if (varietyConfig.creativitySeed.includes('comfort'))
+      tags.push('comfort-food');
+    if (varietyConfig.creativitySeed.includes('health'))
+      tags.push('health-focused');
+    if (varietyConfig.creativitySeed.includes('one-pot'))
+      tags.push('one-pot-meal');
     if (varietyConfig.creativitySeed.includes('color')) tags.push('colorful');
-    if (varietyConfig.creativitySeed.includes('spice')) tags.push('spicy-adventure');
-    if (varietyConfig.creativitySeed.includes('street-food')) tags.push('street-food-inspired');
-    
+    if (varietyConfig.creativitySeed.includes('spice'))
+      tags.push('spicy-adventure');
+    if (varietyConfig.creativitySeed.includes('street-food'))
+      tags.push('street-food-inspired');
+
     // Add technique-based tags
     tags.push(`${varietyConfig.cookingTechniqueSuggestion}-technique`);
-    
+
     // Add complexity tags
-    if (varietyConfig.complexityTarget === 'simple') tags.push('quick-and-easy');
-    if (varietyConfig.complexityTarget === 'complex') tags.push('gourmet-level');
+    if (varietyConfig.complexityTarget === 'simple')
+      tags.push('quick-and-easy');
+    if (varietyConfig.complexityTarget === 'complex')
+      tags.push('gourmet-level');
     if (varietyConfig.culturalFusion) tags.push('cultural-fusion');
 
     return [...new Set(tags)]; // Remove duplicates
@@ -410,41 +534,53 @@ export class RecipeGeneratorService {
   /**
    * Calculate variety score compared to recent recipes
    */
-  private calculateVarietyScore(recipe: Recipe, recentRecipes: Recipe[]): number {
+  private calculateVarietyScore(
+    recipe: Recipe,
+    recentRecipes: Recipe[],
+  ): number {
     if (recentRecipes.length === 0) return 1.0;
 
     let varietyPoints = 0;
     let totalChecks = 0;
 
     // Check cuisine variety
-    const recentCuisines = recentRecipes.map(r => r.cuisineType).filter(Boolean);
+    const recentCuisines = recentRecipes
+      .map(r => r.cuisineType)
+      .filter(Boolean);
     if (!recentCuisines.includes(recipe.cuisineType)) varietyPoints += 2;
     totalChecks += 2;
 
     // Check ingredient variety
-    const recentIngredients = recentRecipes.flatMap(r => 
-      r.ingredients?.map(i => i.name.toLowerCase()) || []
+    const recentIngredients = recentRecipes.flatMap(
+      r => r.ingredients?.map(i => i.name.toLowerCase()) || [],
     );
-    const recipeIngredients = recipe.ingredients?.map(i => i.name.toLowerCase()) || [];
-    const uniqueIngredients = recipeIngredients.filter(i => 
-      !recentIngredients.some(ri => ri.includes(i) || i.includes(ri))
+    const recipeIngredients =
+      recipe.ingredients?.map(i => i.name.toLowerCase()) || [];
+    const uniqueIngredients = recipeIngredients.filter(
+      i => !recentIngredients.some(ri => ri.includes(i) || i.includes(ri)),
     );
-    varietyPoints += Math.min(uniqueIngredients.length / recipeIngredients.length * 3, 3);
+    varietyPoints += Math.min(
+      (uniqueIngredients.length / recipeIngredients.length) * 3,
+      3,
+    );
     totalChecks += 3;
 
     // Check cooking method variety (inferred from instructions)
     const recentMethods = this.extractCookingMethodsFromInstructions(
-      recentRecipes.flatMap(r => r.instructions || [])
+      recentRecipes.flatMap(r => r.instructions || []),
     );
-    const recipeMethods = this.extractCookingMethodsFromInstructions(recipe.instructions || []);
+    const recipeMethods = this.extractCookingMethodsFromInstructions(
+      recipe.instructions || [],
+    );
     const uniqueMethods = recipeMethods.filter(m => !recentMethods.includes(m));
     varietyPoints += Math.min(uniqueMethods.length, 2);
     totalChecks += 2;
 
     // Check name similarity
     const recentNames = recentRecipes.map(r => r.name.toLowerCase());
-    const nameSimilarity = recentNames.some(name => 
-      this.calculateStringSimilarity(name, recipe.name.toLowerCase()) > 0.6
+    const nameSimilarity = recentNames.some(
+      name =>
+        this.calculateStringSimilarity(name, recipe.name.toLowerCase()) > 0.6,
     );
     if (!nameSimilarity) varietyPoints += 1;
     totalChecks += 1;
@@ -455,7 +591,10 @@ export class RecipeGeneratorService {
   /**
    * Update session with newly generated recipe
    */
-  private updateSessionWithNewRecipe(session: RecipeGenerationSession, recipe: Recipe): void {
+  private updateSessionWithNewRecipe(
+    session: RecipeGenerationSession,
+    recipe: Recipe,
+  ): void {
     session.recentRecipes.push(recipe);
     // Keep only last 15 recipes to maintain relevance
     if (session.recentRecipes.length > 15) {
@@ -467,7 +606,8 @@ export class RecipeGeneratorService {
     if (recipe.cuisineType) {
       this.globalRecipePatterns.recentCuisines.push(recipe.cuisineType);
       if (this.globalRecipePatterns.recentCuisines.length > 20) {
-        this.globalRecipePatterns.recentCuisines = this.globalRecipePatterns.recentCuisines.slice(-20);
+        this.globalRecipePatterns.recentCuisines =
+          this.globalRecipePatterns.recentCuisines.slice(-20);
       }
     }
   }
@@ -502,10 +642,12 @@ export class RecipeGeneratorService {
   /**
    * Extract cooking methods from instructions
    */
-  private extractCookingMethodsFromInstructions(instructions: string[]): string[] {
+  private extractCookingMethodsFromInstructions(
+    instructions: string[],
+  ): string[] {
     const methods: string[] = [];
     const instructionText = instructions.join(' ').toLowerCase();
-    
+
     this.varietyPools.cookingTechniques.forEach(technique => {
       if (instructionText.includes(technique)) {
         methods.push(technique);
@@ -518,18 +660,26 @@ export class RecipeGeneratorService {
   /**
    * Select alternating complexity to avoid repetition
    */
-  private selectAlternatingComplexity(recentComplexities: string[]): 'simple' | 'moderate' | 'complex' {
+  private selectAlternatingComplexity(
+    recentComplexities: string[],
+  ): 'simple' | 'moderate' | 'complex' {
     if (recentComplexities.length === 0) return 'moderate';
-    
+
     const lastComplexity = recentComplexities[recentComplexities.length - 1];
-    const secondLastComplexity = recentComplexities[recentComplexities.length - 2];
-    
+    const secondLastComplexity =
+      recentComplexities[recentComplexities.length - 2];
+
     // Avoid same complexity twice in a row
     if (lastComplexity === secondLastComplexity) {
-      const alternatives = ['simple', 'moderate', 'complex'].filter(c => c !== lastComplexity);
-      return alternatives[Math.floor(Math.random() * alternatives.length)] as 'simple' | 'moderate' | 'complex';
+      const alternatives = ['simple', 'moderate', 'complex'].filter(
+        c => c !== lastComplexity,
+      );
+      return alternatives[Math.floor(Math.random() * alternatives.length)] as
+        | 'simple'
+        | 'moderate'
+        | 'complex';
     }
-    
+
     // Random selection weighted towards moderate
     const weights = { simple: 0.3, moderate: 0.5, complex: 0.2 };
     const random = Math.random();
@@ -552,7 +702,9 @@ export class RecipeGeneratorService {
    * Calculate Levenshtein distance between two strings
    */
   private levenshteinDistance(str1: string, str2: string): number {
-    const matrix = Array(str2.length + 1).fill(null).map(() => Array(str1.length + 1).fill(null));
+    const matrix = Array(str2.length + 1)
+      .fill(null)
+      .map(() => Array(str1.length + 1).fill(null));
 
     for (let i = 0; i <= str1.length; i++) matrix[0][i] = i;
     for (let j = 0; j <= str2.length; j++) matrix[j][0] = j;
@@ -563,7 +715,7 @@ export class RecipeGeneratorService {
         matrix[j][i] = Math.min(
           matrix[j][i - 1] + 1,
           matrix[j - 1][i] + 1,
-          matrix[j - 1][i - 1] + indicator
+          matrix[j - 1][i - 1] + indicator,
         );
       }
     }
@@ -683,20 +835,29 @@ export class RecipeGeneratorService {
     isVegetarian: boolean;
     isVegan: boolean;
   } {
-    const meatTerms = ['chicken', 'beef', 'pork', 'fish', 'turkey', 'lamb', 'bacon', 'sausage'];
+    const meatTerms = [
+      'chicken',
+      'beef',
+      'pork',
+      'fish',
+      'turkey',
+      'lamb',
+      'bacon',
+      'sausage',
+    ];
     const dairyTerms = ['milk', 'cheese', 'butter', 'cream', 'yogurt'];
     const eggTerms = ['egg', 'eggs'];
 
     const ingredientNames = ingredients.map(i => i.name.toLowerCase());
 
-    const hasMeat = meatTerms.some(term => 
-      ingredientNames.some(name => name.includes(term))
+    const hasMeat = meatTerms.some(term =>
+      ingredientNames.some(name => name.includes(term)),
     );
-    const hasDairy = dairyTerms.some(term => 
-      ingredientNames.some(name => name.includes(term))
+    const hasDairy = dairyTerms.some(term =>
+      ingredientNames.some(name => name.includes(term)),
     );
-    const hasEggs = eggTerms.some(term => 
-      ingredientNames.some(name => name.includes(term))
+    const hasEggs = eggTerms.some(term =>
+      ingredientNames.some(name => name.includes(term)),
     );
 
     return {
@@ -741,7 +902,8 @@ export class RecipeGeneratorService {
       };
 
       // Create fallback variety config
-      const fallbackVarietyConfig: VarietyConfig = this.createBaseVarietyConfig();
+      const fallbackVarietyConfig: VarietyConfig =
+        this.createBaseVarietyConfig();
 
       return {
         recipe,

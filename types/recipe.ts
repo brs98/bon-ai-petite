@@ -240,3 +240,164 @@ export const FITNESS_GOALS = [
   { value: 'gain_muscle', label: 'Build muscle' },
   { value: 'improve_health', label: 'Improve overall health' },
 ] as const;
+
+// Weekly Meal Planning Types and Schemas
+export const WeeklyMealPlanSchema = z.object({
+  id: z.number().optional(),
+  userId: z.number(),
+  name: z.string().min(1, 'Plan name is required'),
+  description: z.string().optional(),
+  startDate: z.string().date(),
+  endDate: z.string().date(),
+  breakfastCount: z.number().min(0).max(7),
+  lunchCount: z.number().min(0).max(7),
+  dinnerCount: z.number().min(0).max(7),
+  snackCount: z.number().min(0).max(7),
+  totalMeals: z.number().min(0).max(28),
+  status: z.enum(['in_progress', 'completed', 'archived']),
+  globalPreferences: z
+    .object({
+      allergies: z.array(z.string()).optional(),
+      dietaryRestrictions: z.array(z.string()).optional(),
+      cuisinePreferences: z.array(z.string()).optional(),
+      maxPrepTime: z.number().optional(),
+      maxCookTime: z.number().optional(),
+      difficultyLevel: z.enum(['easy', 'medium', 'hard']).optional(),
+    })
+    .optional(),
+  createdAt: z.date().optional(),
+  updatedAt: z.date().optional(),
+});
+
+export type WeeklyMealPlan = z.infer<typeof WeeklyMealPlanSchema>;
+
+export const MealPlanItemSchema = z.object({
+  id: z.number().optional(),
+  planId: z.number(),
+  recipeId: z.number().optional(),
+  category: z.enum(['breakfast', 'lunch', 'dinner', 'snack']),
+  dayNumber: z.number().min(1).max(7),
+  status: z.enum(['pending', 'generating', 'generated', 'locked']),
+  customPreferences: z
+    .object({
+      allergies: z.array(z.string()).optional(),
+      dietaryRestrictions: z.array(z.string()).optional(),
+      cuisinePreferences: z.array(z.string()).optional(),
+      maxPrepTime: z.number().optional(),
+      maxCookTime: z.number().optional(),
+      difficultyLevel: z.enum(['easy', 'medium', 'hard']).optional(),
+    })
+    .optional(),
+  lockedAt: z.date().optional(),
+  createdAt: z.date().optional(),
+  updatedAt: z.date().optional(),
+});
+
+export type MealPlanItem = z.infer<typeof MealPlanItemSchema>;
+
+export const ShoppingListSchema = z.object({
+  id: z.number().optional(),
+  planId: z.number(),
+  ingredients: z.array(
+    z.object({
+      name: z.string(),
+      quantity: z.number().positive(),
+      unit: z.string(),
+      category: z.string().optional(), // produce, dairy, meat, etc.
+      checked: z.boolean().default(false),
+    }),
+  ),
+  totalItems: z.number().min(0),
+  checkedItems: z.number().min(0),
+  exportMetadata: z
+    .object({
+      format: z.string().optional(),
+      exportedAt: z.date().optional(),
+      externalIds: z.record(z.string()).optional(),
+    })
+    .optional(),
+  createdAt: z.date().optional(),
+  updatedAt: z.date().optional(),
+});
+
+export type ShoppingList = z.infer<typeof ShoppingListSchema>;
+
+// Request schemas for API endpoints
+export const CreateWeeklyMealPlanRequestSchema = z.object({
+  name: z.string().min(1, 'Plan name is required'),
+  description: z.string().optional(),
+  startDate: z.string().date(),
+  endDate: z.string().date(),
+  breakfastCount: z.number().min(0).max(7),
+  lunchCount: z.number().min(0).max(7),
+  dinnerCount: z.number().min(0).max(7),
+  snackCount: z.number().min(0).max(7),
+  globalPreferences: z
+    .object({
+      allergies: z.array(z.string()).optional(),
+      dietaryRestrictions: z.array(z.string()).optional(),
+      cuisinePreferences: z.array(z.string()).optional(),
+      maxPrepTime: z.number().optional(),
+      maxCookTime: z.number().optional(),
+      difficultyLevel: z.enum(['easy', 'medium', 'hard']).optional(),
+    })
+    .optional(),
+});
+
+export type CreateWeeklyMealPlanRequest = z.infer<
+  typeof CreateWeeklyMealPlanRequestSchema
+>;
+
+export const GenerateMealRequestSchema = z.object({
+  customPreferences: z
+    .object({
+      allergies: z.array(z.string()).optional(),
+      dietaryRestrictions: z.array(z.string()).optional(),
+      cuisinePreferences: z.array(z.string()).optional(),
+      maxPrepTime: z.number().optional(),
+      maxCookTime: z.number().optional(),
+      difficultyLevel: z.enum(['easy', 'medium', 'hard']).optional(),
+    })
+    .optional()
+    .nullable(),
+});
+
+export type GenerateMealRequest = z.infer<typeof GenerateMealRequestSchema>;
+
+export const LockMealRequestSchema = z.object({
+  locked: z.boolean(),
+});
+
+export type LockMealRequest = z.infer<typeof LockMealRequestSchema>;
+
+// Extended types for API responses
+export type WeeklyMealPlanWithItems = WeeklyMealPlan & {
+  mealPlanItems: (MealPlanItem & {
+    recipe?: Recipe;
+  })[];
+  shoppingList?: ShoppingList;
+};
+
+export type MealPlanItemWithRecipe = MealPlanItem & {
+  recipe?: Recipe;
+};
+
+// Grocery categories for shopping list organization
+export const GROCERY_CATEGORIES = [
+  'produce',
+  'dairy',
+  'meat',
+  'poultry',
+  'seafood',
+  'bakery',
+  'deli',
+  'frozen',
+  'pantry',
+  'spices',
+  'beverages',
+  'snacks',
+  'health',
+  'other',
+] as const;
+
+export type GroceryCategory = (typeof GROCERY_CATEGORIES)[number];

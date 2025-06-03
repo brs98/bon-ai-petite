@@ -4,10 +4,13 @@ import { recipes } from '@/lib/db/schema';
 import { and, eq } from 'drizzle-orm';
 import { NextRequest } from 'next/server';
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } },
-) {
+interface RouteParams {
+  params: Promise<{
+    id: string;
+  }>;
+}
+
+export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     // Authenticate user
     const user = await getUser();
@@ -15,7 +18,8 @@ export async function GET(
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const recipeId = parseInt(params.id);
+    const { id } = await params;
+    const recipeId = parseInt(id);
     if (isNaN(recipeId)) {
       return Response.json({ error: 'Invalid recipe ID' }, { status: 400 });
     }
