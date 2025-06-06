@@ -2,14 +2,14 @@
 
 import { Button } from '@/components/ui/button';
 import {
-    Activity,
-    Calendar,
-    ChefHat,
-    Menu,
-    Settings,
-    Shield,
-    Users,
-    Utensils,
+  Activity,
+  Calendar,
+  ChefHat,
+  Menu,
+  Settings,
+  Shield,
+  Users,
+  Utensils,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -29,10 +29,10 @@ export default function DashboardLayout({
     { href: '/dashboard/activity', icon: Activity, label: 'Activity' },
     { href: '/dashboard/security', icon: Shield, label: 'Security' },
     { href: '/dashboard/recipes', icon: ChefHat, label: 'Recipes' },
-    { 
-      href: '/dashboard/meal-planning/weekly', 
-      icon: Calendar, 
-      label: 'Weekly Meal Planning' 
+    {
+      href: '/dashboard/meal-planning/weekly',
+      icon: Calendar,
+      label: 'Weekly Meal Planning',
     },
     {
       href: '/dashboard/settings/nutrition',

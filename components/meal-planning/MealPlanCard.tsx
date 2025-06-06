@@ -7,17 +7,17 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { MealPlanItem, Recipe } from '@/types/recipe';
 import {
-    Calendar,
-    Check,
-    ChefHat,
-    Clock,
-    Loader2,
-    Lock,
-    RefreshCw,
-    Settings,
-    Sparkles,
-    Unlock,
-    Users,
+  Calendar,
+  Check,
+  ChefHat,
+  Clock,
+  Loader2,
+  Lock,
+  RefreshCw,
+  Settings,
+  Sparkles,
+  Unlock,
+  Users,
 } from 'lucide-react';
 
 interface MealPlanCardProps {

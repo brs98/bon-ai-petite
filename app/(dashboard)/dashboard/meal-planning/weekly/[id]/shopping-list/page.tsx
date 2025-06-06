@@ -5,20 +5,20 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
-    ShoppingList as ShoppingListType,
-    WeeklyMealPlanWithItems,
+  ShoppingList as ShoppingListType,
+  WeeklyMealPlanWithItems,
 } from '@/types/recipe';
 import {
-    AlertTriangle,
-    ArrowLeft,
-    Calendar,
-    CheckCircle2,
-    ChefHat,
-    Download,
-    Printer,
-    RefreshCw,
-    Share2,
-    ShoppingCart,
+  AlertTriangle,
+  ArrowLeft,
+  Calendar,
+  CheckCircle2,
+  ChefHat,
+  Download,
+  Printer,
+  RefreshCw,
+  Share2,
+  ShoppingCart,
 } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -435,7 +435,9 @@ export default function ShoppingListPage() {
                           variant='outline'
                           size='sm'
                           className='w-full mt-2'
-                          onClick={() => item.recipe?.id && handleViewRecipe(item.recipe.id)}
+                          onClick={() =>
+                            item.recipe?.id && handleViewRecipe(item.recipe.id)
+                          }
                         >
                           View Recipe
                         </Button>
@@ -443,12 +445,14 @@ export default function ShoppingListPage() {
                     </div>
                   ))}
               </div>
-              
-              {mealPlan.mealPlanItems.filter(item => item.status === 'locked').length === 0 && (
+
+              {mealPlan.mealPlanItems.filter(item => item.status === 'locked')
+                .length === 0 && (
                 <div className='text-center py-8'>
                   <ChefHat className='h-12 w-12 text-muted-foreground mx-auto mb-3' />
                   <p className='text-muted-foreground'>
-                    No locked meals yet. Complete your meal planning to see recipes here.
+                    No locked meals yet. Complete your meal planning to see
+                    recipes here.
                   </p>
                 </div>
               )}
@@ -519,7 +523,8 @@ export default function ShoppingListPage() {
               {completedMeals === 0 && (
                 <div className='mt-6 space-y-4'>
                   <p className='text-sm text-muted-foreground'>
-                    You need at least one locked meal to generate a shopping list.
+                    You need at least one locked meal to generate a shopping
+                    list.
                     <br />
                     <strong>Next steps:</strong>
                     <br />
@@ -531,9 +536,11 @@ export default function ShoppingListPage() {
                     <br />
                     4. Return here to generate your shopping list
                   </p>
-                  
+
                   <Button
-                    onClick={() => router.push(`/dashboard/meal-planning/weekly/${planId}`)}
+                    onClick={() =>
+                      router.push(`/dashboard/meal-planning/weekly/${planId}`)
+                    }
                     variant='outline'
                   >
                     <ArrowLeft className='h-4 w-4 mr-2' />

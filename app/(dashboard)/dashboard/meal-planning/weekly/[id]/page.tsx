@@ -9,14 +9,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { WeeklyMealPlanWithItems, type NutritionProfile } from '@/types/recipe';
 import {
-    AlertTriangle,
-    ArrowRight,
-    CheckCircle,
-    ChefHat,
-    Clock,
-    Settings,
-    ShoppingCart,
-    Trash2,
+  AlertTriangle,
+  ArrowRight,
+  CheckCircle,
+  ChefHat,
+  Clock,
+  Settings,
+  ShoppingCart,
+  Trash2,
 } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
@@ -262,7 +262,11 @@ export default function WeeklyMealPlanWizardPage() {
 
   // Handle meal plan deletion
   const handleDeletePlan = async () => {
-    if (!confirm('Are you sure you want to delete this meal plan? This action cannot be undone.')) {
+    if (
+      !confirm(
+        'Are you sure you want to delete this meal plan? This action cannot be undone.',
+      )
+    ) {
       return;
     }
 
@@ -337,7 +341,7 @@ export default function WeeklyMealPlanWizardPage() {
         <div className='flex items-center justify-center gap-3 relative'>
           <ChefHat className='h-8 w-8 text-primary' />
           <h1 className='text-3xl font-bold'>Weekly Meal Planning</h1>
-          
+
           {/* Delete button positioned absolutely */}
           <Button
             variant='ghost'
@@ -466,8 +470,8 @@ export default function WeeklyMealPlanWizardPage() {
               onLock={() => meal.id && void handleLockMeal(meal.id)}
               onUnlock={() => meal.id && void handleLockMeal(meal.id)}
               onViewRecipe={
-                meal.recipe?.id 
-                  ? (() => handleViewRecipe(meal.recipe!.id!))
+                meal.recipe?.id
+                  ? () => handleViewRecipe(meal.recipe!.id!)
                   : undefined
               }
             />

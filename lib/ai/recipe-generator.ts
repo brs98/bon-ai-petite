@@ -2,11 +2,11 @@ import { openai } from '@ai-sdk/openai';
 import { generateObject } from 'ai';
 import * as dotenv from 'dotenv';
 import {
-    RecipeGenerationRequestSchema,
-    RecipeGenerationSchema,
-    type Recipe,
-    type RecipeFeedback,
-    type RecipeGenerationRequest,
+  RecipeGenerationRequestSchema,
+  RecipeGenerationSchema,
+  type Recipe,
+  type RecipeFeedback,
+  type RecipeGenerationRequest,
 } from '../../types/recipe';
 import { type NutritionProfile } from '../db/schema';
 import { feedbackProcessor, type FeedbackInsights } from './feedback-processor';
@@ -404,7 +404,7 @@ export class RecipeGeneratorService {
     const minutesSinceLastGeneration = timeSinceLastGeneration / (1000 * 60);
 
     // Dynamic temperature based on variety needs
-    let temperature = 0.8; // Base temperature
+    let temperature = 0.6; // Base temperature
     if (varietyBoost) temperature += 0.3;
     if (minutesSinceLastGeneration < 30) temperature += 0.2; // Rapid successive generations need more variety
     if (session.recentRecipes.length > 5) temperature += 0.1; // More history = more variety needed
@@ -483,7 +483,7 @@ export class RecipeGeneratorService {
    */
   private createBaseVarietyConfig(): VarietyConfig {
     return {
-      temperature: 0.8,
+      temperature: 0.6,
       creativitySeed: 'balanced-nutrition',
       avoidanceTerms: [],
       cuisineRotation: ['American'],
@@ -884,7 +884,7 @@ export class RecipeGeneratorService {
         system:
           'You are a professional chef and nutritionist. Generate recipes that match exact nutritional requirements.',
         prompt,
-        temperature: 0.8, // Slightly lower temperature for fallback
+        temperature: 0.6, // Slightly lower temperature for fallback
       });
 
       // Convert generated recipe to full Recipe type
@@ -917,7 +917,7 @@ export class RecipeGeneratorService {
           processingTime: 0,
           varietyConfig: fallbackVarietyConfig,
           sessionInfo: {
-            temperature: 0.8,
+            temperature: 0.6,
             creativitySeed: 'balanced-nutrition',
             avoidanceTermsUsed: [],
           },

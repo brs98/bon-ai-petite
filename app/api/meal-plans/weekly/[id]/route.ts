@@ -29,7 +29,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     const mealPlan = await db.query.weeklyMealPlans.findFirst({
       where: and(
         eq(weeklyMealPlans.id, planId),
-        eq(weeklyMealPlans.userId, user.id)
+        eq(weeklyMealPlans.userId, user.id),
       ),
       with: {
         mealPlanItems: {
@@ -64,7 +64,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     console.error('Failed to fetch weekly meal plan:', error);
     return Response.json(
       { error: 'Failed to fetch meal plan' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -91,7 +91,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     const existingPlan = await db.query.weeklyMealPlans.findFirst({
       where: and(
         eq(weeklyMealPlans.id, planId),
-        eq(weeklyMealPlans.userId, user.id)
+        eq(weeklyMealPlans.userId, user.id),
       ),
     });
 
@@ -100,7 +100,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     }
 
     // Update the meal plan
-    const [updatedPlan] = await db
+    await db
       .update(weeklyMealPlans)
       .set({
         ...(name && { name }),
@@ -109,8 +109,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         ...(globalPreferences !== undefined && { globalPreferences }),
         updatedAt: new Date(),
       })
-      .where(eq(weeklyMealPlans.id, planId))
-      .returning();
+      .where(eq(weeklyMealPlans.id, planId));
 
     // Fetch the complete updated plan
     const completePlan = await db.query.weeklyMealPlans.findFirst({
@@ -130,7 +129,10 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     });
 
     if (!completePlan) {
-      return Response.json({ error: 'Failed to fetch updated plan' }, { status: 500 });
+      return Response.json(
+        { error: 'Failed to fetch updated plan' },
+        { status: 500 },
+      );
     }
 
     // Transform to match expected type
@@ -148,7 +150,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     console.error('Failed to update weekly meal plan:', error);
     return Response.json(
       { error: 'Failed to update meal plan' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -171,7 +173,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     const existingPlan = await db.query.weeklyMealPlans.findFirst({
       where: and(
         eq(weeklyMealPlans.id, planId),
-        eq(weeklyMealPlans.userId, user.id)
+        eq(weeklyMealPlans.userId, user.id),
       ),
     });
 
@@ -180,16 +182,17 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     }
 
     // Delete the meal plan (this will cascade delete meal plan items due to foreign key constraints)
-    await db
-      .delete(weeklyMealPlans)
-      .where(eq(weeklyMealPlans.id, planId));
+    await db.delete(weeklyMealPlans).where(eq(weeklyMealPlans.id, planId));
 
-    return Response.json({ success: true, message: 'Meal plan deleted successfully' });
+    return Response.json({
+      success: true,
+      message: 'Meal plan deleted successfully',
+    });
   } catch (error) {
     console.error('Failed to delete weekly meal plan:', error);
     return Response.json(
       { error: 'Failed to delete meal plan' },
-      { status: 500 }
+      { status: 500 },
     );
   }
-} 
+}

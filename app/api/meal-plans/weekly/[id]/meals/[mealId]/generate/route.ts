@@ -2,10 +2,10 @@ import { recipeGenerator } from '@/lib/ai/recipe-generator';
 import { db } from '@/lib/db/drizzle';
 import { getUser } from '@/lib/db/queries';
 import {
-    mealPlanItems,
-    nutritionProfiles,
-    recipes,
-    weeklyMealPlans,
+  mealPlanItems,
+  nutritionProfiles,
+  recipes,
+  weeklyMealPlans,
 } from '@/lib/db/schema';
 import { GenerateMealRequestSchema } from '@/types/recipe';
 import { and, desc, eq } from 'drizzle-orm';
@@ -151,9 +151,13 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       const requestCustomPrefs = validatedRequest.customPreferences;
 
       const mergedPreferences = {
-        allergies: requestCustomPrefs?.allergies || storedCustomPrefs?.allergies || globalPrefs?.allergies || [],
+        allergies:
+          requestCustomPrefs?.allergies ||
+          storedCustomPrefs?.allergies ||
+          globalPrefs?.allergies ||
+          [],
         dietaryRestrictions:
-          requestCustomPrefs?.dietaryRestrictions || 
+          requestCustomPrefs?.dietaryRestrictions ||
           storedCustomPrefs?.dietaryRestrictions ||
           globalPrefs?.dietaryRestrictions ||
           [],

@@ -7,13 +7,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { WeeklyMealPlanWithItems } from '@/types/recipe';
 import {
-    AlertTriangle,
-    ArrowRight,
-    Calendar,
-    ChefHat,
-    Clock,
-    Info,
-    Plus,
+  AlertTriangle,
+  ArrowRight,
+  Calendar,
+  ChefHat,
+  Clock,
+  Info,
+  Plus,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';

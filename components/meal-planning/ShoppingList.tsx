@@ -7,25 +7,25 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { GROCERY_CATEGORIES } from '@/types/recipe';
 import {
-    Check,
-    Download,
-    Edit3,
-    Filter,
-    Plus,
-    RefreshCw,
-    Search,
-    ShoppingCart,
-    Trash2,
-    X
+  Check,
+  Download,
+  Edit3,
+  Filter,
+  Plus,
+  RefreshCw,
+  Search,
+  ShoppingCart,
+  Trash2,
+  X,
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
@@ -573,7 +573,8 @@ export function ShoppingList({
                                 <div className='flex flex-wrap gap-1'>
                                   {ingredient.recipeNames.map(
                                     (recipeName, index) => {
-                                      const recipeId = ingredient.recipeIds?.[index];
+                                      const recipeId =
+                                        ingredient.recipeIds?.[index];
                                       return (
                                         <Badge
                                           key={index}
@@ -582,19 +583,23 @@ export function ShoppingList({
                                             'text-xs',
                                             recipeId && onViewRecipe
                                               ? 'cursor-pointer hover:bg-primary/10 hover:border-primary'
-                                              : ''
+                                              : '',
                                           )}
                                           onClick={() => {
                                             if (recipeId && onViewRecipe) {
                                               onViewRecipe(recipeId);
                                             }
                                           }}
-                                          title={recipeId && onViewRecipe ? 'Click to view recipe' : undefined}
+                                          title={
+                                            recipeId && onViewRecipe
+                                              ? 'Click to view recipe'
+                                              : undefined
+                                          }
                                         >
                                           {recipeName}
                                         </Badge>
                                       );
-                                    }
+                                    },
                                   )}
                                 </div>
                               )}

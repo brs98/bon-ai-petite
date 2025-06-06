@@ -191,9 +191,9 @@ function normalizeUnit(unit: string): string {
 
 // Helper function to consolidate ingredients with same name and unit
 function consolidateIngredients(
-  ingredientsWithOrigins: Array<{ 
-    name: string; 
-    quantity: number; 
+  ingredientsWithOrigins: Array<{
+    name: string;
+    quantity: number;
     unit: string;
     recipeName: string;
     recipeId: number;
@@ -211,8 +211,14 @@ function consolidateIngredients(
       existing.quantity += ingredient.quantity;
       // Add recipe info if not already present
       if (!existing.recipeNames?.includes(ingredient.recipeName)) {
-        existing.recipeNames = [...(existing.recipeNames || []), ingredient.recipeName];
-        existing.recipeIds = [...(existing.recipeIds || []), ingredient.recipeId];
+        existing.recipeNames = [
+          ...(existing.recipeNames || []),
+          ingredient.recipeName,
+        ];
+        existing.recipeIds = [
+          ...(existing.recipeIds || []),
+          ingredient.recipeId,
+        ];
       }
     } else {
       consolidated.set(key, {

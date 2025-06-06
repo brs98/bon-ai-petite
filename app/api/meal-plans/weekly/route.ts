@@ -1,13 +1,13 @@
 import { db } from '@/lib/db/drizzle';
 import { getUser } from '@/lib/db/queries';
 import {
-    mealPlanItems,
-    weeklyMealPlans,
-    type NewMealPlanItem,
+  mealPlanItems,
+  weeklyMealPlans,
+  type NewMealPlanItem,
 } from '@/lib/db/schema';
 import {
-    CreateWeeklyMealPlanRequestSchema,
-    type WeeklyMealPlanWithItems,
+  CreateWeeklyMealPlanRequestSchema,
+  type WeeklyMealPlanWithItems,
 } from '@/types/recipe';
 import { and, desc, eq } from 'drizzle-orm';
 import { NextRequest } from 'next/server';
