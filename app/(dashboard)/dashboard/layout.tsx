@@ -2,14 +2,12 @@
 
 import { Button } from '@/components/ui/button';
 import {
-  Activity,
-  Calendar,
-  ChefHat,
-  Menu,
-  Settings,
-  Shield,
-  Users,
-  Utensils,
+    Calendar,
+    ChefHat,
+    Home,
+    Menu,
+    Settings,
+    Utensils
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -24,10 +22,8 @@ export default function DashboardLayout({
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const navItems = [
-    { href: '/dashboard', icon: Users, label: 'Team' },
-    { href: '/dashboard/general', icon: Settings, label: 'General' },
-    { href: '/dashboard/activity', icon: Activity, label: 'Activity' },
-    { href: '/dashboard/security', icon: Shield, label: 'Security' },
+    { href: '/dashboard', icon: Home, label: 'Dashboard' },
+    { href: '/dashboard/settings', icon: Settings, label: 'Settings' },
     { href: '/dashboard/recipes', icon: ChefHat, label: 'Recipes' },
     {
       href: '/dashboard/meal-planning/weekly',
@@ -46,7 +42,7 @@ export default function DashboardLayout({
       {/* Mobile header */}
       <div className='lg:hidden flex items-center justify-between bg-background border-b border-border p-4'>
         <div className='flex items-center'>
-          <span className='font-medium'>Settings</span>
+          <span className='font-medium'>Dashboard</span>
         </div>
         <Button
           className='-mr-3'

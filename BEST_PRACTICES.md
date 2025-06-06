@@ -217,10 +217,7 @@ export const signIn = validatedAction(signInSchema, async (data, formData) => {
 
   // Validation logic...
 
-  await Promise.all([
-    setSession(foundUser),
-    logActivity(foundTeam?.id, foundUser.id, ActivityType.SIGN_IN),
-  ]);
+  await setSession(foundUser);
 
   redirect('/dashboard');
 });
@@ -564,42 +561,7 @@ await db
 - Use JSDoc for function documentation
 - Keep README and setup instructions updated
 
-## Activity Logging
 
-### Audit Trail Implementation
-
-- Log all important user actions
-- Include relevant context (IP address, timestamp)
-- Use enum types for activity types
-
-```typescript
-export enum ActivityType {
-  SIGN_UP = 'SIGN_UP',
-  SIGN_IN = 'SIGN_IN',
-  SIGN_OUT = 'SIGN_OUT',
-  UPDATE_PASSWORD = 'UPDATE_PASSWORD',
-  DELETE_ACCOUNT = 'DELETE_ACCOUNT',
-  CREATE_TEAM = 'CREATE_TEAM',
-  INVITE_TEAM_MEMBER = 'INVITE_TEAM_MEMBER',
-}
-
-async function logActivity(
-  teamId: number | null | undefined,
-  userId: number,
-  type: ActivityType,
-  ipAddress?: string,
-) {
-  if (teamId === null || teamId === undefined) return;
-
-  const newActivity: NewActivityLog = {
-    teamId,
-    userId,
-    action: type,
-    ipAddress: ipAddress || '',
-  };
-  await db.insert(activityLogs).values(newActivity);
-}
-```
 
 ## Error Handling
 

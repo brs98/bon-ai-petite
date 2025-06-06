@@ -1,286 +1,71 @@
-'use client';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Calendar, ChefHat, Settings, Utensils } from 'lucide-react';
+import Link from 'next/link';
 
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardFooter,
-} from '@/components/ui/card';
-import { customerPortalAction } from '@/lib/payments/actions';
-import { useActionState, Suspense } from 'react';
-import { TeamDataWithMembers, User } from '@/lib/db/schema';
-import { removeTeamMember, inviteTeamMember } from '@/app/(login)/actions';
-import useSWR from 'swr';
-import { Input } from '@/components/ui/input';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Label } from '@/components/ui/label';
-import { Loader2, PlusCircle } from 'lucide-react';
+const dashboardCards = [
+  {
+    title: 'Settings',
+    description: 'Manage your account and security settings',
+    href: '/dashboard/settings',
+    icon: Settings,
+    color: 'text-blue-600',
+  },
+  {
+    title: 'Recipes',
+    description: 'Discover and manage your recipes',
+    href: '/dashboard/recipes',
+    icon: ChefHat,
+    color: 'text-orange-600',
+  },
+  {
+    title: 'Meal Planning',
+    description: 'Plan your weekly meals',
+    href: '/dashboard/meal-planning/weekly',
+    icon: Calendar,
+    color: 'text-purple-600',
+  },
+  {
+    title: 'Nutrition Profile',
+    description: 'Set up your nutrition preferences',
+    href: '/dashboard/settings/nutrition',
+    icon: Utensils,
+    color: 'text-red-600',
+  },
+];
 
-type ActionState = {
-  error?: string;
-  success?: string;
-};
-
-const fetcher = (url: string) => fetch(url).then(res => res.json());
-
-function SubscriptionSkeleton() {
-  return (
-    <Card className='mb-8 h-[140px]'>
-      <CardHeader>
-        <CardTitle>Team Subscription</CardTitle>
-      </CardHeader>
-    </Card>
-  );
-}
-
-function ManageSubscription() {
-  const { data: teamData } = useSWR<TeamDataWithMembers>('/api/team', fetcher);
-
-  return (
-    <Card className='mb-8'>
-      <CardHeader>
-        <CardTitle>Team Subscription</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className='space-y-4'>
-          <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center'>
-            <div className='mb-4 sm:mb-0'>
-              <p className='font-medium'>
-                Current Plan: {teamData?.planName || 'Free'}
-              </p>
-              <p className='text-sm text-muted-foreground'>
-                {teamData?.subscriptionStatus === 'active'
-                  ? 'Billed monthly'
-                  : teamData?.subscriptionStatus === 'trialing'
-                    ? 'Trial period'
-                    : 'No active subscription'}
-              </p>
-            </div>
-            <form action={customerPortalAction}>
-              <Button type='submit' variant='outline'>
-                Manage Subscription
-              </Button>
-            </form>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-function TeamMembersSkeleton() {
-  return (
-    <Card className='mb-8 h-[140px]'>
-      <CardHeader>
-        <CardTitle>Team Members</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className='animate-pulse space-y-4 mt-1'>
-          <div className='flex items-center space-x-4'>
-            <div className='size-8 rounded-full bg-muted'></div>
-            <div className='space-y-2'>
-              <div className='h-4 w-32 bg-muted rounded'></div>
-              <div className='h-3 w-14 bg-muted rounded'></div>
-            </div>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-function TeamMembers() {
-  const { data: teamData } = useSWR<TeamDataWithMembers>('/api/team', fetcher);
-  const [removeState, removeAction, isRemovePending] = useActionState<
-    ActionState,
-    FormData
-  >(removeTeamMember, {});
-
-  const getUserDisplayName = (user: Pick<User, 'id' | 'name' | 'email'>) => {
-    return user.name || user.email || 'Unknown User';
-  };
-
-  if (!teamData?.teamMembers?.length) {
-    return (
-      <Card className='mb-8'>
-        <CardHeader>
-          <CardTitle>Team Members</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className='text-muted-foreground'>No team members yet.</p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  return (
-    <Card className='mb-8'>
-      <CardHeader>
-        <CardTitle>Team Members</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <ul className='space-y-4'>
-          {teamData.teamMembers.map((member, index) => (
-            <li key={member.id} className='flex items-center justify-between'>
-              <div className='flex items-center space-x-4'>
-                <Avatar>
-                  {/* 
-                    This app doesn't save profile images, but here
-                    is how you'd show them:
-
-                    <AvatarImage
-                      src={member.user.image || ''}
-                      alt={getUserDisplayName(member.user)}
-                    />
-                  */}
-                  <AvatarFallback>
-                    {getUserDisplayName(member.user)
-                      .split(' ')
-                      .map(n => n[0])
-                      .join('')}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className='font-medium'>
-                    {getUserDisplayName(member.user)}
-                  </p>
-                  <p className='text-sm text-muted-foreground capitalize'>
-                    {member.role}
-                  </p>
-                </div>
-              </div>
-              {index > 1 ? (
-                <form action={removeAction}>
-                  <input type='hidden' name='memberId' value={member.id} />
-                  <Button
-                    type='submit'
-                    variant='outline'
-                    size='sm'
-                    disabled={isRemovePending}
-                  >
-                    {isRemovePending ? 'Removing...' : 'Remove'}
-                  </Button>
-                </form>
-              ) : null}
-            </li>
-          ))}
-        </ul>
-        {removeState?.error && (
-          <p className='text-destructive mt-4'>{removeState.error}</p>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-
-function InviteTeamMemberSkeleton() {
-  return (
-    <Card className='h-[260px]'>
-      <CardHeader>
-        <CardTitle>Invite Team Member</CardTitle>
-      </CardHeader>
-    </Card>
-  );
-}
-
-function InviteTeamMember() {
-  const { data: user } = useSWR<User>('/api/user', fetcher);
-  const isOwner = user?.role === 'owner';
-  const [inviteState, inviteAction, isInvitePending] = useActionState<
-    ActionState,
-    FormData
-  >(inviteTeamMember, {});
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Invite Team Member</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form action={inviteAction} className='space-y-4'>
-          <div>
-            <Label htmlFor='email' className='mb-2'>
-              Email
-            </Label>
-            <Input
-              id='email'
-              name='email'
-              type='email'
-              placeholder='Enter email'
-              required
-              disabled={!isOwner}
-            />
-          </div>
-          <div>
-            <Label>Role</Label>
-            <RadioGroup
-              defaultValue='member'
-              name='role'
-              className='flex space-x-4'
-              disabled={!isOwner}
-            >
-              <div className='flex items-center space-x-2 mt-2'>
-                <RadioGroupItem value='member' id='member' />
-                <Label htmlFor='member'>Member</Label>
-              </div>
-              <div className='flex items-center space-x-2 mt-2'>
-                <RadioGroupItem value='owner' id='owner' />
-                <Label htmlFor='owner'>Owner</Label>
-              </div>
-            </RadioGroup>
-          </div>
-          {inviteState?.error && (
-            <p className='text-destructive'>{inviteState.error}</p>
-          )}
-          {inviteState?.success && (
-            <p className='text-primary'>{inviteState.success}</p>
-          )}
-          <Button
-            type='submit'
-            className='bg-accent hover:bg-accent/90 text-accent-foreground'
-            disabled={isInvitePending}
-          >
-            {isInvitePending ? (
-              <>
-                <Loader2 className='mr-2 h-4 w-4 animate-spin' />
-                Inviting...
-              </>
-            ) : (
-              <>
-                <PlusCircle className='mr-2 h-4 w-4' />
-                Send Invitation
-              </>
-            )}
-          </Button>
-        </form>
-      </CardContent>
-      {!isOwner && (
-        <CardFooter>
-          <p className='text-sm text-muted-foreground'>
-            You must be a team owner to invite new members.
-          </p>
-        </CardFooter>
-      )}
-    </Card>
-  );
-}
-
-export default function SettingsPage() {
+export default function DashboardPage() {
   return (
     <section className='flex-1 p-4 lg:p-8'>
-      <h1 className='text-lg lg:text-2xl font-medium mb-6'>Team Settings</h1>
-      <Suspense fallback={<SubscriptionSkeleton />}>
-        <ManageSubscription />
-      </Suspense>
-      <Suspense fallback={<TeamMembersSkeleton />}>
-        <TeamMembers />
-      </Suspense>
-      <Suspense fallback={<InviteTeamMemberSkeleton />}>
-        <InviteTeamMember />
-      </Suspense>
+      <div className='mb-8'>
+        <h1 className='text-2xl lg:text-3xl font-bold text-foreground mb-2'>
+          Dashboard
+        </h1>
+        <p className='text-muted-foreground'>
+          Welcome to your dashboard. Navigate to different sections to manage your account and meal planning.
+        </p>
+      </div>
+
+      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
+        {dashboardCards.map((card) => (
+          <Link key={card.href} href={card.href}>
+            <Card className='transition-all hover:shadow-md hover:border-primary/20 cursor-pointer group'>
+              <CardHeader className='pb-4'>
+                <div className='flex items-center space-x-3'>
+                  <div className={`p-2 rounded-lg bg-accent/10 ${card.color} group-hover:scale-110 transition-transform`}>
+                    <card.icon className='h-5 w-5' />
+                  </div>
+                  <CardTitle className='text-lg'>{card.title}</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className='text-sm text-muted-foreground'>
+                  {card.description}
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
+        ))}
+      </div>
     </section>
   );
-}
+} 

@@ -1,8 +1,8 @@
-import { desc, and, eq, isNull } from 'drizzle-orm';
-import { db } from './drizzle';
-import { activityLogs, teamMembers, teams, users } from './schema';
-import { cookies } from 'next/headers';
 import { verifyToken } from '@/lib/auth/session';
+import { and, eq, isNull } from 'drizzle-orm';
+import { cookies } from 'next/headers';
+import { db } from './drizzle';
+import { teamMembers, teams, users } from './schema';
 
 export async function getUser() {
   const sessionCookie = (await cookies()).get('session');
@@ -78,26 +78,7 @@ export async function getUserWithTeam(userId: number) {
   return result[0];
 }
 
-export async function getActivityLogs() {
-  const user = await getUser();
-  if (!user) {
-    throw new Error('User not authenticated');
-  }
 
-  return await db
-    .select({
-      id: activityLogs.id,
-      action: activityLogs.action,
-      timestamp: activityLogs.timestamp,
-      ipAddress: activityLogs.ipAddress,
-      userName: users.name,
-    })
-    .from(activityLogs)
-    .leftJoin(users, eq(activityLogs.userId, users.id))
-    .where(eq(activityLogs.userId, user.id))
-    .orderBy(desc(activityLogs.timestamp))
-    .limit(10);
-}
 
 export async function getTeamForUser() {
   const user = await getUser();
