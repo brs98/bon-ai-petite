@@ -1,8 +1,8 @@
-import './globals.css';
+import { getUser } from '@/lib/db/queries';
 import type { Metadata, Viewport } from 'next';
 import { Manrope } from 'next/font/google';
-import { getUser, getTeamForUser } from '@/lib/db/queries';
 import { SWRConfig } from 'swr';
+import './globals.css';
 
 export const metadata: Metadata = {
   title: 'AI Petite - Your Personal AI Nutritionist',
@@ -33,7 +33,6 @@ export default function RootLayout({
               // We do NOT await here
               // Only components that read this data will suspend
               '/api/user': getUser(),
-              '/api/team': getTeamForUser(),
             },
           }}
         >

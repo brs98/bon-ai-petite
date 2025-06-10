@@ -1,5 +1,4 @@
-import { redirect } from 'next/navigation';
-import { getUser, getUserWithTeam } from '@/lib/db/queries';
+import PaymentStatusMessage from '@/app/profile/payment-status-message';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -8,16 +7,17 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { getUser } from '@/lib/db/queries';
 import {
-  ChefHat,
-  User,
-  CreditCard,
-  Settings,
   ArrowLeft,
   CheckCircle,
+  ChefHat,
+  CreditCard,
+  Settings,
+  User,
 } from 'lucide-react';
 import Link from 'next/link';
-import PaymentStatusMessage from '@/app/profile/payment-status-message';
+import { redirect } from 'next/navigation';
 
 export default async function ProfilePage({
   searchParams,
@@ -30,8 +30,8 @@ export default async function ProfilePage({
     redirect('/sign-in');
   }
 
-  const userWithTeam = await getUserWithTeam(user.id);
-  const hasTeam = userWithTeam?.teamId !== null;
+  // Remove team functionality - user subscription is now stored directly on user
+  const hasSubscription = user.stripeSubscriptionId !== null;
 
   // Await searchParams since it's async in Next.js 15+
   const params = await searchParams;
@@ -135,7 +135,7 @@ export default async function ProfilePage({
               </CardDescription>
             </CardHeader>
             <CardContent className='space-y-4'>
-              {hasTeam ? (
+              {hasSubscription ? (
                 <>
                   <div>
                     <label className='text-sm font-medium text-muted-foreground'>
@@ -143,26 +143,28 @@ export default async function ProfilePage({
                     </label>
                     <div className='flex items-center space-x-2'>
                       <p className='text-foreground font-medium'>
-                        Active Subscription
+                        {user.planName || 'Active Subscription'}
                       </p>
                       <span className='bg-green-100 text-green-800 text-xs px-2 py-0.5 rounded'>
-                        Active
+                        {user.subscriptionStatus || 'Active'}
                       </span>
                     </div>
                   </div>
                   <div>
                     <label className='text-sm font-medium text-muted-foreground'>
-                      Team ID
+                      Subscription ID
                     </label>
-                    <p className='text-foreground font-medium'>
-                      {userWithTeam?.teamId}
+                    <p className='text-foreground font-medium text-xs'>
+                      {user.stripeSubscriptionId}
                     </p>
                   </div>
                   <div>
                     <label className='text-sm font-medium text-muted-foreground'>
                       Status
                     </label>
-                    <p className='text-foreground font-medium'>Active</p>
+                    <p className='text-foreground font-medium capitalize'>
+                      {user.subscriptionStatus || 'Active'}
+                    </p>
                   </div>
                 </>
               ) : (

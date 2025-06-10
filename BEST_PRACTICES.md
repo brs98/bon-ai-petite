@@ -561,8 +561,6 @@ await db
 - Use JSDoc for function documentation
 - Keep README and setup instructions updated
 
-
-
 ## Error Handling
 
 ### Global Error Handling

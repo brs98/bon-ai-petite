@@ -7,7 +7,7 @@ import {
     Home,
     Menu,
     Settings,
-    Utensils
+    Utensils,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';

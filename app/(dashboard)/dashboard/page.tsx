@@ -41,17 +41,20 @@ export default function DashboardPage() {
           Dashboard
         </h1>
         <p className='text-muted-foreground'>
-          Welcome to your dashboard. Navigate to different sections to manage your account and meal planning.
+          Welcome to your dashboard. Navigate to different sections to manage
+          your account and meal planning.
         </p>
       </div>
 
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
-        {dashboardCards.map((card) => (
+        {dashboardCards.map(card => (
           <Link key={card.href} href={card.href}>
             <Card className='transition-all hover:shadow-md hover:border-primary/20 cursor-pointer group'>
               <CardHeader className='pb-4'>
                 <div className='flex items-center space-x-3'>
-                  <div className={`p-2 rounded-lg bg-accent/10 ${card.color} group-hover:scale-110 transition-transform`}>
+                  <div
+                    className={`p-2 rounded-lg bg-accent/10 ${card.color} group-hover:scale-110 transition-transform`}
+                  >
                     <card.icon className='h-5 w-5' />
                   </div>
                   <CardTitle className='text-lg'>{card.title}</CardTitle>
@@ -68,4 +71,4 @@ export default function DashboardPage() {
       </div>
     </section>
   );
-} 
+}
