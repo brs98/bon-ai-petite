@@ -277,7 +277,7 @@ export const MealPlanItemSchema = z.object({
   recipeId: z.number().optional(),
   category: z.enum(['breakfast', 'lunch', 'dinner', 'snack']),
   dayNumber: z.number().min(1).max(7),
-  status: z.enum(['pending', 'generating', 'generated', 'locked']),
+  status: z.enum(['pending', 'generating', 'generated']),
   customPreferences: z
     .object({
       allergies: z.array(z.string()).optional(),

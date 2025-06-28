@@ -267,25 +267,25 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    // Get all locked meal plan items with their recipes
-    const lockedMeals = await db.query.mealPlanItems.findMany({
+    // Get all generated meal plan items with their recipes
+    const generatedMeals = await db.query.mealPlanItems.findMany({
       where: and(
         eq(mealPlanItems.planId, planId),
-        eq(mealPlanItems.status, 'locked'),
+        eq(mealPlanItems.status, 'generated'),
       ),
       with: {
         recipe: true,
       },
     });
 
-    if (lockedMeals.length === 0) {
+    if (generatedMeals.length === 0) {
       return Response.json(
-        { error: 'No locked meals found in this meal plan' },
+        { error: 'No generated meals found in this meal plan' },
         { status: 400 },
       );
     }
 
-    // Extract all ingredients from locked meals
+    // Extract all ingredients from generated meals
     const allIngredients: Array<{
       name: string;
       quantity: number;
@@ -294,7 +294,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       recipeId: number;
     }> = [];
 
-    for (const meal of lockedMeals) {
+    for (const meal of generatedMeals) {
       if (meal.recipe?.ingredients && meal.recipe.id && meal.recipe.name) {
         const ingredients = meal.recipe.ingredients as Array<{
           name: string;
@@ -313,7 +313,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
     if (allIngredients.length === 0) {
       return Response.json(
-        { error: 'No ingredients found in locked meals' },
+        { error: 'No ingredients found in generated meals' },
         { status: 400 },
       );
     }
@@ -374,7 +374,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       },
       stats: {
         totalIngredients: consolidatedIngredients.length,
-        totalMeals: lockedMeals.length,
+        totalMeals: generatedMeals.length,
         categoriesUsed: Object.keys(ingredientsByCategory).length,
       },
     });

@@ -1,15 +1,15 @@
 import { relations } from 'drizzle-orm';
 import {
-  boolean,
-  date,
-  index,
-  integer,
-  jsonb,
-  pgTable,
-  serial,
-  text,
-  timestamp,
-  varchar,
+    boolean,
+    date,
+    index,
+    integer,
+    jsonb,
+    pgTable,
+    serial,
+    text,
+    timestamp,
+    varchar,
 } from 'drizzle-orm/pg-core';
 
 export const users = pgTable('users', {
@@ -228,7 +228,7 @@ export const mealPlanItems = pgTable(
     id: serial('id').primaryKey(),
     planId: integer('plan_id')
       .notNull()
-      .references(() => weeklyMealPlans.id),
+      .references(() => weeklyMealPlans.id, { onDelete: 'cascade' }),
     recipeId: integer('recipe_id').references(() => recipes.id), // null when not yet generated
     category: varchar('category', { length: 20 }).notNull(), // breakfast, lunch, dinner, snack
     dayNumber: integer('day_number').notNull(), // 1-7 for days of week
@@ -256,7 +256,7 @@ export const shoppingLists = pgTable(
     id: serial('id').primaryKey(),
     planId: integer('plan_id')
       .notNull()
-      .references(() => weeklyMealPlans.id),
+      .references(() => weeklyMealPlans.id, { onDelete: 'cascade' }),
     ingredients: jsonb('ingredients').notNull(), // [{ name, quantity, unit, category, checked }]
     totalItems: integer('total_items').notNull().default(0),
     checkedItems: integer('checked_items').notNull().default(0),

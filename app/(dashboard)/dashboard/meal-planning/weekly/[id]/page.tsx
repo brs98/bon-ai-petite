@@ -1,25 +1,18 @@
 'use client';
 
+import { FunLoadingOverlay } from '@/components/meal-planning/FunLoadingOverlay';
 import { MealPlanCard } from '@/components/meal-planning/MealPlanCard';
-import { PreferenceOverride } from '@/components/meal-planning/PreferenceOverride';
-import { WizardNavigation } from '@/components/meal-planning/WizardNavigation';
-import { Badge } from '@/components/ui/badge';
+import { ShoppingList } from '@/components/meal-planning/ShoppingList';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
-import { WeeklyMealPlanWithItems, type NutritionProfile } from '@/types/recipe';
+import { ShoppingList as ShoppingListType, WeeklyMealPlanWithItems, type NutritionProfile } from '@/types/recipe';
 import {
-  AlertTriangle,
-  ArrowRight,
-  CheckCircle,
-  ChefHat,
-  Clock,
-  Settings,
-  ShoppingCart,
-  Trash2,
+    AlertTriangle,
+    ChefHat,
+    RefreshCw,
+    Trash2
 } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 type MealCategory = 'breakfast' | 'lunch' | 'dinner' | 'snack';
 
@@ -60,6 +53,9 @@ const CATEGORY_CONFIG = {
   },
 } as const;
 
+// Category order for sorting
+const CATEGORY_ORDER: MealCategory[] = ['breakfast', 'lunch', 'dinner', 'snack'];
+
 // Custom Alert component
 function Alert({
   children,
@@ -79,39 +75,22 @@ function AlertDescription({ children }: { children: React.ReactNode }) {
   return <div className='text-sm'>{children}</div>;
 }
 
-export default function WeeklyMealPlanWizardPage() {
+export default function WeeklyMealPlanPage() {
   const router = useRouter();
   const params = useParams();
   const planId = params.id as string;
 
-  const [mealPlan, setMealPlan] = useState<WeeklyMealPlanWithItems | null>(
-    null,
-  );
-  const [currentCategory, setCurrentCategory] =
-    useState<MealCategory>('breakfast');
-  const [currentStep, setCurrentStep] = useState(0);
+  const [mealPlan, setMealPlan] = useState<WeeklyMealPlanWithItems | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [userProfile, setUserProfile] = useState<NutritionProfile | null>(null);
-  const [globalPreferences, setGlobalPreferences] =
-    useState<PreferenceOverrides | null>(null);
+  const [globalPreferences, setGlobalPreferences] = useState<PreferenceOverrides | null>(null);
   const [showPreferenceOverride, setShowPreferenceOverride] = useState(false);
-
-  // Calculate wizard steps based on meal counts
-  const getWizardSteps = useCallback((plan: WeeklyMealPlanWithItems) => {
-    const steps: { category: MealCategory; count: number }[] = [];
-
-    if (plan.breakfastCount > 0)
-      steps.push({ category: 'breakfast', count: plan.breakfastCount });
-    if (plan.lunchCount > 0)
-      steps.push({ category: 'lunch', count: plan.lunchCount });
-    if (plan.dinnerCount > 0)
-      steps.push({ category: 'dinner', count: plan.dinnerCount });
-    if (plan.snackCount > 0)
-      steps.push({ category: 'snack', count: plan.snackCount });
-
-    return steps;
-  }, []);
+  // Track selected meals for regeneration
+  const [selectedMealIds, setSelectedMealIds] = useState<number[]>([]);
+  const [shoppingList, setShoppingList] = useState<ShoppingListType | null>(null);
+  const [activeTab, setActiveTab] = useState<'meals' | 'shopping'>('meals');
 
   // Load meal plan data
   useEffect(() => {
@@ -123,14 +102,6 @@ export default function WeeklyMealPlanWizardPage() {
         }
         const plan = await response.json();
         setMealPlan(plan);
-
-        // Set initial category and step based on progress
-        const steps = getWizardSteps(plan);
-        if (steps.length > 0) {
-          setCurrentCategory(steps[0].category);
-          setCurrentStep(0);
-        }
-
         // Load user nutrition profile for meal generation
         const profileResponse = await fetch('/api/nutrition/profile');
         if (profileResponse.ok) {
@@ -144,145 +115,91 @@ export default function WeeklyMealPlanWizardPage() {
         setIsLoading(false);
       }
     };
-
     if (planId) {
       void fetchMealPlan();
     }
-  }, [planId, getWizardSteps]);
+  }, [planId]);
 
-  // Get meals for current category
-  const getCurrentCategoryMeals = useCallback(() => {
-    if (!mealPlan) return [];
-
-    return mealPlan.mealPlanItems
-      .filter(item => item.category === currentCategory)
-      .sort((a, b) => a.dayNumber - b.dayNumber);
-  }, [mealPlan, currentCategory]);
-
-  // Check if current category is complete
-  const isCategoryComplete = useCallback(() => {
-    const meals = getCurrentCategoryMeals();
-    return meals.length > 0 && meals.every(meal => meal.status === 'locked');
-  }, [getCurrentCategoryMeals]);
-
-  // Handle navigation between steps
-  const handleNext = () => {
-    if (!mealPlan) return;
-
-    const steps = getWizardSteps(mealPlan);
-    if (currentStep < steps.length - 1) {
-      const nextStep = currentStep + 1;
-      setCurrentStep(nextStep);
-      setCurrentCategory(steps[nextStep].category);
-    } else {
-      // All steps complete, navigate to shopping list
-      router.push(`/dashboard/meal-planning/weekly/${planId}/shopping-list`);
+  // Batch generate all pending meals on initial load
+  useEffect(() => {
+    if (!mealPlan || isGenerating) return;
+    const pendingMeals = mealPlan.mealPlanItems.filter(item => item.status === 'pending');
+    if (pendingMeals.length > 0) {
+      setIsGenerating(true);
+      void (async () => {
+        try {
+          const mealRes = await fetch(`/api/meal-plans/weekly/${planId}/meals/generate`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ mealIds: pendingMeals.map(m => m.id) }),
+          });
+          const mealData = await mealRes.json();
+          if (mealData.mealPlan) setMealPlan(mealData.mealPlan);
+          // After meals are generated, generate the shopping list
+          const shopRes = await fetch(`/api/meal-plans/weekly/${planId}/shopping-list`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+          });
+          const shopData = await shopRes.json();
+          if (shopData.shoppingList) setShoppingList(shopData.shoppingList);
+        } catch (err) {
+          setError('Failed to generate meals or shopping list');
+        } finally {
+          setIsGenerating(false);
+        }
+      })();
+    } else if (!shoppingList) {
+      // If meals are already generated, fetch the shopping list
+      void fetch(`/api/meal-plans/weekly/${planId}/shopping-list`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.shoppingList) setShoppingList(data.shoppingList);
+        });
     }
-  };
+  }, [mealPlan, planId, isGenerating, shoppingList]);
 
-  const handleBack = () => {
-    if (!mealPlan) return;
-
-    if (currentStep > 0) {
-      const steps = getWizardSteps(mealPlan);
-      const prevStep = currentStep - 1;
-      setCurrentStep(prevStep);
-      setCurrentCategory(steps[prevStep].category);
-    }
-  };
-
-  // Handle meal generation
-  const handleGenerateMeal = async (
-    mealId: number,
-    customPreferences?: PreferenceOverrides,
-  ) => {
+  // Handle meal regeneration (batch)
+  const handleRegenerateSelected = async () => {
+    if (!mealPlan || selectedMealIds.length === 0) return;
+    setIsGenerating(true);
+    setError(null);
     try {
-      const response = await fetch(
-        `/api/meal-plans/weekly/${planId}/meals/${mealId}/generate`,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            customPreferences: customPreferences || globalPreferences,
-          }),
-        },
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to generate meal');
+      const response = await fetch(`/api/meal-plans/weekly/${planId}/meals/generate`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mealIds: selectedMealIds }),
+      });
+      const data = await response.json();
+      if (data.mealPlan) {
+        setMealPlan(data.mealPlan);
+        setSelectedMealIds([]);
+        // Regenerate shopping list after meals are regenerated
+        await fetch(`/api/meal-plans/weekly/${planId}/shopping-list`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+        })
+          .then(res => res.json())
+          .then(data => {
+            if (data.shoppingList) setShoppingList(data.shoppingList);
+          });
+      } else {
+        setError('Failed to regenerate meals');
       }
-
-      // Refresh meal plan data
-      const updatedPlanResponse = await fetch(
-        `/api/meal-plans/weekly/${planId}`,
-      );
-      if (updatedPlanResponse.ok) {
-        const updatedPlan = await updatedPlanResponse.json();
-        setMealPlan(updatedPlan);
-      }
-    } catch (error) {
-      console.error('Error generating meal:', error);
-      setError('Failed to generate meal');
-    }
-  };
-
-  // Handle meal lock
-  const handleLockMeal = async (mealId: number) => {
-    try {
-      const response = await fetch(
-        `/api/meal-plans/weekly/${planId}/meals/${mealId}/lock`,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ locked: true }),
-        },
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to lock meal');
-      }
-
-      // Refresh meal plan data
-      const updatedPlanResponse = await fetch(
-        `/api/meal-plans/weekly/${planId}`,
-      );
-      if (updatedPlanResponse.ok) {
-        const updatedPlan = await updatedPlanResponse.json();
-        setMealPlan(updatedPlan);
-      }
-    } catch (error) {
-      console.error('Error locking meal:', error);
-      setError('Failed to lock meal');
+    } catch (err) {
+      setError('Failed to regenerate meals');
+    } finally {
+      setIsGenerating(false);
     }
   };
 
   // Handle meal plan deletion
   const handleDeletePlan = async () => {
-    if (
-      !confirm(
-        'Are you sure you want to delete this meal plan? This action cannot be undone.',
-      )
-    ) {
-      return;
-    }
-
+    if (!confirm('Are you sure you want to delete this meal plan? This action cannot be undone.')) return;
     try {
-      const response = await fetch(`/api/meal-plans/weekly/${planId}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete meal plan');
-      }
-
-      // Redirect back to meal planning page
+      const response = await fetch(`/api/meal-plans/weekly/${planId}`, { method: 'DELETE' });
+      if (!response.ok) throw new Error('Failed to delete meal plan');
       router.push('/dashboard/meal-planning/weekly');
     } catch (error) {
-      console.error('Error deleting meal plan:', error);
       setError('Failed to delete meal plan');
     }
   };
@@ -290,6 +207,11 @@ export default function WeeklyMealPlanWizardPage() {
   // Handle viewing individual recipe details
   const handleViewRecipe = (recipeId: number) => {
     router.push(`/dashboard/recipes/${recipeId}`);
+  };
+
+  // Handle selection for regeneration
+  const handleSelectMeal = (mealId: number, selected: boolean) => {
+    setSelectedMealIds(prev => selected ? [...prev, mealId] : prev.filter(id => id !== mealId));
   };
 
   if (isLoading) {
@@ -311,28 +233,25 @@ export default function WeeklyMealPlanWizardPage() {
         <Alert variant='destructive'>
           <div className='flex items-center gap-2'>
             <AlertTriangle className='h-4 w-4' />
-            <AlertDescription>
-              {error || 'Meal plan not found'}
-            </AlertDescription>
+            <AlertDescription>{error || 'Meal plan not found'}</AlertDescription>
           </div>
         </Alert>
       </div>
     );
   }
 
-  const steps = getWizardSteps(mealPlan);
-  const currentCategoryMeals = getCurrentCategoryMeals();
-  const categoryComplete = isCategoryComplete();
-  const totalSteps = steps.length;
-  const completedSteps = steps.slice(0, currentStep + 1).filter((_, index) => {
-    // Check if this step is actually complete
-    const stepMeals = mealPlan.mealPlanItems.filter(
-      item => item.category === steps[index].category,
-    );
-    return (
-      stepMeals.length > 0 && stepMeals.every(meal => meal.status === 'locked')
-    );
-  }).length;
+  // Show fun loading overlay while generating
+  if (isGenerating) {
+    return <FunLoadingOverlay />;
+  }
+
+  // Tab UI
+  const tabButtonClass = (tab: 'meals' | 'shopping') =>
+    `px-4 py-2 rounded-t-lg font-semibold transition-colors duration-200 focus:outline-none ${
+      activeTab === tab
+        ? 'bg-primary text-white shadow'
+        : 'bg-muted text-muted-foreground hover:bg-primary/10'
+    }`;
 
   return (
     <div className='container mx-auto px-4 py-8 space-y-8'>
@@ -341,8 +260,6 @@ export default function WeeklyMealPlanWizardPage() {
         <div className='flex items-center justify-center gap-3 relative'>
           <ChefHat className='h-8 w-8 text-primary' />
           <h1 className='text-3xl font-bold'>Weekly Meal Planning</h1>
-
-          {/* Delete button positioned absolutely */}
           <Button
             variant='ghost'
             size='sm'
@@ -353,10 +270,35 @@ export default function WeeklyMealPlanWizardPage() {
             <Trash2 className='h-4 w-4' />
           </Button>
         </div>
-        <p className='text-lg text-muted-foreground'>
-          Step-by-step meal generation for your weekly plan
-        </p>
+        <p className='text-lg text-muted-foreground'>Your AI-generated meal plan for the week</p>
       </div>
+
+      {/* Tabs */}
+      <div className='flex justify-center border-b border-muted mb-6'>
+        <button
+          className={tabButtonClass('meals')}
+          onClick={() => setActiveTab('meals')}
+          type='button'
+        >
+          Meals
+        </button>
+        <button
+          className={tabButtonClass('shopping')}
+          onClick={() => setActiveTab('shopping')}
+          type='button'
+        >
+          Shopping List
+        </button>
+      </div>
+
+      {/* Prompt for batch regeneration */}
+      {activeTab === 'meals' && (
+        <div className='text-center mb-2'>
+          <span className='text-base text-muted-foreground'>
+            Click on any meal card to select it for regeneration. When ready, click <b>Regenerate Selected</b>.
+          </span>
+        </div>
+      )}
 
       {/* Error Alert */}
       {error && (
@@ -368,192 +310,68 @@ export default function WeeklyMealPlanWizardPage() {
         </Alert>
       )}
 
-      {/* Wizard Navigation */}
-      <WizardNavigation
-        steps={steps.map((step, index) => ({
-          id: `step-${step.category}`,
-          category: step.category,
-          label: CATEGORY_CONFIG[step.category].label,
-          description: CATEGORY_CONFIG[step.category].description,
-          icon: CATEGORY_CONFIG[step.category].emoji,
-          mealCount: step.count,
-          isComplete: mealPlan.mealPlanItems
-            .filter(item => item.category === step.category)
-            .every(meal => meal.status === 'locked'),
-          isActive: index === currentStep,
-          isSkipped: false,
-        }))}
-        currentStepIndex={currentStep}
-        totalSteps={totalSteps}
-        completedSteps={completedSteps}
-        canGoBack={currentStep > 0}
-        canGoNext={categoryComplete}
-        canSkip={false}
-        isGeneratingMeals={false}
-        onBack={handleBack}
-        onNext={handleNext}
-        onStepClick={stepIndex => {
-          setCurrentStep(stepIndex);
-          setCurrentCategory(steps[stepIndex].category);
-        }}
-      />
-
-      {/* Current Category Header */}
-      <div className='space-y-4'>
-        <div className='flex items-center justify-between'>
-          <div className='flex items-center gap-3'>
-            <span className='text-3xl'>
-              {CATEGORY_CONFIG[currentCategory].emoji}
-            </span>
-            <div>
-              <h2 className='text-2xl font-bold'>
-                {CATEGORY_CONFIG[currentCategory].label}
-              </h2>
-              <p className='text-muted-foreground'>
-                {CATEGORY_CONFIG[currentCategory].description}
-              </p>
-            </div>
-          </div>
-
-          <div className='flex items-center gap-4'>
-            <Badge variant={categoryComplete ? 'default' : 'secondary'}>
-              {currentCategoryMeals.filter(m => m.status === 'locked').length} /{' '}
-              {currentCategoryMeals.length} complete
-            </Badge>
-
-            <Button
-              variant='outline'
-              size='sm'
-              onClick={() => setShowPreferenceOverride(!showPreferenceOverride)}
-            >
-              <Settings className='h-4 w-4 mr-2' />
-              Preferences
-            </Button>
-          </div>
-        </div>
-
-        {/* Preference Override */}
-        {showPreferenceOverride && (
-          <Card>
-            <CardHeader>
-              <CardTitle className='text-lg'>Category Preferences</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <PreferenceOverride
-                currentPreferences={globalPreferences || undefined}
-                userProfile={userProfile || undefined}
-                onSave={setGlobalPreferences}
-                onReset={() => setGlobalPreferences(null)}
-                onCancel={() => setShowPreferenceOverride(false)}
-                mealCategory={currentCategory}
-                isGlobalOverride={true}
-              />
-            </CardContent>
-          </Card>
-        )}
-      </div>
-
-      <Separator />
-
-      {/* Meal Cards Grid */}
-      <div className='space-y-6'>
-        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
-          {currentCategoryMeals.map(meal => (
-            <MealPlanCard
-              key={meal.id}
-              mealPlanItem={meal}
-              recipe={meal.recipe}
-              dayNumber={meal.dayNumber}
-              category={meal.category}
-              onGenerate={() => meal.id && void handleGenerateMeal(meal.id)}
-              onRegenerate={() => meal.id && void handleGenerateMeal(meal.id)}
-              onLock={() => meal.id && void handleLockMeal(meal.id)}
-              onUnlock={() => meal.id && void handleLockMeal(meal.id)}
-              onViewRecipe={
-                meal.recipe?.id
-                  ? () => handleViewRecipe(meal.recipe!.id!)
-                  : undefined
-              }
-            />
-          ))}
-        </div>
-
-        {/* Category Summary */}
-        {currentCategoryMeals.length > 0 && (
-          <Card
-            className={`${categoryComplete ? 'bg-green-50 border-green-200 dark:bg-green-950/20 dark:border-green-800' : ''}`}
+      {/* Regenerate Selected Button (only in Meals tab) */}
+      {activeTab === 'meals' && (
+        <div className='flex justify-end mb-4'>
+          <Button
+            onClick={handleRegenerateSelected}
+            disabled={selectedMealIds.length === 0 || isGenerating}
+            variant='outline'
           >
-            <CardContent className='pt-6'>
-              <div className='flex items-center justify-between'>
-                <div className='flex items-center gap-3'>
-                  {categoryComplete ? (
-                    <CheckCircle className='h-6 w-6 text-green-600' />
-                  ) : (
-                    <Clock className='h-6 w-6 text-muted-foreground' />
-                  )}
-                  <div>
-                    <p className='font-medium'>
-                      {categoryComplete
-                        ? 'Category Complete!'
-                        : 'Category in Progress'}
-                    </p>
-                    <p className='text-sm text-muted-foreground'>
-                      {categoryComplete
-                        ? 'All meals have been generated and locked. Ready to proceed.'
-                        : 'Generate and lock all meals to continue to the next category.'}
-                    </p>
-                  </div>
-                </div>
-
-                {categoryComplete && (
-                  <Badge variant='default' className='bg-green-600'>
-                    <CheckCircle className='h-3 w-3 mr-1' />
-                    Complete
-                  </Badge>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-      </div>
-
-      {/* Navigation Buttons */}
-      <div className='flex justify-between items-center pt-8'>
-        <Button
-          variant='outline'
-          onClick={handleBack}
-          disabled={currentStep === 0}
-        >
-          Previous Category
-        </Button>
-
-        <div className='text-center'>
-          <p className='text-sm text-muted-foreground'>
-            Step {currentStep + 1} of {totalSteps}
-          </p>
-          <p className='text-xs text-muted-foreground'>
-            {completedSteps} / {totalSteps} categories complete
-          </p>
+            <RefreshCw className='h-4 w-4 mr-2' />
+            Regenerate Selected
+          </Button>
         </div>
+      )}
 
-        <Button
-          onClick={handleNext}
-          disabled={!categoryComplete}
-          className='min-w-[140px]'
-        >
-          {currentStep === totalSteps - 1 ? (
-            <>
-              <ShoppingCart className='h-4 w-4 mr-2' />
-              Shopping List
-            </>
+      {/* Tab Content */}
+      {activeTab === 'meals' ? (
+        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
+          {mealPlan.mealPlanItems
+            .slice()
+            .sort((a, b) => {
+              // Sort by category order, then by dayNumber
+              const catA = CATEGORY_ORDER.indexOf(a.category as MealCategory);
+              const catB = CATEGORY_ORDER.indexOf(b.category as MealCategory);
+              if (catA !== catB) return catA - catB;
+              return a.dayNumber - b.dayNumber;
+            })
+            .map(meal => (
+              <MealPlanCard
+                key={meal.id}
+                mealPlanItem={meal}
+                recipe={meal.recipe}
+                dayNumber={meal.dayNumber}
+                category={meal.category}
+                onGenerate={() => {}}
+                onRegenerate={() => {}}
+                onViewRecipe={meal.recipe?.id ? () => handleViewRecipe(meal.recipe!.id!) : undefined}
+                selected={selectedMealIds.includes(meal.id!)}
+                // Make the entire card clickable for selection
+                onSelectChange={() => handleSelectMeal(meal.id!, !selectedMealIds.includes(meal.id!))}
+                disabled={isGenerating}
+              />
+            ))}
+        </div>
+      ) : (
+        <div>
+          {shoppingList ? (
+            <ShoppingList
+              ingredients={shoppingList.ingredients}
+              planName={mealPlan.name}
+              onIngredientToggle={() => {}}
+              onIngredientEdit={() => {}}
+              onIngredientAdd={() => {}}
+              onIngredientRemove={() => {}}
+              isEditable={false}
+              showRecipeOrigins={true}
+              disabled={isGenerating}
+            />
           ) : (
-            <>
-              Next Category
-              <ArrowRight className='h-4 w-4 ml-2' />
-            </>
+            <div className='text-center text-muted-foreground'>No shopping list found.</div>
           )}
-        </Button>
-      </div>
+        </div>
+      )}
     </div>
   );
 }
