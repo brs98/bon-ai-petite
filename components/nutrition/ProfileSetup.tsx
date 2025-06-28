@@ -235,7 +235,7 @@ export function ProfileSetup({
                   {/* Height in ft/in */}
                   <FormItem>
                     <FormLabel>Height</FormLabel>
-                    <div className='flex gap-2'>
+                    <div className='flex gap-2 items-end'>
                       <Input
                         type='number'
                         min={0}
@@ -258,7 +258,6 @@ export function ProfileSetup({
                       />
                       <span className='self-center'>in</span>
                     </div>
-                    <FormDescription>Your height in feet and inches</FormDescription>
                   </FormItem>
 
                   {/* Weight in lbs */}
@@ -272,7 +271,6 @@ export function ProfileSetup({
                       onChange={e => setWeightLbs(parseInt(e.target.value) || 0)}
                       aria-label='Weight (lbs)'
                     />
-                    <FormDescription>Your current weight in pounds</FormDescription>
                   </FormItem>
                 </div>
               )}
