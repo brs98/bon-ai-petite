@@ -113,16 +113,16 @@ export async function GET(request: NextRequest) {
     }
 
     console.log('Redirecting to profile with success status');
-    // Always redirect to profile, even if database update failed
+    // Always redirect to dashboard, even if database update failed
     return NextResponse.redirect(
-      new URL('/profile?payment=success', request.url),
+      new URL('/dashboard?payment=success', request.url),
     );
   } catch (error) {
     console.error('Error handling successful checkout:', error);
     console.log('Redirecting to profile with error status');
-    // Still redirect to profile with an error flag so user isn't stuck
+    // Still redirect to dashboard with an error flag so user isn't stuck
     return NextResponse.redirect(
-      new URL('/profile?payment=error', request.url),
+      new URL('/dashboard?payment=error', request.url),
     );
   }
 }
