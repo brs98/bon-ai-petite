@@ -69,7 +69,11 @@ Key principles:
 - Prioritize nutritional accuracy while maintaining great taste
 - Consider cooking skill level and time constraints
 - Use seasonal and readily available ingredients when possible
-- Provide helpful cooking tips within the instructions`;
+- Provide helpful cooking tips within the instructions
+- Only use ingredients that are commonly found in typical grocery stores (e.g., Walmart, Kroger, Safeway, Publix, etc.)
+- Do not use specialty or international ingredients that are hard to find
+- All output, including ingredient names, instructions, and descriptions, must be written in clear, natural English
+- Recipes should be easy to shop for and prepare, using straightforward steps and minimal specialty equipment.`;
 
     // Add user-specific context if available
     if (userContext?.recentFeedback && userContext.recentFeedback.length > 0) {
@@ -146,6 +150,14 @@ The user prefers to avoid (when possible): ${userContext.avoidedIngredients.join
       }
       if (profile.goals) {
         prompt += `- User goal: ${profile.goals.replace('_', ' ')}\n`;
+      }
+      if (profile.weight) {
+        prompt += `- User weight: ${profile.weight} lbs\n`;
+      }
+      if (profile.height) {
+        const feet = Math.floor(profile.height / 12);
+        const inches = profile.height % 12;
+        prompt += `- User height: ${feet}ft ${inches}in\n`;
       }
     }
 
@@ -230,7 +242,11 @@ Return ONLY a valid JSON object with this exact structure:
 - Include specific quantities and units for all ingredients
 - Make instructions clear and sequential
 - Consider prep and cooking time accuracy
-- Choose appropriate difficulty level based on techniques required`;
+- Choose appropriate difficulty level based on techniques required
+- All ingredients must be available in typical grocery stores (e.g., Walmart, Kroger, Safeway, Publix, etc.)
+- Do not use ingredients that are difficult to find
+- Write all output in clear, natural English
+- Make the recipe easy to shop for and prepare, with simple, direct instructions and minimal specialty equipment.`;
 
     return prompt;
   }

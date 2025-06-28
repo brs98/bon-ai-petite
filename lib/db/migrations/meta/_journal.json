@@ -71,6 +71,13 @@
       "when": 1751089591543,
       "tag": "0009_dark_junta",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1751093657570,
+      "tag": "0010_freezing_stick",
+      "breakpoints": true
     }
   ]
 }

@@ -1,7 +1,7 @@
 interface CalorieCalculationParams {
   age: number;
-  weight: number; // in kg
-  height: number; // in cm
+  weight: number; // in lbs
+  height: number; // in inches
   activityLevel: string;
   goals: string;
   gender: 'male' | 'female';
@@ -13,29 +13,41 @@ interface MacroResult {
   fat: number;
 }
 
+// Conversion helpers
+function lbsToKg(lbs: number): number {
+  return lbs * 0.453592;
+}
+function inchesToCm(inches: number): number {
+  return inches * 2.54;
+}
+
 /**
  * Calculate Basal Metabolic Rate (BMR) using Mifflin-St Jeor Equation
+ * Expects weight in lbs and height in inches, converts to metric internally.
  */
 export function calculateBMR(
   age: number,
-  weight: number,
-  height: number,
+  weight: number, // lbs
+  height: number, // inches
   gender: 'male' | 'female',
 ): number {
+  const weightKg = lbsToKg(weight);
+  const heightCm = inchesToCm(height);
   if (gender === 'male') {
-    return 10 * weight + 6.25 * height - 5 * age + 5;
+    return 10 * weightKg + 6.25 * heightCm - 5 * age + 5;
   } else {
-    return 10 * weight + 6.25 * height - 5 * age - 161;
+    return 10 * weightKg + 6.25 * heightCm - 5 * age - 161;
   }
 }
 
 /**
  * Calculate daily calorie needs using Mifflin-St Jeor Equation
+ * Expects weight in lbs and height in inches, converts to metric internally.
  */
 export function calculateDailyCalories({
   age,
-  weight,
-  height,
+  weight, // lbs
+  height, // inches
   activityLevel,
   goals,
   gender,
@@ -171,10 +183,12 @@ export function validateNutritionProfile(profile: {
 
 /**
  * Calculate BMI from height and weight
+ * Expects weight in lbs and height in inches, converts to metric internally.
  */
 export function calculateBMI(weight: number, height: number): number {
-  const heightInMeters = height / 100;
-  return Math.round((weight / (heightInMeters * heightInMeters)) * 10) / 10;
+  const weightKg = lbsToKg(weight);
+  const heightM = inchesToCm(height) / 100;
+  return Math.round((weightKg / (heightM * heightM)) * 10) / 10;
 }
 
 /**

@@ -104,8 +104,8 @@ export const NutritionProfileSchema = z.object({
   id: z.number().optional(),
   userId: z.number(),
   age: z.number().positive().optional(),
-  height: z.number().positive().optional(), // in cm
-  weight: z.number().positive().optional(), // in kg
+  height: z.number().positive().optional(), // in inches
+  weight: z.number().positive().optional(), // in lbs
   activityLevel: z
     .enum([
       'sedentary',

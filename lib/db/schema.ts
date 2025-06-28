@@ -36,8 +36,8 @@ export const nutritionProfiles = pgTable(
       .notNull()
       .references(() => users.id),
     age: integer('age'),
-    height: integer('height_cm'),
-    weight: integer('weight_kg'),
+    height: integer('height_in'), // height in inches
+    weight: integer('weight_lbs'), // weight in pounds
     activityLevel: varchar('activity_level', { length: 20 }),
     goals: varchar('goals', { length: 50 }), // lose_weight, gain_muscle, maintain
     dailyCalories: integer('daily_calories'),

@@ -4,16 +4,23 @@ import { ProfileSetup } from '@/components/nutrition/ProfileSetup';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
 } from '@/components/ui/card';
 import { type NutritionProfile } from '@/types/recipe';
 import { Loader2, Settings, User } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+
+function formatHeight(heightIn?: number) {
+  if (!heightIn) return '';
+  const feet = Math.floor(heightIn / 12);
+  const inches = heightIn % 12;
+  return `${feet}ft ${inches}in`;
+}
 
 export default function NutritionSettingsPage() {
   const [profile, setProfile] = useState<NutritionProfile | null>(null);
@@ -126,11 +133,11 @@ export default function NutritionSettingsPage() {
               </div>
               <div>
                 <p className='text-sm font-medium'>Height</p>
-                <p className='text-2xl font-bold'>{profile.height}cm</p>
+                <p className='text-2xl font-bold'>{formatHeight(profile.height)}</p>
               </div>
               <div>
                 <p className='text-sm font-medium'>Weight</p>
-                <p className='text-2xl font-bold'>{profile.weight}kg</p>
+                <p className='text-2xl font-bold'>{profile.weight} lbs</p>
               </div>
               <div>
                 <p className='text-sm font-medium'>Daily Calories</p>

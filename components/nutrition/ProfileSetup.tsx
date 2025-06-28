@@ -3,39 +3,39 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
 } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+    Form,
+    FormControl,
+    FormDescription,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from '@/components/ui/select';
 import { calculateDailyCalories, calculateMacros } from '@/lib/utils/nutrition';
 import {
-  ACTIVITY_LEVELS,
-  COMMON_ALLERGIES,
-  CUISINE_TYPES,
-  DIETARY_RESTRICTIONS,
-  NutritionProfileSchema,
-  type NutritionProfile,
+    ACTIVITY_LEVELS,
+    COMMON_ALLERGIES,
+    CUISINE_TYPES,
+    DIETARY_RESTRICTIONS,
+    NutritionProfileSchema,
+    type NutritionProfile,
 } from '@/types/recipe';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useState } from 'react';
@@ -49,6 +49,13 @@ interface ProfileSetupProps {
   isLoading?: boolean;
 }
 
+function formatHeight(heightIn?: number) {
+  if (!heightIn) return '';
+  const feet = Math.floor(heightIn / 12);
+  const inches = heightIn % 12;
+  return `${feet}ft ${inches}in`;
+}
+
 export function ProfileSetup({
   initialData,
   onSave,
@@ -59,6 +66,15 @@ export function ProfileSetup({
   const [calculatedCalories, setCalculatedCalories] = useState<
     number | undefined
   >(initialData?.dailyCalories || undefined);
+  const [heightFeet, setHeightFeet] = useState<number | undefined>(
+    initialData?.height ? Math.floor(initialData.height / 12) : undefined
+  );
+  const [heightInches, setHeightInches] = useState<number | undefined>(
+    initialData?.height ? initialData.height % 12 : undefined
+  );
+  const [weightLbs, setWeightLbs] = useState<number | undefined>(
+    initialData?.weight || undefined
+  );
 
   const form = useForm<Partial<NutritionProfile>>({
     resolver: zodResolver(NutritionProfileSchema.partial()),
@@ -121,9 +137,22 @@ export function ProfileSetup({
       form.setValue('macroCarbs', macros.carbs);
       form.setValue('macroFat', macros.fat);
     }
+
+    // Sync form height/weight with local ft/in/lbs state
+    if (typeof heightFeet === 'number' && typeof heightInches === 'number') {
+      form.setValue('height', heightFeet * 12 + heightInches);
+    }
+    if (typeof weightLbs === 'number') {
+      form.setValue('weight', weightLbs);
+    }
   }, watchedValues);
 
   const onSubmit = async (data: Partial<NutritionProfile>) => {
+    // Ensure height and weight are set from local state
+    data.height = typeof heightFeet === 'number' && typeof heightInches === 'number'
+      ? heightFeet * 12 + heightInches
+      : undefined;
+    data.weight = typeof weightLbs === 'number' ? weightLbs : undefined;
     await onSave(data);
   };
 
@@ -189,7 +218,7 @@ export function ProfileSetup({
                         <FormControl>
                           <Input
                             type='number'
-                            placeholder='25'
+                            placeholder='Enter your age'
                             {...field}
                             onChange={e =>
                               field.onChange(
@@ -203,57 +232,48 @@ export function ProfileSetup({
                     )}
                   />
 
-                  <FormField
-                    control={form.control}
-                    name='height'
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Height (cm)</FormLabel>
-                        <FormControl>
-                          <Input
-                            type='number'
-                            placeholder='175'
-                            {...field}
-                            onChange={e =>
-                              field.onChange(
-                                parseInt(e.target.value) || undefined,
-                              )
-                            }
-                          />
-                        </FormControl>
-                        <FormDescription>
-                          Your height in centimeters
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  {/* Height in ft/in */}
+                  <FormItem>
+                    <FormLabel>Height</FormLabel>
+                    <div className='flex gap-2'>
+                      <Input
+                        type='number'
+                        min={0}
+                        placeholder='Feet'
+                        value={heightFeet ?? ''}
+                        onChange={e => setHeightFeet(parseInt(e.target.value) || 0)}
+                        className='w-16'
+                        aria-label='Height (feet)'
+                      />
+                      <span className='self-center'>ft</span>
+                      <Input
+                        type='number'
+                        min={0}
+                        max={11}
+                        placeholder='Inches'
+                        value={heightInches ?? ''}
+                        onChange={e => setHeightInches(parseInt(e.target.value) || 0)}
+                        className='w-16'
+                        aria-label='Height (inches)'
+                      />
+                      <span className='self-center'>in</span>
+                    </div>
+                    <FormDescription>Your height in feet and inches</FormDescription>
+                  </FormItem>
 
-                  <FormField
-                    control={form.control}
-                    name='weight'
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Weight (kg)</FormLabel>
-                        <FormControl>
-                          <Input
-                            type='number'
-                            placeholder='70'
-                            {...field}
-                            onChange={e =>
-                              field.onChange(
-                                parseInt(e.target.value) || undefined,
-                              )
-                            }
-                          />
-                        </FormControl>
-                        <FormDescription>
-                          Your current weight in kilograms
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  {/* Weight in lbs */}
+                  <FormItem>
+                    <FormLabel>Weight (lbs)</FormLabel>
+                    <Input
+                      type='number'
+                      min={0}
+                      placeholder='Pounds'
+                      value={weightLbs ?? ''}
+                      onChange={e => setWeightLbs(parseInt(e.target.value) || 0)}
+                      aria-label='Weight (lbs)'
+                    />
+                    <FormDescription>Your current weight in pounds</FormDescription>
+                  </FormItem>
                 </div>
               )}
 
@@ -456,7 +476,7 @@ export function ProfileSetup({
                           <FormControl>
                             <Input
                               type='number'
-                              placeholder='2000'
+                              placeholder='Daily calorie target'
                               {...field}
                               onChange={e =>
                                 field.onChange(
@@ -488,7 +508,7 @@ export function ProfileSetup({
                             <FormControl>
                               <Input
                                 type='number'
-                                placeholder='150'
+                                placeholder='Protein (g)'
                                 {...field}
                                 onChange={e =>
                                   field.onChange(
@@ -511,7 +531,7 @@ export function ProfileSetup({
                             <FormControl>
                               <Input
                                 type='number'
-                                placeholder='200'
+                                placeholder='Carbs (g)'
                                 {...field}
                                 onChange={e =>
                                   field.onChange(
@@ -534,7 +554,7 @@ export function ProfileSetup({
                             <FormControl>
                               <Input
                                 type='number'
-                                placeholder='65'
+                                placeholder='Fat (g)'
                                 {...field}
                                 onChange={e =>
                                   field.onChange(
@@ -569,8 +589,7 @@ export function ProfileSetup({
                       <div>
                         <h4 className='font-medium text-sm'>Physical Stats</h4>
                         <p className='text-sm text-muted-foreground'>
-                          {formValues.age} years old, {formValues.height}cm,{' '}
-                          {formValues.weight}kg
+                          {formValues.age} years old, {formatHeight(formValues.height)}, {formValues.weight} lbs
                         </p>
                       </div>
 
