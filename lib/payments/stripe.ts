@@ -1,7 +1,7 @@
 import {
-  getUser,
-  getUserByStripeCustomerId,
-  updateUserSubscription,
+    getUser,
+    getUserByStripeCustomerId,
+    updateUserSubscription,
 } from '@/lib/db/queries';
 import { User } from '@/lib/db/schema';
 import { redirect } from 'next/navigation';
@@ -114,6 +114,15 @@ export async function createCustomerPortalSession(user: User) {
   });
 }
 
+// Utility to normalize Stripe product names to internal plan names
+export function normalizePlanName(stripeProductName?: string | null): string | null {
+  if (!stripeProductName) return null;
+  const name = stripeProductName.toLowerCase();
+  if (name === 'plus' || name === 'premium') return 'premium';
+  if (name === 'base' || name === 'essential') return 'essential';
+  return name; // fallback to raw name if unknown
+}
+
 export async function handleSubscriptionChange(
   subscription: Stripe.Subscription,
 ) {
@@ -133,7 +142,7 @@ export async function handleSubscriptionChange(
     await updateUserSubscription(user.id, {
       stripeSubscriptionId: subscriptionId,
       stripeProductId: plan?.product as string,
-      planName: (plan?.product as Stripe.Product).name,
+      planName: normalizePlanName((plan?.product as Stripe.Product)?.name),
       subscriptionStatus: status,
     });
   } else if (status === 'canceled' || status === 'unpaid') {

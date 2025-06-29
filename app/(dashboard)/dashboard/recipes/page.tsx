@@ -1,152 +1,120 @@
 'use client';
 
+import { RecipeCard } from '@/components/recipes/RecipeCard/RecipeCard';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { ChefHat, PlusCircle, Settings, Sparkles } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Recipe } from '@/types/recipe';
+import { PlusCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 export default function RecipesPage() {
   const router = useRouter();
 
+  // State for recently generated meals
+  const [recentRecipes, setRecentRecipes] = useState<Recipe[] | null>(null);
+  const [recentLoading, setRecentLoading] = useState(true);
+  const [recentError, setRecentError] = useState<string | null>(null);
+
+  // State for saved meals
+  const [savedRecipes, setSavedRecipes] = useState<Recipe[] | null>(null);
+  const [savedLoading, setSavedLoading] = useState(true);
+  const [savedError, setSavedError] = useState<string | null>(null);
+
+  // Fetch recently generated (not saved) recipes
+  useEffect(() => {
+    setRecentLoading(true);
+    fetch('/api/recipes/saved?limit=4&sort=newest&isSaved=false')
+      .then(res => res.json())
+      .then(data => {
+        setRecentRecipes(data.data?.recipes || []);
+        setRecentError(null);
+      })
+      .catch(err => setRecentError('Failed to load recent recipes'))
+      .finally(() => setRecentLoading(false));
+  }, []);
+
+  // Fetch saved recipes
+  useEffect(() => {
+    setSavedLoading(true);
+    fetch('/api/recipes/saved?limit=4&sort=newest&isSaved=true')
+      .then(res => res.json())
+      .then(data => {
+        setSavedRecipes(data.data?.recipes || []);
+        setSavedError(null);
+      })
+      .catch(err => setSavedError('Failed to load saved recipes'))
+      .finally(() => setSavedLoading(false));
+  }, []);
+
   return (
-    <div className='container mx-auto py-6 space-y-8'>
-      {/* Header */}
-      <div className='flex items-center justify-between'>
-        <div>
-          <h1 className='text-3xl font-bold'>AI Recipe Generator</h1>
-          <p className='text-muted-foreground'>
-            Create personalized recipes tailored to your nutrition goals and
-            preferences
-          </p>
-        </div>
+    <div className="container mx-auto py-6 space-y-10">
+      {/* Generate Recipe Button */}
+      <div className="flex justify-end">
         <Button
-          onClick={() => router.push('/dashboard/settings/nutrition')}
-          variant='outline'
-          size='sm'
-          className='gap-2'
+          onClick={() => router.push('/dashboard/recipes/generate')}
+          className="gap-2"
+          size="lg"
         >
-          <Settings className='h-4 w-4' />
-          Nutrition Settings
+          <PlusCircle className="h-5 w-5" />
+          Generate Recipe
         </Button>
       </div>
 
-      {/* Quick Actions */}
-      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
-        <Card
-          className='hover:shadow-lg transition-shadow cursor-pointer'
-          onClick={() => router.push('/dashboard/recipes/generate')}
-        >
-          <CardHeader>
-            <CardTitle className='flex items-center gap-2'>
-              <ChefHat className='h-5 w-5 text-primary' />
-              Generate Recipe
-            </CardTitle>
-            <CardDescription>
-              Create a new personalized recipe based on your preferences
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button className='w-full gap-2'>
-              <PlusCircle className='h-4 w-4' />
-              Start Generating
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card
-          className='hover:shadow-lg transition-shadow cursor-pointer'
-          onClick={() => router.push('/dashboard/recipes/saved')}
-        >
-          <CardHeader>
-            <CardTitle className='flex items-center gap-2'>
-              <Sparkles className='h-5 w-5 text-primary' />
-              Saved Recipes
-            </CardTitle>
-            <CardDescription>
-              View and manage your collection of saved recipes
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button variant='outline' className='w-full'>
-              View Saved Recipes
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card
-          className='hover:shadow-lg transition-shadow cursor-pointer'
-          onClick={() => router.push('/dashboard/recipes/generate/preferences')}
-        >
-          <CardHeader>
-            <CardTitle className='flex items-center gap-2'>
-              <Settings className='h-5 w-5 text-primary' />
-              Recipe Preferences
-            </CardTitle>
-            <CardDescription>
-              Set up your dietary preferences and cooking style
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button variant='outline' className='w-full'>
-              Setup Preferences
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Getting Started */}
+      {/* Recently Generated Meals */}
       <Card>
         <CardHeader>
-          <CardTitle>Getting Started</CardTitle>
-          <CardDescription>
-            New to AI recipe generation? Here's how to get the best results
-          </CardDescription>
+          <CardTitle>Recently Generated Meals</CardTitle>
         </CardHeader>
-        <CardContent className='space-y-4'>
-          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
-            <div className='space-y-2'>
-              <div className='flex items-center gap-2'>
-                <div className='w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-bold'>
-                  1
-                </div>
-                <h3 className='font-medium'>Set Up Your Profile</h3>
-              </div>
-              <p className='text-sm text-muted-foreground pl-8'>
-                Tell us about your nutrition goals, dietary restrictions, and
-                preferences
-              </p>
+        <CardContent>
+          {recentLoading ? (
+            <div className="text-muted-foreground py-8 text-center">Loading...</div>
+          ) : recentError ? (
+            <div className="text-destructive py-8 text-center">{recentError}</div>
+          ) : recentRecipes && recentRecipes.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {recentRecipes.map(recipe => (
+                <RecipeCard
+                  key={recipe.id}
+                  recipe={recipe}
+                  onView={id => router.push(`/dashboard/recipes/${id}`)}
+                />
+              ))}
             </div>
+          ) : (
+            <div className="text-muted-foreground py-8 text-center">No recently generated meals found.</div>
+          )}
+          <div className="flex justify-end mt-4">
+            <Button variant="outline" onClick={() => router.push('/dashboard/recipes/generate')}>View More</Button>
+          </div>
+        </CardContent>
+      </Card>
 
-            <div className='space-y-2'>
-              <div className='flex items-center gap-2'>
-                <div className='w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-bold'>
-                  2
-                </div>
-                <h3 className='font-medium'>Generate Your First Recipe</h3>
-              </div>
-              <p className='text-sm text-muted-foreground pl-8'>
-                Choose a meal type and let our AI create a personalized recipe
-                for you
-              </p>
+      {/* Saved Meals */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Saved Meals</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {savedLoading ? (
+            <div className="text-muted-foreground py-8 text-center">Loading...</div>
+          ) : savedError ? (
+            <div className="text-destructive py-8 text-center">{savedError}</div>
+          ) : savedRecipes && savedRecipes.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {savedRecipes.map(recipe => (
+                <RecipeCard
+                  key={recipe.id}
+                  recipe={recipe}
+                  onView={id => router.push(`/dashboard/recipes/${id}`)}
+                />
+              ))}
             </div>
-
-            <div className='space-y-2'>
-              <div className='flex items-center gap-2'>
-                <div className='w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-bold'>
-                  3
-                </div>
-                <h3 className='font-medium'>Save & Cook</h3>
-              </div>
-              <p className='text-sm text-muted-foreground pl-8'>
-                Save recipes you love and follow the step-by-step instructions
-              </p>
-            </div>
+          ) : (
+            <div className="text-muted-foreground py-8 text-center">No saved meals found.</div>
+          )}
+          <div className="flex justify-end mt-4">
+            <Button variant="outline" onClick={() => router.push('/dashboard/recipes/saved')}>View More</Button>
           </div>
         </CardContent>
       </Card>

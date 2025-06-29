@@ -5,15 +5,15 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { customerPortalAction } from '@/lib/payments/actions';
 import { WeeklyMealPlanWithItems } from '@/types/recipe';
 import {
-  AlertTriangle,
-  ArrowRight,
-  Calendar,
-  ChefHat,
-  Clock,
-  Info,
-  Plus,
+    AlertTriangle,
+    ArrowRight,
+    Calendar,
+    ChefHat,
+    Info,
+    Plus
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -29,15 +29,17 @@ interface MealCounts {
 function Alert({
   children,
   variant = 'default',
+  className = '',
 }: {
   children: React.ReactNode;
   variant?: 'default' | 'destructive';
+  className?: string;
 }) {
   const bgColor =
     variant === 'destructive'
       ? 'bg-red-50 border-red-200 dark:bg-red-950/20 dark:border-red-800'
       : 'bg-blue-50 border-blue-200 dark:bg-blue-950/20 dark:border-blue-800';
-  return <div className={`rounded-lg border p-4 ${bgColor}`}>{children}</div>;
+  return <div className={`rounded-lg border p-4 ${bgColor} ${className}`}>{children}</div>;
 }
 
 function AlertDescription({ children }: { children: React.ReactNode }) {
@@ -46,6 +48,8 @@ function AlertDescription({ children }: { children: React.ReactNode }) {
 
 export default function WeeklyMealPlanningPage() {
   const router = useRouter();
+  // Fetch the user's plan from the API
+  const [userPlan, setUserPlan] = useState<string | null>(null);
   const [selectedCounts, setSelectedCounts] = useState<MealCounts>({
     breakfastCount: 0,
     lunchCount: 0,
@@ -85,6 +89,29 @@ export default function WeeklyMealPlanningPage() {
 
     void fetchExistingPlans();
   }, []);
+
+  // Fetch the user's plan from the API
+  useEffect(() => {
+    async function fetchUser() {
+      try {
+        const res = await fetch('/api/user');
+        if (res.ok) {
+          const user = await res.json();
+          setUserPlan(user?.planName?.toLowerCase() || 'essential');
+        } else {
+          setUserPlan('essential');
+        }
+      } catch {
+        setUserPlan('essential');
+      }
+    }
+    void fetchUser();
+  }, []);
+
+  if (userPlan === null) {
+    // Optionally show a loading spinner here
+    return null;
+  }
 
   const handleCreateNewPlan = async () => {
     if (!hasValidSelection) return;
@@ -169,7 +196,7 @@ export default function WeeklyMealPlanningPage() {
       plan.dinnerCount +
       plan.snackCount;
     const completedMeals =
-      plan.mealPlanItems?.filter(item => item.status === 'locked').length || 0;
+      plan.mealPlanItems?.filter(item => item.status === 'generated').length || 0;
 
     return {
       totalMeals,
@@ -178,6 +205,27 @@ export default function WeeklyMealPlanningPage() {
         totalMeals > 0 ? Math.round((completedMeals / totalMeals) * 100) : 0,
     };
   };
+
+  if (userPlan !== 'premium') {
+    // Show only the premium alert, hide all other content
+    return (
+      <div className='container mx-auto px-4 py-8 flex items-center justify-center min-h-[300px]'>
+        <Alert variant='default' className='w-full max-w-2xl flex items-center justify-between gap-4'>
+          <div className='flex items-center gap-2'>
+            <Info className='h-4 w-4' />
+            <span>
+              <strong>Premium Feature:</strong> Weekly meal planning is available to <span className='text-primary font-semibold'>Premium</span> subscribers only.
+            </span>
+          </div>
+          <form action={customerPortalAction} className='flex-shrink-0'>
+            <Button type='submit' variant='default' size='sm'>
+              Upgrade Now
+            </Button>
+          </form>
+        </Alert>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -204,18 +252,6 @@ export default function WeeklyMealPlanningPage() {
           Create comprehensive weekly meal plans with AI-generated recipes and
           automatic shopping lists.
         </p>
-
-        {/* TODO: Add Premium feature highlighting */}
-        <Alert>
-          <div className='flex items-center gap-2'>
-            <Info className='h-4 w-4' />
-            <AlertDescription>
-              <strong>Note:</strong> Weekly meal planning will be a Premium
-              feature. Usage limits will be enforced once subscription system is
-              fully implemented.
-            </AlertDescription>
-          </div>
-        </Alert>
       </div>
 
       {/* Error Alert */}
@@ -311,7 +347,7 @@ export default function WeeklyMealPlanningPage() {
         <MealCountSelector
           initialCounts={selectedCounts}
           onCountsChange={setSelectedCounts}
-          disabled={isCreating}
+          disabled={isCreating || userPlan !== 'premium'}
           maxTotalMeals={28} // TODO: Adjust based on subscription tier
         />
 
@@ -319,7 +355,7 @@ export default function WeeklyMealPlanningPage() {
         <div className='flex flex-col sm:flex-row gap-4 justify-center'>
           <Button
             onClick={() => void handleCreateNewPlan()}
-            disabled={!hasValidSelection || isCreating}
+            disabled={!hasValidSelection || isCreating || userPlan !== 'premium'}
             size='lg'
             className='sm:px-8'
           >
@@ -335,13 +371,6 @@ export default function WeeklyMealPlanningPage() {
               </>
             )}
           </Button>
-
-          {hasValidSelection && (
-            <div className='flex items-center gap-2 text-sm text-muted-foreground justify-center'>
-              <Clock className='h-4 w-4' />
-              <span>Estimated time: {Math.ceil(totalMeals * 2)} minutes</span>
-            </div>
-          )}
         </div>
       </div>
 

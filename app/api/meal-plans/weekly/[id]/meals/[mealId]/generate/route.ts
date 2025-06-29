@@ -2,11 +2,12 @@ import { recipeGenerator } from '@/lib/ai/recipe-generator';
 import { db } from '@/lib/db/drizzle';
 import { getUser } from '@/lib/db/queries';
 import {
-  mealPlanItems,
-  nutritionProfiles,
-  recipes,
-  weeklyMealPlans,
+    mealPlanItems,
+    nutritionProfiles,
+    recipes,
+    weeklyMealPlans,
 } from '@/lib/db/schema';
+import { checkUsageLimit, incrementUsage } from '@/lib/subscriptions/usage-limits';
 import { GenerateMealRequestSchema } from '@/types/recipe';
 import { and, desc, eq } from 'drizzle-orm';
 import { NextRequest } from 'next/server';
@@ -24,6 +25,17 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     const user = await getUser();
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Enforce per-user daily usage limit for recipe generation (meal generation)
+    const withinLimit = await checkUsageLimit(user.id, 'recipe_generation');
+    if (!withinLimit) {
+      return Response.json(
+        {
+          error: 'You have reached your daily recipe generation limit. Please try again tomorrow or upgrade your plan for unlimited access.',
+        },
+        { status: 429 },
+      );
     }
 
     // Parse and validate request body
@@ -208,6 +220,9 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         undefined, // user feedbacks
         nutritionProfile || undefined,
       );
+
+      // Increment usage after successful generation
+      await incrementUsage(user.id, 'recipe_generation');
 
       const generatedRecipe = generationResult.recipe;
 

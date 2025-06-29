@@ -6,11 +6,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 import {
-  AlertCircle,
-  Check,
-  ChevronLeft,
-  ChevronRight,
-  Clock,
+    AlertCircle,
+    Check,
+    ChevronLeft,
+    ChevronRight
 } from 'lucide-react';
 
 interface WizardStep {
@@ -152,18 +151,6 @@ export function WizardNavigation({
                 )}
               </div>
             )}
-
-            {/* Time Estimation */}
-            {showProgressDetails &&
-              estimatedTimeRemaining &&
-              estimatedTimeRemaining > 0 && (
-                <div className='flex items-center gap-2 text-sm text-muted-foreground'>
-                  <Clock className='h-4 w-4' />
-                  <span>
-                    Est. {formatTimeRemaining(estimatedTimeRemaining)} remaining
-                  </span>
-                </div>
-              )}
           </div>
         </CardContent>
       </Card>

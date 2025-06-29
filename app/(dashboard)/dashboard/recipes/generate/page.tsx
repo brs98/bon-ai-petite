@@ -5,10 +5,11 @@ import { GenerationProgress } from '@/components/recipes/RecipeGenerator/Generat
 import { GeneratorForm } from '@/components/recipes/RecipeGenerator/GeneratorForm';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { customerPortalAction } from '@/lib/payments/actions';
 import {
-  type NutritionProfile,
-  type Recipe,
-  type RecipeGenerationRequest,
+    type NutritionProfile,
+    type Recipe,
+    type RecipeGenerationRequest,
 } from '@/types/recipe';
 import { AlertCircle, ArrowLeft, RefreshCw } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -198,15 +199,11 @@ export default function RecipeGeneratePage() {
           </CardHeader>
           <CardContent className='space-y-4'>
             <p className='text-sm text-muted-foreground'>{error}</p>
-            <div className='flex gap-2'>
-              <Button onClick={handleRegenerate} variant='default' size='sm'>
-                <RefreshCw className='h-4 w-4 mr-2' />
-                Try Again
+            <form action={customerPortalAction}>
+              <Button type='submit' variant='default'>
+                Manage Subscription
               </Button>
-              <Button onClick={handleStartOver} variant='outline' size='sm'>
-                Start Over
-              </Button>
-            </div>
+            </form>
           </CardContent>
         </Card>
       )}
@@ -248,7 +245,7 @@ export default function RecipeGeneratePage() {
       )}
 
       {/* Generator Form */}
-      {!isGenerating && !generatedRecipe && (
+      {!isGenerating && !generatedRecipe && !error && (
         <GeneratorForm
           onGenerate={request => {
             void handleGenerate(request);

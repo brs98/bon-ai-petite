@@ -1,7 +1,7 @@
 import { setSession } from '@/lib/auth/session';
 import { db } from '@/lib/db/drizzle';
 import { users } from '@/lib/db/schema';
-import { stripe } from '@/lib/payments/stripe';
+import { normalizePlanName, stripe } from '@/lib/payments/stripe';
 import { eq } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
@@ -83,7 +83,7 @@ export async function GET(request: NextRequest) {
             stripeCustomerId: customerId,
             stripeSubscriptionId: subscriptionId,
             stripeProductId: productId,
-            planName: (plan.product as Stripe.Product).name,
+            planName: normalizePlanName((plan.product as Stripe.Product).name),
             subscriptionStatus: subscription.status,
             updatedAt: new Date(),
           })

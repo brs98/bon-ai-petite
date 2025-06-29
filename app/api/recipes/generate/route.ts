@@ -2,6 +2,7 @@ import { recipeGenerator } from '@/lib/ai/recipe-generator';
 import { db } from '@/lib/db/drizzle';
 import { getUser } from '@/lib/db/queries';
 import { recipes } from '@/lib/db/schema';
+import { checkUsageLimit, incrementUsage } from '@/lib/subscriptions/usage-limits';
 import { RecipeGenerationRequestSchema } from '@/types/recipe';
 import { desc, eq } from 'drizzle-orm';
 import { NextRequest } from 'next/server';
@@ -12,6 +13,17 @@ export async function POST(request: NextRequest) {
     const user = await getUser();
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Enforce per-user daily usage limit for recipe generation
+    const withinLimit = await checkUsageLimit(user.id, 'recipe_generation');
+    if (!withinLimit) {
+      return Response.json(
+        {
+          error: 'You have reached your daily recipe generation limit. Please try again tomorrow or upgrade your plan for unlimited access.',
+        },
+        { status: 429 },
+      );
     }
 
     // Parse and validate request body
@@ -146,6 +158,9 @@ export async function POST(request: NextRequest) {
         rating: null,
       })
       .returning();
+
+    // Increment usage after successful generation and save
+    await incrementUsage(user.id, 'recipe_generation');
 
     // Return the generated recipe with database ID and enhanced generation metadata
     return Response.json({

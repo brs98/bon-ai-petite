@@ -1,13 +1,14 @@
 import { db } from '@/lib/db/drizzle';
 import { getUser } from '@/lib/db/queries';
 import {
-  mealPlanItems,
-  weeklyMealPlans,
-  type NewMealPlanItem,
+    mealPlanItems,
+    weeklyMealPlans,
+    type NewMealPlanItem,
 } from '@/lib/db/schema';
+import { checkUsageLimit, incrementUsage } from '@/lib/subscriptions/usage-limits';
 import {
-  CreateWeeklyMealPlanRequestSchema,
-  type WeeklyMealPlanWithItems,
+    CreateWeeklyMealPlanRequestSchema,
+    type WeeklyMealPlanWithItems,
 } from '@/types/recipe';
 import { and, desc, eq } from 'drizzle-orm';
 import { NextRequest } from 'next/server';
@@ -18,6 +19,27 @@ export async function POST(request: NextRequest) {
     const user = await getUser();
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Restrict weekly meal plan creation to premium subscribers only
+    if ((user.planName || '').toLowerCase() !== 'premium') {
+      return Response.json(
+        {
+          error: 'Weekly meal plan generation is available to Premium subscribers only. Please upgrade your plan to access this feature.',
+        },
+        { status: 403 },
+      );
+    }
+
+    // Enforce per-user weekly usage limit for meal plan creation
+    const withinLimit = await checkUsageLimit(user.id, 'meal_plan_creation');
+    if (!withinLimit) {
+      return Response.json(
+        {
+          error: 'You have reached your weekly meal plan creation limit. Please try again next week or upgrade your plan for unlimited access.',
+        },
+        { status: 429 },
+      );
     }
 
     // Parse and validate request body
@@ -99,6 +121,9 @@ export async function POST(request: NextRequest) {
     if (mealPlanItemsToCreate.length > 0) {
       await db.insert(mealPlanItems).values(mealPlanItemsToCreate);
     }
+
+    // Increment usage after successful plan creation
+    await incrementUsage(user.id, 'meal_plan_creation');
 
     // Fetch the complete plan with items for response
     const completeplan = await db.query.weeklyMealPlans.findFirst({

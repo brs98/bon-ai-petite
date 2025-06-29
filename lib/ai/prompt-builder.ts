@@ -430,18 +430,8 @@ Return ONLY a valid JSON object with this exact structure:
     let prompt = '## VARIETY AND CREATIVITY REQUIREMENTS:\n';
 
     if (varietyConfig) {
-      prompt += `- Creative Theme: Apply "${varietyConfig.creativitySeed}" approach to this recipe\n`;
       prompt += `- Complexity Target: Aim for ${varietyConfig.complexityTarget} difficulty level\n`;
       prompt += `- Cooking Technique Focus: Emphasize ${varietyConfig.cookingTechniqueSuggestion} technique\n`;
-
-      if (varietyConfig.culturalFusion) {
-        prompt +=
-          '- Cultural Fusion: Blend elements from different culinary traditions creatively\n';
-      }
-
-      if (varietyConfig.ingredientFocus?.length > 0) {
-        prompt += `- Unique Ingredients: Consider incorporating: ${varietyConfig.ingredientFocus.join(', ')}\n`;
-      }
 
       if (varietyConfig.cuisineRotation?.length > 0) {
         prompt += `- Cuisine Preferences: Draw inspiration from: ${varietyConfig.cuisineRotation.join(' or ')}\n`;

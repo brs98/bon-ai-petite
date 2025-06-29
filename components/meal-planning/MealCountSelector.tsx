@@ -3,7 +3,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Clock, Minus, Plus, Users } from 'lucide-react';
+import { Minus, Plus, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 interface MealCounts {
@@ -65,7 +65,6 @@ export function MealCountSelector({
     (sum, count) => sum + count,
     0,
   );
-  const estimatedTimeMinutes = totalMeals * 15; // Rough estimate: 15 minutes per meal generation
   const hasValidSelection = totalMeals > 0;
 
   // Update parent component when counts change
@@ -95,17 +94,6 @@ export function MealCountSelector({
       ...prev,
       [category]: Math.max(0, prev[category] - 1),
     }));
-  };
-
-  const formatEstimatedTime = (minutes: number): string => {
-    if (minutes < 60) {
-      return `${minutes}m`;
-    }
-    const hours = Math.floor(minutes / 60);
-    const remainingMinutes = minutes % 60;
-    return remainingMinutes > 0
-      ? `${hours}h ${remainingMinutes}m`
-      : `${hours}h`;
   };
 
   return (
@@ -223,15 +211,6 @@ export function MealCountSelector({
                   </Badge>
                 )}
               </div>
-              {totalMeals > 0 && (
-                <div className='flex items-center gap-2 text-sm text-muted-foreground'>
-                  <Clock className='h-4 w-4' />
-                  <span>
-                    Est. {formatEstimatedTime(estimatedTimeMinutes)} generation
-                    time
-                  </span>
-                </div>
-              )}
             </div>
 
             {hasValidSelection && (

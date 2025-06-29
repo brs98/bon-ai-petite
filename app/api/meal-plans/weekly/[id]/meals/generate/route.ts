@@ -7,6 +7,7 @@ import {
     recipes,
     weeklyMealPlans,
 } from '@/lib/db/schema';
+import { checkUsageLimit, incrementUsage } from '@/lib/subscriptions/usage-limits';
 import { and, desc, eq } from 'drizzle-orm';
 import { NextRequest } from 'next/server';
 import { z } from 'zod';
@@ -129,9 +130,22 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         createdAt: recipe.createdAt,
       }));
 
-    // For each meal, generate a recipe
+    // For each meal, generate a recipe, enforcing usage limits per meal
     const results = [];
     for (const mealItem of items) {
+      // Check usage limit before each generation
+      const withinLimit = await checkUsageLimit(user.id, 'recipe_generation');
+      if (!withinLimit) {
+        // If over limit, stop further generations and return partial results
+        return Response.json(
+          {
+            error: 'You have reached your daily recipe generation limit. Please try again tomorrow or upgrade your plan for unlimited access.',
+            partialResults: results,
+          },
+          { status: 429 },
+        );
+      }
+
       // Update meal item status to generating
       await db
         .update(mealPlanItems)
@@ -203,6 +217,10 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
           undefined,
           nutritionProfile || undefined,
         );
+
+        // Increment usage after successful generation
+        await incrementUsage(user.id, 'recipe_generation');
+
         const generatedRecipe = generationResult.recipe;
         if (
           !generatedRecipe ||
@@ -258,7 +276,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
             updatedAt: new Date(),
           })
           .where(eq(mealPlanItems.id, mealItem.id));
-        results.push({ mealId: mealItem.id, success: true });
+        results.push({ mealId: mealItem.id, recipe: generationResult.recipe });
       } catch (generationError) {
         // Reset meal item status on error
         await db
