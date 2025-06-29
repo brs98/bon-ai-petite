@@ -1,16 +1,17 @@
 'use client';
 
 import {
-  deleteAccount,
-  updateAccount,
-  updatePassword,
+    deleteAccount,
+    updateAccount,
+    updatePassword,
 } from '@/app/(login)/actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { User as UserType } from '@/lib/db/schema';
-import { Loader2, Lock, Shield, Trash2, User } from 'lucide-react';
+import { customerPortalAction } from '@/lib/payments/actions';
+import { CreditCard, Loader2, Lock, Shield, Trash2, User } from 'lucide-react';
 import { Suspense, useActionState } from 'react';
 import useSWR from 'swr';
 
@@ -110,6 +111,30 @@ export default function SettingsPage() {
       <h1 className='text-lg lg:text-2xl font-medium text-foreground mb-6'>
         Settings
       </h1>
+
+      {/* Subscription Management Section */}
+      <Card className='mb-8'>
+        <CardHeader>
+          <CardTitle className='flex items-center gap-2'>
+            <CreditCard className='h-5 w-5' />
+            Subscription
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className='mb-4 text-muted-foreground'>
+            Manage your subscription, switch plans, or cancel at the end of your billing period. You will be redirected to our secure Stripe Billing Portal.
+          </p>
+          {/*
+            The form below triggers the customerPortalAction server action, which creates a Stripe Billing Portal session and redirects the user.
+            This is the recommended, secure way to let users self-manage their subscription.
+          */}
+          <form action={customerPortalAction}>
+            <Button type='submit' variant='default'>
+              Manage Subscription
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
 
       {/* Account Information Section */}
       <Card className='mb-8'>
