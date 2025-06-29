@@ -9,7 +9,6 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
 import {
     Form,
     FormControl,
@@ -20,27 +19,20 @@ import {
     FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
 import { calculateDailyCalories, calculateMacros } from '@/lib/utils/nutrition';
 import {
     ACTIVITY_LEVELS,
-    COMMON_ALLERGIES,
-    CUISINE_TYPES,
-    DIETARY_RESTRICTIONS,
+    FITNESS_GOALS,
     NutritionProfileSchema,
-    type NutritionProfile,
+    type NutritionProfile
 } from '@/types/recipe';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Apple, ClipboardCheck, Dumbbell, Ruler, User, Weight } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { GoalsSelector } from './GoalsSelector';
+import { AllergyPreferencesStep } from '../recipes/RecipeGenerator/AllergyPreferencesStep';
+import { CuisinePreferencesStep } from '../recipes/RecipeGenerator/CuisinePreferencesStep';
+import { DietaryPreferencesStep } from '../recipes/RecipeGenerator/DietaryPreferencesStep';
 import { MacroTracker } from './MacroTracker';
 
 interface ProfileSetupProps {
@@ -97,10 +89,9 @@ export function ProfileSetup({
   const steps = [
     { title: 'Physical Stats', description: 'Basic information about you' },
     { title: 'Activity & Goals', description: 'Your lifestyle and objectives' },
-    {
-      title: 'Dietary Preferences',
-      description: 'Food preferences and restrictions',
-    },
+    { title: 'Allergies & Intolerances', description: 'Select any food allergies or intolerances you have.' },
+    { title: 'Dietary Preferences', description: 'Select dietary patterns or restrictions you follow.' },
+    { title: 'Preferred Cuisines', description: 'Select cuisines you enjoy (optional).' },
     { title: 'Nutrition Targets', description: 'Calorie and macro goals' },
     { title: 'Review', description: 'Review and save your profile' },
   ];
@@ -207,287 +198,230 @@ export function ProfileSetup({
               </CardDescription>
             </CardHeader>
             <CardContent className='space-y-6'>
-              {currentStep === 0 && (
-                <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
-                  <FormField
-                    control={form.control}
-                    name='age'
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Age</FormLabel>
-                        <FormControl>
-                          <Input
-                            type='number'
-                            placeholder='Enter your age'
-                            {...field}
-                            onChange={e =>
-                              field.onChange(
-                                parseInt(e.target.value) || undefined,
-                              )
-                            }
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  {/* Height in ft/in */}
-                  <FormItem>
-                    <FormLabel>Height</FormLabel>
-                    <div className='flex gap-2 items-end'>
-                      <Input
-                        type='number'
-                        min={0}
-                        placeholder='Feet'
-                        value={heightFeet ?? ''}
-                        onChange={e => setHeightFeet(parseInt(e.target.value) || 0)}
-                        className='w-16'
-                        aria-label='Height (feet)'
+              {Number(currentStep) === 0 && (
+                <div className="space-y-8 text-center">
+                  <div className="space-y-2">
+                    <User className="h-12 w-12 mx-auto text-primary" />
+                    <h2 className="text-2xl font-bold">Physical Stats</h2>
+                    <p className="text-muted-foreground">
+                      Tell us about yourself so we can personalize your nutrition plan.
+                    </p>
+                  </div>
+                  <div className="flex flex-col md:flex-row gap-6 max-w-3xl mx-auto">
+                    {/* Age */}
+                    <div className="flex-1 flex flex-col items-center">
+                      <FormField
+                        control={form.control}
+                        name="age"
+                        render={({ field }) => (
+                          <FormItem className="w-full">
+                            <FormLabel className="flex items-center gap-2 justify-center">
+                              <User className="h-5 w-5 text-muted-foreground" /> Age
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                type="number"
+                                min={0}
+                                placeholder="Enter your age"
+                                className="w-full text-lg py-4 text-center"
+                                {...field}
+                                onChange={e =>
+                                  field.onChange(parseInt(e.target.value) || undefined)
+                                }
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
                       />
-                      <span className='self-center'>ft</span>
-                      <Input
-                        type='number'
-                        min={0}
-                        max={11}
-                        placeholder='Inches'
-                        value={heightInches ?? ''}
-                        onChange={e => setHeightInches(parseInt(e.target.value) || 0)}
-                        className='w-16'
-                        aria-label='Height (inches)'
-                      />
-                      <span className='self-center'>in</span>
                     </div>
-                  </FormItem>
-
-                  {/* Weight in lbs */}
-                  <FormItem>
-                    <FormLabel>Weight (lbs)</FormLabel>
-                    <Input
-                      type='number'
-                      min={0}
-                      placeholder='Pounds'
-                      value={weightLbs ?? ''}
-                      onChange={e => setWeightLbs(parseInt(e.target.value) || 0)}
-                      aria-label='Weight (lbs)'
-                    />
-                  </FormItem>
+                    {/* Height */}
+                    <div className="flex-1 flex flex-col items-center">
+                      <FormItem className="w-full">
+                        <FormLabel className="flex items-center gap-2 justify-center">
+                          <Ruler className="h-5 w-5 text-muted-foreground" /> Height
+                        </FormLabel>
+                        <div className="flex gap-2 items-end justify-center w-full">
+                          <Input
+                            type="number"
+                            min={0}
+                            placeholder="Feet"
+                            value={heightFeet ?? ''}
+                            onChange={e => setHeightFeet(parseInt(e.target.value) || 0)}
+                            className="w-full text-lg py-4 text-center"
+                            aria-label="Height (feet)"
+                          />
+                          <span className="self-center">ft</span>
+                          <Input
+                            type="number"
+                            min={0}
+                            max={11}
+                            placeholder="Inches"
+                            value={heightInches ?? ''}
+                            onChange={e => setHeightInches(parseInt(e.target.value) || 0)}
+                            className="w-full text-lg py-4 text-center"
+                            aria-label="Height (inches)"
+                          />
+                          <span className="self-center">in</span>
+                        </div>
+                      </FormItem>
+                    </div>
+                    {/* Weight */}
+                    <div className="flex-1 flex flex-col items-center">
+                      <FormItem className="w-full">
+                        <FormLabel className="flex items-center gap-2 justify-center">
+                          <Weight className="h-5 w-5 text-muted-foreground" /> Weight (lbs)
+                        </FormLabel>
+                        <Input
+                          type="number"
+                          min={0}
+                          placeholder="Pounds"
+                          value={weightLbs ?? ''}
+                          onChange={e => setWeightLbs(parseInt(e.target.value) || 0)}
+                          className="w-full text-lg py-4 text-center"
+                          aria-label="Weight (lbs)"
+                        />
+                      </FormItem>
+                    </div>
+                  </div>
                 </div>
               )}
 
-              {currentStep === 1 && (
-                <div className='space-y-6'>
-                  <FormField
-                    control={form.control}
-                    name='activityLevel'
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Activity Level</FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder='Select your activity level' />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {ACTIVITY_LEVELS.map(level => (
-                              <SelectItem key={level.value} value={level.value}>
-                                {level.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormDescription>
-                          This helps us calculate your daily calorie needs
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <GoalsSelector
-                    selectedGoal={selectedGoal}
-                    onGoalSelect={goal => {
-                      setSelectedGoal(goal);
-                      form.setValue(
-                        'goals',
-                        goal as
-                          | 'lose_weight'
-                          | 'gain_weight'
-                          | 'maintain_weight'
-                          | 'gain_muscle'
-                          | 'improve_health',
-                      );
-                    }}
-                  />
-                </div>
-              )}
-
-              {currentStep === 2 && (
-                <div className='space-y-6'>
-                  <FormField
-                    control={form.control}
-                    name='allergies'
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Allergies</FormLabel>
-                        <FormDescription>
-                          Select any food allergies you have
-                        </FormDescription>
-                        <div className='grid grid-cols-2 md:grid-cols-3 gap-3'>
-                          {COMMON_ALLERGIES.map(allergy => (
-                            <div
-                              key={allergy}
-                              className='flex items-center space-x-2'
-                            >
-                              <Checkbox
-                                id={`allergy-${allergy}`}
-                                checked={field.value?.includes(allergy)}
-                                onCheckedChange={checked => {
-                                  if (checked) {
-                                    field.onChange([
-                                      ...(field.value || []),
-                                      allergy,
-                                    ]);
-                                  } else {
-                                    field.onChange(
-                                      field.value?.filter(
-                                        item => item !== allergy,
-                                      ),
-                                    );
-                                  }
-                                }}
-                              />
-                              <Label htmlFor={`allergy-${allergy}`}>
-                                {allergy}
-                              </Label>
-                            </div>
-                          ))}
-                        </div>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name='dietaryRestrictions'
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Dietary Restrictions</FormLabel>
-                        <FormDescription>
-                          Select any dietary preferences you follow
-                        </FormDescription>
-                        <div className='grid grid-cols-2 md:grid-cols-3 gap-3'>
-                          {DIETARY_RESTRICTIONS.map(restriction => (
-                            <div
-                              key={restriction}
-                              className='flex items-center space-x-2'
-                            >
-                              <Checkbox
-                                id={`restriction-${restriction}`}
-                                checked={field.value?.includes(restriction)}
-                                onCheckedChange={checked => {
-                                  if (checked) {
-                                    field.onChange([
-                                      ...(field.value || []),
-                                      restriction,
-                                    ]);
-                                  } else {
-                                    field.onChange(
-                                      field.value?.filter(
-                                        item => item !== restriction,
-                                      ),
-                                    );
-                                  }
-                                }}
-                              />
-                              <Label htmlFor={`restriction-${restriction}`}>
-                                {restriction}
-                              </Label>
-                            </div>
-                          ))}
-                        </div>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name='cuisinePreferences'
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Preferred Cuisines</FormLabel>
-                        <FormDescription>
-                          Select cuisines you enjoy (optional)
-                        </FormDescription>
-                        <div className='grid grid-cols-2 md:grid-cols-4 gap-3'>
-                          {CUISINE_TYPES.map(cuisine => (
-                            <div
-                              key={cuisine}
-                              className='flex items-center space-x-2'
-                            >
-                              <Checkbox
-                                id={`cuisine-${cuisine}`}
-                                checked={field.value?.includes(cuisine)}
-                                onCheckedChange={checked => {
-                                  if (checked) {
-                                    field.onChange([
-                                      ...(field.value || []),
-                                      cuisine,
-                                    ]);
-                                  } else {
-                                    field.onChange(
-                                      field.value?.filter(
-                                        item => item !== cuisine,
-                                      ),
-                                    );
-                                  }
-                                }}
-                              />
-                              <Label htmlFor={`cuisine-${cuisine}`}>
-                                {cuisine}
-                              </Label>
-                            </div>
-                          ))}
-                        </div>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              )}
-
-              {currentStep === 3 && (
-                <div className='grid grid-cols-1 lg:grid-cols-2 gap-8'>
-                  <div className='space-y-6'>
+              {Number(currentStep) === 1 && (
+                <div className="space-y-8 text-center">
+                  <div className="space-y-2">
+                    <Dumbbell className="h-12 w-12 mx-auto text-primary" />
+                    <h2 className="text-2xl font-bold">Activity & Goals</h2>
+                    <p className="text-muted-foreground">
+                      Tell us about your lifestyle and fitness goals so we can personalize your nutrition plan.
+                    </p>
+                  </div>
+                  <div className="flex flex-col gap-8 max-w-2xl mx-auto">
+                    {/* Activity Level Badge Group */}
                     <FormField
                       control={form.control}
-                      name='dailyCalories'
+                      name="activityLevel"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Daily Calorie Target</FormLabel>
+                          <FormLabel className="flex items-center gap-2 justify-center">
+                            Activity Level
+                          </FormLabel>
+                          <div className="flex flex-wrap gap-3 justify-center">
+                            {ACTIVITY_LEVELS.map(level => (
+                              <Button
+                                key={level.value}
+                                type="button"
+                                variant={field.value === level.value ? 'default' : 'outline'}
+                                className="py-2 px-4 text-sm"
+                                onClick={() => field.onChange(level.value)}
+                              >
+                                {level.label}
+                              </Button>
+                            ))}
+                          </div>
+                          <FormDescription>
+                            This helps us calculate your daily calorie needs
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    {/* Goals Badge Group */}
+                    <FormField
+                      control={form.control}
+                      name="goals"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="flex items-center gap-2 justify-center">
+                            Fitness Goal
+                          </FormLabel>
+                          <div className="flex flex-wrap gap-3 justify-center">
+                            {FITNESS_GOALS.map(goal => (
+                              <Button
+                                key={goal.value}
+                                type="button"
+                                variant={field.value === goal.value ? 'default' : 'outline'}
+                                className="py-2 px-4 text-sm"
+                                onClick={() => {
+                                  setSelectedGoal(goal.value);
+                                  field.onChange(goal.value);
+                                }}
+                              >
+                                {goal.label}
+                              </Button>
+                            ))}
+                          </div>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {Number(currentStep) === 2 && (
+                <FormField
+                  control={form.control}
+                  name="allergies"
+                  render={({ field }) => (
+                    <AllergyPreferencesStep value={field.value || []} onChange={field.onChange} />
+                  )}
+                />
+              )}
+
+              {Number(currentStep) === 3 && (
+                <FormField
+                  control={form.control}
+                  name="dietaryRestrictions"
+                  render={({ field }) => (
+                    <DietaryPreferencesStep value={field.value || []} onChange={field.onChange} />
+                  )}
+                />
+              )}
+
+              {Number(currentStep) === 4 && (
+                <FormField
+                  control={form.control}
+                  name="cuisinePreferences"
+                  render={({ field }) => (
+                    <CuisinePreferencesStep value={field.value || []} onChange={field.onChange} />
+                  )}
+                />
+              )}
+
+              {Number(currentStep) === 5 && (
+                <div className="space-y-8 text-center">
+                  <div className="space-y-2">
+                    <Apple className="h-12 w-12 mx-auto text-primary" />
+                    <h2 className="text-2xl font-bold">Nutrition Targets</h2>
+                    <p className="text-muted-foreground">
+                      Set your daily calorie and macronutrient goals. We'll use these to personalize your meal plans.
+                    </p>
+                  </div>
+                  <div className="flex flex-col gap-8 max-w-2xl mx-auto">
+                    <FormField
+                      control={form.control}
+                      name="dailyCalories"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="flex items-center gap-2 justify-center">
+                            Daily Calorie Target
+                          </FormLabel>
                           <FormControl>
                             <Input
-                              type='number'
-                              placeholder='Daily calorie target'
+                              type="number"
+                              placeholder="Daily calorie target"
+                              className="text-lg py-4 text-center"
                               {...field}
                               onChange={e =>
-                                field.onChange(
-                                  parseInt(e.target.value) || undefined,
-                                )
+                                field.onChange(parseInt(e.target.value) || undefined)
                               }
                             />
                           </FormControl>
                           <FormDescription>
                             {calculatedCalories && (
                               <span>
-                                Suggested: {calculatedCalories} calories based
-                                on your profile
+                                Suggested: {calculatedCalories} calories based on your profile
                               </span>
                             )}
                           </FormDescription>
@@ -495,23 +429,23 @@ export function ProfileSetup({
                         </FormItem>
                       )}
                     />
-
-                    <div className='grid grid-cols-3 gap-4'>
+                    <div className="flex flex-col md:flex-row gap-6 justify-center">
                       <FormField
                         control={form.control}
-                        name='macroProtein'
+                        name="macroProtein"
                         render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Protein (g)</FormLabel>
+                          <FormItem className="flex-1">
+                            <FormLabel className="flex items-center gap-2 justify-center">
+                              Protein (g)
+                            </FormLabel>
                             <FormControl>
                               <Input
-                                type='number'
-                                placeholder='Protein (g)'
+                                type="number"
+                                placeholder="Protein (g)"
+                                className="text-lg py-4 text-center"
                                 {...field}
                                 onChange={e =>
-                                  field.onChange(
-                                    parseInt(e.target.value) || undefined,
-                                  )
+                                  field.onChange(parseInt(e.target.value) || undefined)
                                 }
                               />
                             </FormControl>
@@ -519,22 +453,22 @@ export function ProfileSetup({
                           </FormItem>
                         )}
                       />
-
                       <FormField
                         control={form.control}
-                        name='macroCarbs'
+                        name="macroCarbs"
                         render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Carbs (g)</FormLabel>
+                          <FormItem className="flex-1">
+                            <FormLabel className="flex items-center gap-2 justify-center">
+                              Carbs (g)
+                            </FormLabel>
                             <FormControl>
                               <Input
-                                type='number'
-                                placeholder='Carbs (g)'
+                                type="number"
+                                placeholder="Carbs (g)"
+                                className="text-lg py-4 text-center"
                                 {...field}
                                 onChange={e =>
-                                  field.onChange(
-                                    parseInt(e.target.value) || undefined,
-                                  )
+                                  field.onChange(parseInt(e.target.value) || undefined)
                                 }
                               />
                             </FormControl>
@@ -542,22 +476,22 @@ export function ProfileSetup({
                           </FormItem>
                         )}
                       />
-
                       <FormField
                         control={form.control}
-                        name='macroFat'
+                        name="macroFat"
                         render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Fat (g)</FormLabel>
+                          <FormItem className="flex-1">
+                            <FormLabel className="flex items-center gap-2 justify-center">
+                              Fat (g)
+                            </FormLabel>
                             <FormControl>
                               <Input
-                                type='number'
-                                placeholder='Fat (g)'
+                                type="number"
+                                placeholder="Fat (g)"
+                                className="text-lg py-4 text-center"
                                 {...field}
                                 onChange={e =>
-                                  field.onChange(
-                                    parseInt(e.target.value) || undefined,
-                                  )
+                                  field.onChange(parseInt(e.target.value) || undefined)
                                 }
                               />
                             </FormControl>
@@ -566,106 +500,118 @@ export function ProfileSetup({
                         )}
                       />
                     </div>
+                    <MacroTracker
+                      data-testid="macro-tracker"
+                      dailyCalories={formValues.dailyCalories}
+                      macroProtein={formValues.macroProtein}
+                      macroCarbs={formValues.macroCarbs}
+                      macroFat={formValues.macroFat}
+                    />
                   </div>
-
-                  <MacroTracker
-                    data-testid='macro-tracker'
-                    dailyCalories={formValues.dailyCalories}
-                    macroProtein={formValues.macroProtein}
-                    macroCarbs={formValues.macroCarbs}
-                    macroFat={formValues.macroFat}
-                  />
                 </div>
               )}
 
-              {currentStep === 4 && (
-                <div className='grid grid-cols-1 lg:grid-cols-2 gap-8'>
-                  <div className='space-y-4'>
-                    <h3 className='text-lg font-medium'>Profile Summary</h3>
-
-                    <div className='space-y-4'>
-                      <div>
-                        <h4 className='font-medium text-sm'>Physical Stats</h4>
-                        <p className='text-sm text-muted-foreground'>
-                          {formValues.age} years old, {formatHeight(formValues.height)}, {formValues.weight} lbs
-                        </p>
+              {Number(currentStep) === 6 && (
+                <div className="space-y-8 text-center">
+                  <div className="space-y-2">
+                    <ClipboardCheck className="h-12 w-12 mx-auto text-primary" />
+                    <h2 className="text-2xl font-bold">Review Your Profile</h2>
+                    <p className="text-muted-foreground">
+                      Please review your information below. You can edit any section before saving.
+                    </p>
+                  </div>
+                  <div className="flex flex-col gap-8 max-w-2xl mx-auto text-left">
+                    {/* Physical Stats */}
+                    <div className="rounded-lg border p-4 space-y-2 bg-muted/50">
+                      <div className="flex justify-between items-center">
+                        <h3 className="font-semibold text-lg">Physical Stats</h3>
+                        <Button type="button" size="sm" variant="outline" onClick={() => setCurrentStep(0)}>
+                          Edit
+                        </Button>
                       </div>
-
-                      <div>
-                        <h4 className='font-medium text-sm'>
-                          Activity & Goals
-                        </h4>
-                        <p className='text-sm text-muted-foreground'>
-                          {
-                            ACTIVITY_LEVELS.find(
-                              l => l.value === formValues.activityLevel,
-                            )?.label
-                          }
-                        </p>
-                        <p className='text-sm text-muted-foreground'>
-                          Goal: {formValues.goals?.replace('_', ' ')}
-                        </p>
+                      <div className="text-muted-foreground">
+                        {formValues.age} years old, {formatHeight(formValues.height)}, {formValues.weight} lbs
                       </div>
-
-                      {(formValues.allergies?.length ||
-                        formValues.dietaryRestrictions?.length) && (
+                    </div>
+                    {/* Activity & Goals */}
+                    <div className="rounded-lg border p-4 space-y-2 bg-muted/50">
+                      <div className="flex justify-between items-center">
+                        <h3 className="font-semibold text-lg">Activity & Goals</h3>
+                        <Button type="button" size="sm" variant="outline" onClick={() => setCurrentStep(1)}>
+                          Edit
+                        </Button>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <Badge>{ACTIVITY_LEVELS.find(l => l.value === formValues.activityLevel)?.label || formValues.activityLevel}</Badge>
+                        <Badge>{FITNESS_GOALS.find(g => g.value === formValues.goals)?.label || formValues.goals}</Badge>
+                      </div>
+                    </div>
+                    {/* Allergies */}
+                    <div className="rounded-lg border p-4 space-y-2 bg-muted/50">
+                      <div className="flex justify-between items-center">
+                        <h3 className="font-semibold text-lg">Allergies & Intolerances</h3>
+                        <Button type="button" size="sm" variant="outline" onClick={() => setCurrentStep(2)}>
+                          Edit
+                        </Button>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {(formValues.allergies?.length ? formValues.allergies : ['None']).map(a => (
+                          <Badge key={a}>{a}</Badge>
+                        ))}
+                      </div>
+                    </div>
+                    {/* Dietary Preferences */}
+                    <div className="rounded-lg border p-4 space-y-2 bg-muted/50">
+                      <div className="flex justify-between items-center">
+                        <h3 className="font-semibold text-lg">Dietary Preferences</h3>
+                        <Button type="button" size="sm" variant="outline" onClick={() => setCurrentStep(3)}>
+                          Edit
+                        </Button>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {(formValues.dietaryRestrictions?.length ? formValues.dietaryRestrictions : ['None']).map(d => (
+                          <Badge key={d}>{d}</Badge>
+                        ))}
+                      </div>
+                    </div>
+                    {/* Preferred Cuisines */}
+                    <div className="rounded-lg border p-4 space-y-2 bg-muted/50">
+                      <div className="flex justify-between items-center">
+                        <h3 className="font-semibold text-lg">Preferred Cuisines</h3>
+                        <Button type="button" size="sm" variant="outline" onClick={() => setCurrentStep(4)}>
+                          Edit
+                        </Button>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {(formValues.cuisinePreferences?.length ? formValues.cuisinePreferences : ['None']).map(c => (
+                          <Badge key={c}>{c}</Badge>
+                        ))}
+                      </div>
+                    </div>
+                    {/* Nutrition Targets */}
+                    <div className="rounded-lg border p-4 space-y-2 bg-muted/50">
+                      <div className="flex justify-between items-center">
+                        <h3 className="font-semibold text-lg">Nutrition Targets</h3>
+                        <Button type="button" size="sm" variant="outline" onClick={() => setCurrentStep(5)}>
+                          Edit
+                        </Button>
+                      </div>
+                      <div className="flex flex-wrap gap-4">
                         <div>
-                          <h4 className='font-medium text-sm'>
-                            Dietary Restrictions
-                          </h4>
-                          <div className='flex flex-wrap gap-1 mt-1'>
-                            {formValues.allergies?.map(allergy => (
-                              <Badge
-                                key={allergy}
-                                variant='destructive'
-                                className='text-xs'
-                              >
-                                {allergy}
-                              </Badge>
-                            ))}
-                            {formValues.dietaryRestrictions?.map(
-                              restriction => (
-                                <Badge
-                                  key={restriction}
-                                  variant='secondary'
-                                  className='text-xs'
-                                >
-                                  {restriction}
-                                </Badge>
-                              ),
-                            )}
-                          </div>
+                          <span className="font-medium">Calories:</span> {formValues.dailyCalories || '—'} kcal
                         </div>
-                      )}
-
-                      {formValues.cuisinePreferences?.length && (
                         <div>
-                          <h4 className='font-medium text-sm'>
-                            Preferred Cuisines
-                          </h4>
-                          <div className='flex flex-wrap gap-1 mt-1'>
-                            {formValues.cuisinePreferences.map(cuisine => (
-                              <Badge
-                                key={cuisine}
-                                variant='outline'
-                                className='text-xs'
-                              >
-                                {cuisine}
-                              </Badge>
-                            ))}
-                          </div>
+                          <span className="font-medium">Protein:</span> {formValues.macroProtein || '—'} g
                         </div>
-                      )}
+                        <div>
+                          <span className="font-medium">Carbs:</span> {formValues.macroCarbs || '—'} g
+                        </div>
+                        <div>
+                          <span className="font-medium">Fat:</span> {formValues.macroFat || '—'} g
+                        </div>
+                      </div>
                     </div>
                   </div>
-
-                  <MacroTracker
-                    data-testid='macro-tracker'
-                    dailyCalories={formValues.dailyCalories}
-                    macroProtein={formValues.macroProtein}
-                    macroCarbs={formValues.macroCarbs}
-                    macroFat={formValues.macroFat}
-                  />
                 </div>
               )}
             </CardContent>

@@ -3,14 +3,14 @@
 import { NutritionProfileBanner } from '@/components/nutrition/NutritionProfileBanner';
 import { Button } from '@/components/ui/button';
 import {
-  ArrowRight,
-  CheckCircle,
-  ChefHat,
-  Clock,
-  Heart,
-  ShoppingCart,
-  Sparkles,
-  Users,
+    ArrowRight,
+    CheckCircle,
+    ChefHat,
+    Clock,
+    Heart,
+    ShoppingCart,
+    Sparkles,
+    Users,
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import Image from 'next/image';
@@ -178,7 +178,7 @@ export default function HomePage() {
                   whileHover={{ scale: 1.05 }}
                 >
                   <CheckCircle className='h-4 w-4 text-primary mr-2' />
-                  Free 7-day trial
+                  Free 14-day trial
                 </motion.div>
               </motion.div>
             </motion.div>
@@ -767,7 +767,7 @@ export default function HomePage() {
             whileInView={{ opacity: 1 }}
             transition={{ delay: 0.6 }}
           >
-            {['Free 7-day trial', 'Cancel anytime', 'No setup fees'].map(
+            {['Free 14-day trial', 'Cancel anytime', 'No setup fees'].map(
               (text, index) => (
                 <motion.div
                   key={index}

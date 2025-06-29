@@ -1,7 +1,7 @@
-import { Check, ChefHat, Sparkles, Star, Zap } from 'lucide-react';
 import { getStripePrices, getStripeProducts } from '@/lib/payments/stripe';
-import { SubmitButton } from './submit-button';
+import { Check, ChefHat, Sparkles, Star, Zap } from 'lucide-react';
 import Link from 'next/link';
+import { SubmitButton } from './submit-button';
 
 // Prices are fresh for one hour max
 export const revalidate = 3600;
@@ -71,7 +71,7 @@ export default async function PricingPage() {
             displayName={basePlan?.name || 'Essential'}
             price={basePrice?.unitAmount || 800}
             interval={basePrice?.interval || 'month'}
-            trialDays={basePrice?.trialPeriodDays || 7}
+            trialDays={basePrice?.trialPeriodDays || 14}
             features={[
               'AI-Generated Meal Plans',
               'Basic Dietary Preferences',
@@ -88,7 +88,7 @@ export default async function PricingPage() {
             displayName={plusPlan?.name || 'Premium'}
             price={plusPrice?.unitAmount || 1200}
             interval={plusPrice?.interval || 'month'}
-            trialDays={plusPrice?.trialPeriodDays || 7}
+            trialDays={plusPrice?.trialPeriodDays || 14}
             features={[
               'Everything in Essential, plus:',
               'Advanced Nutrition Tracking',
@@ -123,7 +123,7 @@ export default async function PricingPage() {
             <div className='flex items-center justify-center space-x-8 text-sm text-muted-foreground'>
               <div className='flex items-center'>
                 <Check className='h-4 w-4 text-primary mr-2' />
-                <span>7-day free trial</span>
+                <span>14-day free trial</span>
               </div>
               <div className='flex items-center'>
                 <Check className='h-4 w-4 text-primary mr-2' />

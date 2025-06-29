@@ -1,17 +1,18 @@
 'use client';
 
-import Link from 'next/link';
-import { useActionState } from 'react';
-import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ChefHat, Loader2, Sparkles } from 'lucide-react';
-import { signIn, signUp } from './actions';
 import { ActionState } from '@/lib/auth/middleware';
+import { ChefHat, Loader2, Sparkles } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useActionState, useEffect } from 'react';
+import { signIn, signUp } from './actions';
 
 export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const redirect = searchParams.get('redirect');
   const priceId = searchParams.get('priceId');
   const inviteId = searchParams.get('inviteId');
@@ -20,6 +21,13 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
     mode === 'signin' ? signIn : signUp,
     { error: '' },
   );
+
+  // Redirect to pricing if signing up and no plan is selected
+  useEffect(() => {
+    if (mode === 'signup' && !plan) {
+      router.replace('/pricing');
+    }
+  }, [mode, plan, router]);
 
   // Plan display information
   const planInfo = {
@@ -80,7 +88,7 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
                 </span>
               </div>
               <p className='text-sm text-muted-foreground mb-2'>
-                {selectedPlan.price} • 7-day free trial
+                {selectedPlan.price} • 14-day free trial
               </p>
               <div className='text-xs text-muted-foreground'>
                 {selectedPlan.features.slice(0, 2).join(' • ')}
@@ -209,7 +217,7 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
               <div className='flex items-center justify-center space-x-6 text-sm text-muted-foreground'>
                 <div className='flex items-center'>
                   <div className='w-2 h-2 bg-primary rounded-full mr-2'></div>
-                  <span>7-day free trial</span>
+                  <span>14-day free trial</span>
                 </div>
                 <div className='flex items-center'>
                   <div className='w-2 h-2 bg-primary rounded-full mr-2'></div>
