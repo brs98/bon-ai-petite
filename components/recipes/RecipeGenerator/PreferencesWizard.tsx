@@ -4,30 +4,30 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from '@/components/ui/form';
 import { Progress } from '@/components/ui/progress';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
-    COMMON_ALLERGIES,
-    CUISINE_TYPES,
-    DIETARY_RESTRICTIONS,
-    type NutritionProfile,
+  COMMON_ALLERGIES,
+  CUISINE_TYPES,
+  DIETARY_RESTRICTIONS,
+  type NutritionProfile,
 } from '@/types/recipe';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
-    ArrowLeft,
-    ArrowRight,
-    Check,
-    ChefHat,
-    Heart,
-    Shield,
-    UtensilsCrossed,
+  ArrowLeft,
+  ArrowRight,
+  Check,
+  ChefHat,
+  Heart,
+  Shield,
+  UtensilsCrossed,
 } from 'lucide-react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';

@@ -28,7 +28,8 @@ export const CuisinePreferencesStep: React.FC<CuisinePreferencesStepProps> = ({
         <UtensilsCrossed className='h-12 w-12 mx-auto text-primary' />
         <h2 className='text-2xl font-bold'>Preferred Cuisines</h2>
         <p className='text-muted-foreground'>
-          Select cuisines you enjoy. This helps us tailor recipes to your tastes (optional).
+          Select cuisines you enjoy. This helps us tailor recipes to your tastes
+          (optional).
         </p>
       </div>
       <div className='flex flex-wrap gap-3 justify-center max-w-4xl mx-auto'>
@@ -39,9 +40,7 @@ export const CuisinePreferencesStep: React.FC<CuisinePreferencesStepProps> = ({
             className='cursor-pointer hover:bg-accent text-sm py-2 px-4 transition-all'
             onClick={() => toggleSelection(cuisine)}
           >
-            {value.includes(cuisine) && (
-              <Check className='h-3 w-3 mr-1' />
-            )}
+            {value.includes(cuisine) && <Check className='h-3 w-3 mr-1' />}
             {cuisine}
           </Badge>
         ))}
@@ -53,4 +52,4 @@ export const CuisinePreferencesStep: React.FC<CuisinePreferencesStepProps> = ({
       )}
     </div>
   );
-}; 
+};

@@ -40,9 +40,16 @@ function getWeekStartDateString(): string {
  * @param action - The action to check (e.g., 'recipe_generation')
  * @returns Promise<boolean> - true if within limit, false if exceeded
  */
-export async function checkUsageLimit(userId: number, action: UsageAction): Promise<boolean> {
+export async function checkUsageLimit(
+  userId: number,
+  action: UsageAction,
+): Promise<boolean> {
   // Fetch user plan
-  const userArr = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+  const userArr = await db
+    .select()
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
   const user = userArr[0];
   if (!user) return false;
   const plan = (user.planName as keyof typeof PLAN_LIMITS) || 'essential';
@@ -65,11 +72,13 @@ export async function checkUsageLimit(userId: number, action: UsageAction): Prom
   const usageArr = await db
     .select()
     .from(usageTracking)
-    .where(and(
-      eq(usageTracking.userId, userId),
-      eq(usageTracking.action, action),
-      eq(usageTracking.date, periodStart)
-    ))
+    .where(
+      and(
+        eq(usageTracking.userId, userId),
+        eq(usageTracking.action, action),
+        eq(usageTracking.date, periodStart),
+      ),
+    )
     .limit(1);
   const usage = usageArr[0];
   const count = usage ? usage.count : 0;
@@ -80,7 +89,10 @@ export async function checkUsageLimit(userId: number, action: UsageAction): Prom
  * Increment a user's usage for a given action and period.
  * Call this after a successful action (e.g., after recipe generation).
  */
-export async function incrementUsage(userId: number, action: UsageAction): Promise<void> {
+export async function incrementUsage(
+  userId: number,
+  action: UsageAction,
+): Promise<void> {
   let periodStart: string;
   if (action === 'recipe_generation') {
     periodStart = getTodayDateString();
@@ -94,11 +106,13 @@ export async function incrementUsage(userId: number, action: UsageAction): Promi
   const existing = await db
     .select()
     .from(usageTracking)
-    .where(and(
-      eq(usageTracking.userId, userId),
-      eq(usageTracking.action, action),
-      eq(usageTracking.date, periodStart)
-    ))
+    .where(
+      and(
+        eq(usageTracking.userId, userId),
+        eq(usageTracking.action, action),
+        eq(usageTracking.date, periodStart),
+      ),
+    )
     .limit(1);
   if (existing.length > 0) {
     await db
@@ -115,4 +129,4 @@ export async function incrementUsage(userId: number, action: UsageAction): Promi
   }
 }
 
-// ... more functions to be added for incrementing usage, getting usage, etc. 
+// ... more functions to be added for incrementing usage, getting usage, etc.

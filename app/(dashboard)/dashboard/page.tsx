@@ -21,7 +21,7 @@ import {
   Target,
   TrendingUp,
   Utensils,
-  Zap
+  Zap,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Suspense } from 'react';
@@ -33,25 +33,25 @@ function getCurrentWeekRange() {
   const monday = new Date(now);
   monday.setDate(now.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1));
   monday.setHours(0, 0, 0, 0);
-  
+
   const sunday = new Date(monday);
   sunday.setDate(monday.getDate() + 6);
   sunday.setHours(23, 59, 59, 999);
-  
+
   return {
     start: monday.toISOString().split('T')[0],
-    end: sunday.toISOString().split('T')[0]
+    end: sunday.toISOString().split('T')[0],
   };
 }
 
 // Helper function to format goal text
 function formatGoal(goal: string) {
   const goalMap: Record<string, string> = {
-    'lose_weight': 'Lose Weight',
-    'gain_weight': 'Gain Weight', 
-    'maintain_weight': 'Maintain Weight',
-    'gain_muscle': 'Gain Muscle',
-    'improve_health': 'Improve Health'
+    lose_weight: 'Lose Weight',
+    gain_weight: 'Gain Weight',
+    maintain_weight: 'Maintain Weight',
+    gain_muscle: 'Gain Muscle',
+    improve_health: 'Improve Health',
   };
   return goalMap[goal] || goal;
 }
@@ -59,11 +59,11 @@ function formatGoal(goal: string) {
 // Helper function to format activity level
 function formatActivityLevel(level: string) {
   const levelMap: Record<string, string> = {
-    'sedentary': 'Sedentary',
-    'lightly_active': 'Lightly Active',
-    'moderately_active': 'Moderately Active', 
-    'very_active': 'Very Active',
-    'extremely_active': 'Extremely Active'
+    sedentary: 'Sedentary',
+    lightly_active: 'Lightly Active',
+    moderately_active: 'Moderately Active',
+    very_active: 'Very Active',
+    extremely_active: 'Extremely Active',
   };
   return levelMap[level] || level;
 }
@@ -83,7 +83,7 @@ async function getDashboardData() {
     where: and(
       eq(weeklyMealPlans.userId, user.id),
       gte(weeklyMealPlans.startDate, weekRange.start),
-      lte(weeklyMealPlans.endDate, weekRange.end)
+      lte(weeklyMealPlans.endDate, weekRange.end),
     ),
     with: {
       mealPlanItems: {
@@ -98,36 +98,41 @@ async function getDashboardData() {
   // Get recent meal plans count
   const recentPlansCount = await db.$count(
     weeklyMealPlans,
-    eq(weeklyMealPlans.userId, user.id)
+    eq(weeklyMealPlans.userId, user.id),
   );
 
   return {
     user,
     nutritionProfile,
     currentWeekPlan,
-    recentPlansCount
+    recentPlansCount,
   };
 }
 
 export default async function DashboardPage() {
   const data = await getDashboardData();
-  
+
   if (!data) {
     return (
       <section className='flex-1 p-4 lg:p-8'>
         <div className='text-center py-12'>
-          <p className='text-muted-foreground'>Please sign in to view your dashboard.</p>
+          <p className='text-muted-foreground'>
+            Please sign in to view your dashboard.
+          </p>
         </div>
       </section>
     );
   }
 
   const { user, nutritionProfile, currentWeekPlan, recentPlansCount } = data;
-  
+
   // Calculate meal plan progress
   const totalMeals = currentWeekPlan?.totalMeals || 0;
-  const generatedMeals = currentWeekPlan?.mealPlanItems?.filter(item => item.status === 'generated').length || 0;
-  const progressPercentage = totalMeals > 0 ? (generatedMeals / totalMeals) * 100 : 0;
+  const generatedMeals =
+    currentWeekPlan?.mealPlanItems?.filter(item => item.status === 'generated')
+      .length || 0;
+  const progressPercentage =
+    totalMeals > 0 ? (generatedMeals / totalMeals) * 100 : 0;
 
   // Quick action cards
   const quickActions = [
@@ -179,7 +184,7 @@ export default async function DashboardPage() {
             <Target className='h-5 w-5 text-primary' />
             <h2 className='text-xl font-semibold'>Your Nutrition Goals</h2>
           </div>
-          
+
           <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4'>
             <Card className='border-primary/20'>
               <CardHeader className='pb-3'>
@@ -205,7 +210,11 @@ export default async function DashboardPage() {
               <CardContent>
                 <div className='text-2xl font-bold'>
                   {nutritionProfile.dailyCalories || 'Not set'}
-                  {nutritionProfile.dailyCalories && <span className='text-sm font-normal text-muted-foreground ml-1'>kcal</span>}
+                  {nutritionProfile.dailyCalories && (
+                    <span className='text-sm font-normal text-muted-foreground ml-1'>
+                      kcal
+                    </span>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -233,14 +242,18 @@ export default async function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className='text-lg font-bold'>
-                  {nutritionProfile.macroProtein || 0}g / {nutritionProfile.macroCarbs || 0}g / {nutritionProfile.macroFat || 0}g
+                  {nutritionProfile.macroProtein || 0}g /{' '}
+                  {nutritionProfile.macroCarbs || 0}g /{' '}
+                  {nutritionProfile.macroFat || 0}g
                 </div>
               </CardContent>
             </Card>
           </div>
 
           {/* Dietary preferences */}
-          {(nutritionProfile.allergies?.length || nutritionProfile.dietaryRestrictions?.length || nutritionProfile.cuisinePreferences?.length) && (
+          {(nutritionProfile.allergies?.length ||
+            nutritionProfile.dietaryRestrictions?.length ||
+            nutritionProfile.cuisinePreferences?.length) && (
             <Card>
               <CardHeader>
                 <CardTitle className='text-lg flex items-center gap-2'>
@@ -251,23 +264,35 @@ export default async function DashboardPage() {
               <CardContent className='space-y-4'>
                 {nutritionProfile.allergies?.length && (
                   <div>
-                    <p className='text-sm font-medium text-muted-foreground mb-2'>Allergies</p>
+                    <p className='text-sm font-medium text-muted-foreground mb-2'>
+                      Allergies
+                    </p>
                     <div className='flex flex-wrap gap-2'>
-                      {nutritionProfile.allergies.map((allergy) => (
-                        <Badge key={allergy} variant='destructive' className='text-xs'>
+                      {nutritionProfile.allergies.map(allergy => (
+                        <Badge
+                          key={allergy}
+                          variant='destructive'
+                          className='text-xs'
+                        >
                           {allergy}
                         </Badge>
                       ))}
                     </div>
                   </div>
                 )}
-                
+
                 {nutritionProfile.dietaryRestrictions?.length && (
                   <div>
-                    <p className='text-sm font-medium text-muted-foreground mb-2'>Dietary Restrictions</p>
+                    <p className='text-sm font-medium text-muted-foreground mb-2'>
+                      Dietary Restrictions
+                    </p>
                     <div className='flex flex-wrap gap-2'>
-                      {nutritionProfile.dietaryRestrictions.map((restriction) => (
-                        <Badge key={restriction} variant='secondary' className='text-xs'>
+                      {nutritionProfile.dietaryRestrictions.map(restriction => (
+                        <Badge
+                          key={restriction}
+                          variant='secondary'
+                          className='text-xs'
+                        >
                           {restriction}
                         </Badge>
                       ))}
@@ -277,10 +302,16 @@ export default async function DashboardPage() {
 
                 {nutritionProfile.cuisinePreferences?.length && (
                   <div>
-                    <p className='text-sm font-medium text-muted-foreground mb-2'>Favorite Cuisines</p>
+                    <p className='text-sm font-medium text-muted-foreground mb-2'>
+                      Favorite Cuisines
+                    </p>
                     <div className='flex flex-wrap gap-2'>
-                      {nutritionProfile.cuisinePreferences.map((cuisine) => (
-                        <Badge key={cuisine} variant='outline' className='text-xs'>
+                      {nutritionProfile.cuisinePreferences.map(cuisine => (
+                        <Badge
+                          key={cuisine}
+                          variant='outline'
+                          className='text-xs'
+                        >
                           {cuisine}
                         </Badge>
                       ))}
@@ -301,7 +332,8 @@ export default async function DashboardPage() {
           </CardHeader>
           <CardContent className='space-y-4'>
             <p className='text-amber-700 dark:text-amber-300'>
-              Get personalized recipe recommendations by setting up your nutrition goals and preferences.
+              Get personalized recipe recommendations by setting up your
+              nutrition goals and preferences.
             </p>
             <Button asChild className='bg-amber-600 hover:bg-amber-700'>
               <Link href='/dashboard/settings/nutrition'>
@@ -332,24 +364,34 @@ export default async function DashboardPage() {
             <Card>
               <CardHeader>
                 <div className='flex items-center justify-between'>
-                  <CardTitle className='text-lg'>{currentWeekPlan.name}</CardTitle>
+                  <CardTitle className='text-lg'>
+                    {currentWeekPlan.name}
+                  </CardTitle>
                   <Button asChild size='sm' variant='outline'>
-                    <Link href={`/dashboard/meal-planning/weekly/${currentWeekPlan.id}`}>
+                    <Link
+                      href={`/dashboard/meal-planning/weekly/${currentWeekPlan.id}`}
+                    >
                       View Plan
                       <ArrowRight className='ml-2 h-4 w-4' />
                     </Link>
                   </Button>
                 </div>
                 {currentWeekPlan.description && (
-                  <p className='text-sm text-muted-foreground'>{currentWeekPlan.description}</p>
+                  <p className='text-sm text-muted-foreground'>
+                    {currentWeekPlan.description}
+                  </p>
                 )}
               </CardHeader>
               <CardContent className='space-y-4'>
                 {/* Progress */}
                 <div>
                   <div className='flex items-center justify-between text-sm mb-2'>
-                    <span className='text-muted-foreground'>Meal Generation Progress</span>
-                    <span className='font-medium'>{generatedMeals}/{totalMeals} meals</span>
+                    <span className='text-muted-foreground'>
+                      Meal Generation Progress
+                    </span>
+                    <span className='font-medium'>
+                      {generatedMeals}/{totalMeals} meals
+                    </span>
                   </div>
                   <Progress value={progressPercentage} className='h-2' />
                 </div>
@@ -357,19 +399,29 @@ export default async function DashboardPage() {
                 {/* Meal counts */}
                 <div className='grid grid-cols-2 lg:grid-cols-4 gap-4'>
                   <div className='text-center p-3 bg-muted/50 rounded-lg'>
-                    <div className='text-lg font-bold text-orange-600'>{currentWeekPlan.breakfastCount}</div>
-                    <div className='text-xs text-muted-foreground'>Breakfasts</div>
+                    <div className='text-lg font-bold text-orange-600'>
+                      {currentWeekPlan.breakfastCount}
+                    </div>
+                    <div className='text-xs text-muted-foreground'>
+                      Breakfasts
+                    </div>
                   </div>
                   <div className='text-center p-3 bg-muted/50 rounded-lg'>
-                    <div className='text-lg font-bold text-green-600'>{currentWeekPlan.lunchCount}</div>
+                    <div className='text-lg font-bold text-green-600'>
+                      {currentWeekPlan.lunchCount}
+                    </div>
                     <div className='text-xs text-muted-foreground'>Lunches</div>
                   </div>
                   <div className='text-center p-3 bg-muted/50 rounded-lg'>
-                    <div className='text-lg font-bold text-blue-600'>{currentWeekPlan.dinnerCount}</div>
+                    <div className='text-lg font-bold text-blue-600'>
+                      {currentWeekPlan.dinnerCount}
+                    </div>
                     <div className='text-xs text-muted-foreground'>Dinners</div>
                   </div>
                   <div className='text-center p-3 bg-muted/50 rounded-lg'>
-                    <div className='text-lg font-bold text-purple-600'>{currentWeekPlan.snackCount}</div>
+                    <div className='text-lg font-bold text-purple-600'>
+                      {currentWeekPlan.snackCount}
+                    </div>
                     <div className='text-xs text-muted-foreground'>Snacks</div>
                   </div>
                 </div>
@@ -377,14 +429,18 @@ export default async function DashboardPage() {
                 {/* Quick actions for meal plan */}
                 <div className='flex gap-2 pt-2'>
                   <Button asChild size='sm' variant='outline'>
-                    <Link href={`/dashboard/meal-planning/weekly/${currentWeekPlan.id}/shopping-list`}>
+                    <Link
+                      href={`/dashboard/meal-planning/weekly/${currentWeekPlan.id}/shopping-list`}
+                    >
                       <Clock className='mr-2 h-4 w-4' />
                       Shopping List
                     </Link>
                   </Button>
                   {progressPercentage < 100 && (
                     <Button asChild size='sm'>
-                      <Link href={`/dashboard/meal-planning/weekly/${currentWeekPlan.id}`}>
+                      <Link
+                        href={`/dashboard/meal-planning/weekly/${currentWeekPlan.id}`}
+                      >
                         Continue Planning
                       </Link>
                     </Button>
@@ -403,7 +459,8 @@ export default async function DashboardPage() {
             </CardHeader>
             <CardContent className='text-center space-y-4'>
               <p className='text-muted-foreground'>
-                Start planning your meals for the week to get personalized recipes and shopping lists.
+                Start planning your meals for the week to get personalized
+                recipes and shopping lists.
               </p>
               <Button asChild>
                 <Link href='/dashboard/meal-planning/weekly'>
@@ -422,14 +479,16 @@ export default async function DashboardPage() {
           <TrendingUp className='h-5 w-5 text-primary' />
           <h2 className='text-xl font-semibold'>Quick Actions</h2>
         </div>
-        
+
         <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
-          {quickActions.map((action) => (
+          {quickActions.map(action => (
             <Link key={action.href} href={action.href}>
               <Card className='transition-all hover:shadow-md hover:border-primary/20 cursor-pointer group h-full'>
                 <CardHeader className='pb-4'>
                   <div className='flex items-center space-x-3'>
-                    <div className={`p-3 rounded-lg ${action.bgColor} ${action.color} group-hover:scale-110 transition-transform`}>
+                    <div
+                      className={`p-3 rounded-lg ${action.bgColor} ${action.color} group-hover:scale-110 transition-transform`}
+                    >
                       <action.icon className='h-6 w-6' />
                     </div>
                     <CardTitle className='text-lg'>{action.title}</CardTitle>
@@ -452,21 +511,29 @@ export default async function DashboardPage() {
           <BarChart3 className='h-5 w-5 text-primary' />
           <h2 className='text-xl font-semibold'>Your Activity</h2>
         </div>
-        
+
         <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
           <Card>
             <CardHeader className='pb-3'>
-              <CardTitle className='text-sm font-medium text-muted-foreground'>Total Meal Plans</CardTitle>
+              <CardTitle className='text-sm font-medium text-muted-foreground'>
+                Total Meal Plans
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className='text-3xl font-bold text-primary'>{recentPlansCount}</div>
-              <p className='text-xs text-muted-foreground mt-1'>Plans created</p>
+              <div className='text-3xl font-bold text-primary'>
+                {recentPlansCount}
+              </div>
+              <p className='text-xs text-muted-foreground mt-1'>
+                Plans created
+              </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className='pb-3'>
-              <CardTitle className='text-sm font-medium text-muted-foreground'>Profile Completion</CardTitle>
+              <CardTitle className='text-sm font-medium text-muted-foreground'>
+                Profile Completion
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className='text-3xl font-bold text-green-600'>
@@ -480,13 +547,17 @@ export default async function DashboardPage() {
 
           <Card>
             <CardHeader className='pb-3'>
-              <CardTitle className='text-sm font-medium text-muted-foreground'>This Week</CardTitle>
+              <CardTitle className='text-sm font-medium text-muted-foreground'>
+                This Week
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className='text-3xl font-bold text-blue-600'>
                 {Math.round(progressPercentage)}%
               </div>
-              <p className='text-xs text-muted-foreground mt-1'>Meal planning progress</p>
+              <p className='text-xs text-muted-foreground mt-1'>
+                Meal planning progress
+              </p>
             </CardContent>
           </Card>
         </div>

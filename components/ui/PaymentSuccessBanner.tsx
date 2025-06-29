@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useSearchParams } from 'next/navigation';
 import { NotificationBanner } from './NotificationBanner';
@@ -13,4 +13,4 @@ export function PaymentSuccessBanner() {
       className='mb-6'
     />
   );
-} 
+}

@@ -1,14 +1,17 @@
 import { db } from '@/lib/db/drizzle';
 import { getUser } from '@/lib/db/queries';
 import {
-    mealPlanItems,
-    weeklyMealPlans,
-    type NewMealPlanItem,
+  mealPlanItems,
+  weeklyMealPlans,
+  type NewMealPlanItem,
 } from '@/lib/db/schema';
-import { checkUsageLimit, incrementUsage } from '@/lib/subscriptions/usage-limits';
 import {
-    CreateWeeklyMealPlanRequestSchema,
-    type WeeklyMealPlanWithItems,
+  checkUsageLimit,
+  incrementUsage,
+} from '@/lib/subscriptions/usage-limits';
+import {
+  CreateWeeklyMealPlanRequestSchema,
+  type WeeklyMealPlanWithItems,
 } from '@/types/recipe';
 import { and, desc, eq } from 'drizzle-orm';
 import { NextRequest } from 'next/server';
@@ -25,7 +28,8 @@ export async function POST(request: NextRequest) {
     if ((user.planName || '').toLowerCase() !== 'premium') {
       return Response.json(
         {
-          error: 'Weekly meal plan generation is available to Premium subscribers only. Please upgrade your plan to access this feature.',
+          error:
+            'Weekly meal plan generation is available to Premium subscribers only. Please upgrade your plan to access this feature.',
         },
         { status: 403 },
       );
@@ -36,7 +40,8 @@ export async function POST(request: NextRequest) {
     if (!withinLimit) {
       return Response.json(
         {
-          error: 'You have reached your weekly meal plan creation limit. Please try again next week or upgrade your plan for unlimited access.',
+          error:
+            'You have reached your weekly meal plan creation limit. Please try again next week or upgrade your plan for unlimited access.',
         },
         { status: 429 },
       );

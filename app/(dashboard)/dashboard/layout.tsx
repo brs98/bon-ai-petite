@@ -2,12 +2,12 @@
 
 import { Button } from '@/components/ui/button';
 import {
-    Calendar,
-    ChefHat,
-    Home,
-    Menu,
-    Settings,
-    Utensils,
+  Calendar,
+  ChefHat,
+  Home,
+  Menu,
+  Settings,
+  Utensils,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';

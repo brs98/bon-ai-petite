@@ -4,11 +4,11 @@ import { ProfileSetup } from '@/components/nutrition/ProfileSetup';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
 } from '@/components/ui/card';
 import { type NutritionProfile } from '@/types/recipe';
 import { Loader2, Settings, User } from 'lucide-react';
@@ -133,7 +133,9 @@ export default function NutritionSettingsPage() {
               </div>
               <div>
                 <p className='text-sm font-medium'>Height</p>
-                <p className='text-2xl font-bold'>{formatHeight(profile.height)}</p>
+                <p className='text-2xl font-bold'>
+                  {formatHeight(profile.height)}
+                </p>
               </div>
               <div>
                 <p className='text-sm font-medium'>Weight</p>

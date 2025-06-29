@@ -1,7 +1,7 @@
 import {
-    getUser,
-    getUserByStripeCustomerId,
-    updateUserSubscription,
+  getUser,
+  getUserByStripeCustomerId,
+  updateUserSubscription,
 } from '@/lib/db/queries';
 import { User } from '@/lib/db/schema';
 import { redirect } from 'next/navigation';
@@ -115,7 +115,9 @@ export async function createCustomerPortalSession(user: User) {
 }
 
 // Utility to normalize Stripe product names to internal plan names
-export function normalizePlanName(stripeProductName?: string | null): string | null {
+export function normalizePlanName(
+  stripeProductName?: string | null,
+): string | null {
   if (!stripeProductName) return null;
   const name = stripeProductName.toLowerCase();
   if (name === 'plus' || name === 'premium') return 'premium';

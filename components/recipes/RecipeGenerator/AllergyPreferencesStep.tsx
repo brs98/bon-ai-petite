@@ -28,7 +28,8 @@ export const AllergyPreferencesStep: React.FC<AllergyPreferencesStepProps> = ({
         <Shield className='h-12 w-12 mx-auto text-primary' />
         <h2 className='text-2xl font-bold'>Allergies & Intolerances</h2>
         <p className='text-muted-foreground'>
-          Select any food allergies or intolerances you have. We'll make sure to avoid these ingredients.
+          Select any food allergies or intolerances you have. We'll make sure to
+          avoid these ingredients.
         </p>
       </div>
       <div className='flex flex-wrap gap-3 justify-center max-w-4xl mx-auto'>
@@ -39,9 +40,7 @@ export const AllergyPreferencesStep: React.FC<AllergyPreferencesStepProps> = ({
             className='cursor-pointer hover:bg-accent text-sm py-2 px-4 transition-all'
             onClick={() => toggleSelection(allergy)}
           >
-            {value.includes(allergy) && (
-              <Check className='h-3 w-3 mr-1' />
-            )}
+            {value.includes(allergy) && <Check className='h-3 w-3 mr-1' />}
             {allergy}
           </Badge>
         ))}
@@ -53,4 +52,4 @@ export const AllergyPreferencesStep: React.FC<AllergyPreferencesStepProps> = ({
       )}
     </div>
   );
-}; 
+};

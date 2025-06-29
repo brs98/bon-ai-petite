@@ -7,9 +7,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { customerPortalAction } from '@/lib/payments/actions';
 import {
-    type NutritionProfile,
-    type Recipe,
-    type RecipeGenerationRequest,
+  type NutritionProfile,
+  type Recipe,
+  type RecipeGenerationRequest,
 } from '@/types/recipe';
 import { AlertCircle, ArrowLeft, RefreshCw } from 'lucide-react';
 import { useRouter } from 'next/navigation';

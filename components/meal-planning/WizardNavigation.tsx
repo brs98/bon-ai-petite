@@ -5,12 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
-import {
-    AlertCircle,
-    Check,
-    ChevronLeft,
-    ChevronRight
-} from 'lucide-react';
+import { AlertCircle, Check, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface WizardStep {
   id: string;
@@ -79,24 +74,11 @@ export function WizardNavigation({
   onNext,
   onSkip,
   onStepClick,
-  showProgressDetails = true,
-  estimatedTimeRemaining,
 }: WizardNavigationProps) {
   const currentStep = steps[currentStepIndex];
   const progressPercentage =
     totalSteps > 0 ? (completedSteps / totalSteps) * 100 : 0;
   const activeSteps = steps.filter(step => !step.isSkipped);
-
-  const formatTimeRemaining = (minutes: number): string => {
-    if (minutes < 60) {
-      return `${minutes}m`;
-    }
-    const hours = Math.floor(minutes / 60);
-    const remainingMinutes = minutes % 60;
-    return remainingMinutes > 0
-      ? `${hours}h ${remainingMinutes}m`
-      : `${hours}h`;
-  };
 
   const getStepStatus = (step: WizardStep, index: number) => {
     if (step.isSkipped) return 'skipped';

@@ -1,9 +1,9 @@
 'use client';
 
 import {
-    deleteAccount,
-    updateAccount,
-    updatePassword,
+  deleteAccount,
+  updateAccount,
+  updatePassword,
 } from '@/app/(login)/actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -122,7 +122,9 @@ export default function SettingsPage() {
         </CardHeader>
         <CardContent>
           <p className='mb-4 text-muted-foreground'>
-            Manage your subscription, switch plans, or cancel at the end of your billing period. You will be redirected to our secure Stripe Billing Portal.
+            Manage your subscription, switch plans, or cancel at the end of your
+            billing period. You will be redirected to our secure Stripe Billing
+            Portal.
           </p>
           {/*
             The form below triggers the customerPortalAction server action, which creates a Stripe Billing Portal session and redirects the user.

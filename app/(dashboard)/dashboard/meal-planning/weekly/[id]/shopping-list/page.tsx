@@ -329,8 +329,8 @@ export default function ShoppingListPage() {
   }
 
   const completedMeals =
-    mealPlan.mealPlanItems?.filter(item => item.status === 'locked').length ||
-    0;
+    mealPlan.mealPlanItems?.filter(item => item.status === 'generated')
+      .length || 0;
   const totalMeals =
     mealPlan.breakfastCount +
     mealPlan.lunchCount +
@@ -408,7 +408,7 @@ export default function ShoppingListPage() {
             <CardContent>
               <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
                 {mealPlan.mealPlanItems
-                  .filter(item => item.status === 'locked' && item.recipe)
+                  .filter(item => item.status === 'generated' && item.recipe)
                   .map(item => (
                     <div
                       key={item.id}
@@ -446,12 +446,13 @@ export default function ShoppingListPage() {
                   ))}
               </div>
 
-              {mealPlan.mealPlanItems.filter(item => item.status === 'locked')
-                .length === 0 && (
+              {mealPlan.mealPlanItems.filter(
+                item => item.status === 'generated',
+              ).length === 0 && (
                 <div className='text-center py-8'>
                   <ChefHat className='h-12 w-12 text-muted-foreground mx-auto mb-3' />
                   <p className='text-muted-foreground'>
-                    No locked meals yet. Complete your meal planning to see
+                    No generated meals yet. Complete your meal planning to see
                     recipes here.
                   </p>
                 </div>
@@ -487,7 +488,7 @@ export default function ShoppingListPage() {
                   <AlertTriangle className='h-4 w-4' />
                   <AlertDescription>
                     <strong>Note:</strong> Your meal plan is not complete. The
-                    shopping list will only include ingredients from locked
+                    shopping list will only include ingredients from generated
                     meals.
                   </AlertDescription>
                 </div>
@@ -523,7 +524,7 @@ export default function ShoppingListPage() {
               {completedMeals === 0 && (
                 <div className='mt-6 space-y-4'>
                   <p className='text-sm text-muted-foreground'>
-                    You need at least one locked meal to generate a shopping
+                    You need at least one generated meal to generate a shopping
                     list.
                     <br />
                     <strong>Next steps:</strong>
@@ -532,7 +533,7 @@ export default function ShoppingListPage() {
                     <br />
                     2. Generate recipes for your meals
                     <br />
-                    3. Lock the meals you want to include
+                    3. Generate the meals you want to include
                     <br />
                     4. Return here to generate your shopping list
                   </p>

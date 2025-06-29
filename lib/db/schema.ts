@@ -1,15 +1,15 @@
 import { relations } from 'drizzle-orm';
 import {
-    boolean,
-    date,
-    index,
-    integer,
-    jsonb,
-    pgTable,
-    serial,
-    text,
-    timestamp,
-    varchar,
+  boolean,
+  date,
+  index,
+  integer,
+  jsonb,
+  pgTable,
+  serial,
+  text,
+  timestamp,
+  varchar,
 } from 'drizzle-orm/pg-core';
 
 export const users = pgTable('users', {

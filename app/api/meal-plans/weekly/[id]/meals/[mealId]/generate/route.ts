@@ -2,12 +2,15 @@ import { recipeGenerator } from '@/lib/ai/recipe-generator';
 import { db } from '@/lib/db/drizzle';
 import { getUser } from '@/lib/db/queries';
 import {
-    mealPlanItems,
-    nutritionProfiles,
-    recipes,
-    weeklyMealPlans,
+  mealPlanItems,
+  nutritionProfiles,
+  recipes,
+  weeklyMealPlans,
 } from '@/lib/db/schema';
-import { checkUsageLimit, incrementUsage } from '@/lib/subscriptions/usage-limits';
+import {
+  checkUsageLimit,
+  incrementUsage,
+} from '@/lib/subscriptions/usage-limits';
 import { GenerateMealRequestSchema } from '@/types/recipe';
 import { and, desc, eq } from 'drizzle-orm';
 import { NextRequest } from 'next/server';
@@ -32,7 +35,8 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     if (!withinLimit) {
       return Response.json(
         {
-          error: 'You have reached your daily recipe generation limit. Please try again tomorrow or upgrade your plan for unlimited access.',
+          error:
+            'You have reached your daily recipe generation limit. Please try again tomorrow or upgrade your plan for unlimited access.',
         },
         { status: 429 },
       );

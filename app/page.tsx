@@ -3,14 +3,14 @@
 import { NutritionProfileBanner } from '@/components/nutrition/NutritionProfileBanner';
 import { Button } from '@/components/ui/button';
 import {
-    ArrowRight,
-    CheckCircle,
-    ChefHat,
-    Clock,
-    Heart,
-    ShoppingCart,
-    Sparkles,
-    Users,
+  ArrowRight,
+  CheckCircle,
+  ChefHat,
+  Clock,
+  Heart,
+  ShoppingCart,
+  Sparkles,
+  Users,
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import Image from 'next/image';

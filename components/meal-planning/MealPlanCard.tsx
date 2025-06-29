@@ -7,13 +7,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { MealPlanItem, Recipe } from '@/types/recipe';
 import {
-    Calendar,
-    ChefHat,
-    Clock,
-    Loader2,
-    Settings,
-    Sparkles,
-    Users
+  Calendar,
+  ChefHat,
+  Clock,
+  Loader2,
+  Settings,
+  Sparkles,
+  Users,
 } from 'lucide-react';
 
 interface MealPlanCardProps {
@@ -70,7 +70,6 @@ export function MealPlanCard({
   dayNumber,
   category,
   onGenerate,
-  onRegenerate,
   onCustomizePreferences,
   onViewRecipe,
   isGenerating = false,
@@ -241,7 +240,8 @@ export function MealPlanCard({
         CATEGORY_COLORS[category],
         {
           'ring-2 ring-primary shadow-md': selected,
-          'hover:ring-2 hover:ring-primary/60 hover:shadow-lg': !selected && !disabled,
+          'hover:ring-2 hover:ring-primary/60 hover:shadow-lg':
+            !selected && !disabled,
           'opacity-75': disabled,
         },
       )}

@@ -40,9 +40,7 @@ export const DietaryPreferencesStep: React.FC<DietaryPreferencesStepProps> = ({
             className='cursor-pointer hover:bg-accent text-sm py-2 px-4 transition-all'
             onClick={() => toggleSelection(restriction)}
           >
-            {value.includes(restriction) && (
-              <Check className='h-3 w-3 mr-1' />
-            )}
+            {value.includes(restriction) && <Check className='h-3 w-3 mr-1' />}
             {restriction}
           </Badge>
         ))}
@@ -54,4 +52,4 @@ export const DietaryPreferencesStep: React.FC<DietaryPreferencesStepProps> = ({
       )}
     </div>
   );
-}; 
+};

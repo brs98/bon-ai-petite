@@ -2,12 +2,15 @@ import { recipeGenerator } from '@/lib/ai/recipe-generator';
 import { db } from '@/lib/db/drizzle';
 import { getUser } from '@/lib/db/queries';
 import {
-    mealPlanItems,
-    nutritionProfiles,
-    recipes,
-    weeklyMealPlans,
+  mealPlanItems,
+  nutritionProfiles,
+  recipes,
+  weeklyMealPlans,
 } from '@/lib/db/schema';
-import { checkUsageLimit, incrementUsage } from '@/lib/subscriptions/usage-limits';
+import {
+  checkUsageLimit,
+  incrementUsage,
+} from '@/lib/subscriptions/usage-limits';
 import { and, desc, eq } from 'drizzle-orm';
 import { NextRequest } from 'next/server';
 import { z } from 'zod';
@@ -80,7 +83,10 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       items = items.filter(item => mealIds.includes(item.id));
     }
     if (items.length === 0) {
-      return Response.json({ error: 'No meals found to generate' }, { status: 400 });
+      return Response.json(
+        { error: 'No meals found to generate' },
+        { status: 400 },
+      );
     }
 
     // Get user's nutrition profile for enhanced generation
@@ -119,11 +125,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         servings: recipe.servings || 1,
         difficulty: recipe.difficulty as 'easy' | 'medium' | 'hard',
         cuisineType: recipe.cuisineType || undefined,
-        mealType: recipe.mealType as
-          | 'breakfast'
-          | 'lunch'
-          | 'dinner'
-          | 'snack',
+        mealType: recipe.mealType as 'breakfast' | 'lunch' | 'dinner' | 'snack',
         tags: recipe.tags || [],
         isSaved: recipe.isSaved,
         rating: recipe.rating || undefined,
@@ -139,7 +141,8 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         // If over limit, stop further generations and return partial results
         return Response.json(
           {
-            error: 'You have reached your daily recipe generation limit. Please try again tomorrow or upgrade your plan for unlimited access.',
+            error:
+              'You have reached your daily recipe generation limit. Please try again tomorrow or upgrade your plan for unlimited access.',
             partialResults: results,
           },
           { status: 429 },
@@ -157,7 +160,8 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 
       // Merge preferences: request > stored custom > global
       const globalPrefs = mealPlan.globalPreferences as Preferences | null;
-      const storedCustomPrefs = mealItem.customPreferences as Preferences | null;
+      const storedCustomPrefs =
+        mealItem.customPreferences as Preferences | null;
       const requestCustomPrefs = customPreferences?.[mealItem.id];
       const mergedPreferences = {
         allergies:
@@ -242,7 +246,10 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
               updatedAt: new Date(),
             })
             .where(eq(mealPlanItems.id, mealItem.id));
-          results.push({ mealId: mealItem.id, error: 'Generated recipe is incomplete.' });
+          results.push({
+            mealId: mealItem.id,
+            error: 'Generated recipe is incomplete.',
+          });
           continue;
         }
         // Save the generated recipe
@@ -278,6 +285,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
           .where(eq(mealPlanItems.id, mealItem.id));
         results.push({ mealId: mealItem.id, recipe: generationResult.recipe });
       } catch (generationError) {
+        console.error('Error:', generationError);
         // Reset meal item status on error
         await db
           .update(mealPlanItems)
@@ -286,7 +294,10 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
             updatedAt: new Date(),
           })
           .where(eq(mealPlanItems.id, mealItem.id));
-        results.push({ mealId: mealItem.id, error: 'Failed to generate recipe.' });
+        results.push({
+          mealId: mealItem.id,
+          error: 'Failed to generate recipe.',
+        });
       }
     }
 
@@ -307,6 +318,9 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     });
   } catch (error) {
     console.error('Failed to batch generate meals:', error);
-    return Response.json({ error: 'Failed to batch generate meals' }, { status: 500 });
+    return Response.json(
+      { error: 'Failed to batch generate meals' },
+      { status: 500 },
+    );
   }
-} 
+}

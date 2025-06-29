@@ -8,12 +8,12 @@ import { Separator } from '@/components/ui/separator';
 import { customerPortalAction } from '@/lib/payments/actions';
 import { WeeklyMealPlanWithItems } from '@/types/recipe';
 import {
-    AlertTriangle,
-    ArrowRight,
-    Calendar,
-    ChefHat,
-    Info,
-    Plus
+  AlertTriangle,
+  ArrowRight,
+  Calendar,
+  ChefHat,
+  Info,
+  Plus,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -39,7 +39,11 @@ function Alert({
     variant === 'destructive'
       ? 'bg-red-50 border-red-200 dark:bg-red-950/20 dark:border-red-800'
       : 'bg-blue-50 border-blue-200 dark:bg-blue-950/20 dark:border-blue-800';
-  return <div className={`rounded-lg border p-4 ${bgColor} ${className}`}>{children}</div>;
+  return (
+    <div className={`rounded-lg border p-4 ${bgColor} ${className}`}>
+      {children}
+    </div>
+  );
 }
 
 function AlertDescription({ children }: { children: React.ReactNode }) {
@@ -196,7 +200,8 @@ export default function WeeklyMealPlanningPage() {
       plan.dinnerCount +
       plan.snackCount;
     const completedMeals =
-      plan.mealPlanItems?.filter(item => item.status === 'generated').length || 0;
+      plan.mealPlanItems?.filter(item => item.status === 'generated').length ||
+      0;
 
     return {
       totalMeals,
@@ -210,11 +215,17 @@ export default function WeeklyMealPlanningPage() {
     // Show only the premium alert, hide all other content
     return (
       <div className='container mx-auto px-4 py-8 flex items-center justify-center min-h-[300px]'>
-        <Alert variant='default' className='w-full max-w-2xl flex items-center justify-between gap-4'>
+        <Alert
+          variant='default'
+          className='w-full max-w-2xl flex items-center justify-between gap-4'
+        >
           <div className='flex items-center gap-2'>
             <Info className='h-4 w-4' />
             <span>
-              <strong>Premium Feature:</strong> Weekly meal planning is available to <span className='text-primary font-semibold'>Premium</span> subscribers only.
+              <strong>Premium Feature:</strong> Weekly meal planning is
+              available to{' '}
+              <span className='text-primary font-semibold'>Premium</span>{' '}
+              subscribers only.
             </span>
           </div>
           <form action={customerPortalAction} className='flex-shrink-0'>
@@ -355,7 +366,9 @@ export default function WeeklyMealPlanningPage() {
         <div className='flex flex-col sm:flex-row gap-4 justify-center'>
           <Button
             onClick={() => void handleCreateNewPlan()}
-            disabled={!hasValidSelection || isCreating || userPlan !== 'premium'}
+            disabled={
+              !hasValidSelection || isCreating || userPlan !== 'premium'
+            }
             size='lg'
             className='sm:px-8'
           >

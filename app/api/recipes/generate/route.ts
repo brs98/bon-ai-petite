@@ -2,7 +2,10 @@ import { recipeGenerator } from '@/lib/ai/recipe-generator';
 import { db } from '@/lib/db/drizzle';
 import { getUser } from '@/lib/db/queries';
 import { recipes } from '@/lib/db/schema';
-import { checkUsageLimit, incrementUsage } from '@/lib/subscriptions/usage-limits';
+import {
+  checkUsageLimit,
+  incrementUsage,
+} from '@/lib/subscriptions/usage-limits';
 import { RecipeGenerationRequestSchema } from '@/types/recipe';
 import { desc, eq } from 'drizzle-orm';
 import { NextRequest } from 'next/server';
@@ -20,7 +23,8 @@ export async function POST(request: NextRequest) {
     if (!withinLimit) {
       return Response.json(
         {
-          error: 'You have reached your daily recipe generation limit. Please try again tomorrow or upgrade your plan for unlimited access.',
+          error:
+            'You have reached your daily recipe generation limit. Please try again tomorrow or upgrade your plan for unlimited access.',
         },
         { status: 429 },
       );
