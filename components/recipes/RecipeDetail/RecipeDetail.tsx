@@ -2,7 +2,14 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Recipe } from '@/types/recipe';
-import { ArrowLeft, ChefHat, Clock, Users } from 'lucide-react';
+import {
+  ArrowLeft,
+  ChefHat,
+  Clock,
+  Star,
+  Star as StarFilled,
+  Users,
+} from 'lucide-react';
 import { FeedbackButtons } from '../RecipeCard/FeedbackButtons';
 import { NutritionBadge } from '../RecipeCard/NutritionBadge';
 
@@ -131,9 +138,16 @@ export function RecipeDetail({
           <div className='flex items-center justify-between pt-4 border-t'>
             <div className='flex gap-2'>
               <Button
-                variant={recipe.isSaved ? 'default' : 'outline'}
+                variant='outline'
                 onClick={handleSave}
+                className='font-semibold px-6 py-2 flex-1 flex items-center gap-2 shadow-md border-2 border-yellow-400 text-yellow-700 hover:bg-yellow-100 hover:text-yellow-700'
+                style={{ minWidth: 120 }}
               >
+                {recipe.isSaved ? (
+                  <StarFilled className='h-5 w-5 fill-yellow-400 text-yellow-500' />
+                ) : (
+                  <Star className='h-5 w-5 text-yellow-500' />
+                )}
                 {recipe.isSaved ? 'Saved' : 'Save Recipe'}
               </Button>
             </div>

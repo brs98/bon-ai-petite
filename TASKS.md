@@ -1,63 +1,93 @@
 # 📋 Recipe Generation Service: Implementation Tasks
 
-> **Checklist updated as of June 2024 after deep codebase review. Most core infrastructure, API, and main UI components are complete. Remaining items are polish, analytics, and advanced features.**
+> **Checklist updated as of June 2024 after deep codebase review. Most core
+> infrastructure, API, and main UI components are complete. Remaining items are
+> polish, analytics, and advanced features.**
 
 # 🔎 User Testing Feedback & Action Items (May 2024)
 
-- [ ] Error page is shown after creating weekly meal plan (refresh seems to fix it) <!-- TODO: Needs further testing -->
-- [ ] Sometimes, the shopping list isn't created along with the meals (might be related to above) <!-- TODO: Needs further testing -->
-- [ ] Update landing page so it doesn't look like 12 items in cart (confusing) <!-- TODO: UI polish -->
-- [ ] Update landing page to give better idea of what somebody is buying (show process: profile creation → meal planning generation → shopping list creation) <!-- TODO: UI polish -->
-- [ ] Add 'None' option for nutrition profile setup <!-- TODO: UI polish -->
-- [ ] Macro targets might not be desired (indicate it's to help the AI model do healthy meals for your body) <!-- TODO: UI copy -->
-- [ ] Add button on nutrition profile summary to link to generate meal plans and generate a single recipe <!-- TODO: UI polish -->
-- [ ] Recipe page should look different if there are no meals to display <!-- TODO: UI polish -->
-- [ ] Custom nutrition targets feels weird (make it a little more hidden via a drop down or something) <!-- TODO: UI polish -->
+- [x] Error page is shown after creating weekly meal plan (refresh seems to fix
+      it) <!-- TODO: Needs further testing -->
+- [x] Sometimes, the shopping list isn't created along with the meals (might be
+      related to above) <!-- TODO: Needs further testing -->
+- [ ] Update landing page so it doesn't look like 12 items in cart (confusing)
+      <!-- TODO: UI polish -->
+- [ ] Update landing page to give better idea of what somebody is buying (show
+      process: profile creation → meal planning generation → shopping list
+      creation) <!-- TODO: UI polish -->
+- [x] Add 'None' option for nutrition profile setup <!-- TODO: UI polish -->
+- [ ] Macro targets might not be desired (indicate it's to help the AI model do
+      healthy meals for your body) <!-- TODO: UI copy -->
+- [ ] Add button on nutrition profile summary to link to generate meal plans and
+      generate a single recipe <!-- TODO: UI polish -->
+- [x] Recipe page should look different if there are no meals to display
+      <!-- TODO: UI polish -->
+- [ ] Custom nutrition targets feels weird (make it a little more hidden via a
+      drop down or something) <!-- TODO: UI polish -->
 - [ ] Make nutrition targets be daily not weekly <!-- TODO: UI logic -->
-- [ ] Make save recipe button on recipe page stand out more <!-- TODO: UI polish -->
-- [ ] Add 'generate another recipe' button on recipe page <!-- TODO: UI polish -->
-- [ ] Make recipe prompt include a healthy balance (base - rice, pasta, quinoa, etc, vegetables, protein) <!-- TODO: Prompt tweak -->
-- [ ] Recently generated recipes don't display <!-- TODO: Bug -->
-- [ ] More in-depth quiz at profile setup to generate meals closer to user taste (like Hello Fresh, specify foods you do/don't like) <!-- TODO: Feature -->
-- [ ] Only generate meals that match user preferences (e.g., Moroccan and Thai generated even if not listed) <!-- TODO: Prompt/logic -->
-- [ ] Optimize weekly meal plan query so meals are aware of each other (avoid all meals being the same cuisine) <!-- TODO: Logic -->
-- [ ] Regenerate one-by-one with loading state instead of selecting all to regenerate <!-- TODO: UI/logic -->
-- [ ] In recipe, when disliked, allow feedback like (select ingredients you didn't like, or other reasons) <!-- TODO: UI/logic -->
-- [ ] Allow ability to iterate on a recipe (e.g., add a sauce, substitutions) <!-- TODO: Feature -->
-- [ ] Weekly meal plan: ability to set and organize by day <!-- TODO: UI/logic -->
+- [x] Make save recipe button on recipe page stand out more
+      <!-- TODO: UI polish -->
+- [x] Add 'generate another recipe' button on recipe page
+      <!-- TODO: UI polish -->
+- [ ] Make recipe prompt include a healthy balance (base - rice, pasta, quinoa,
+      etc, vegetables, protein) <!-- TODO: Prompt tweak -->
+- [x] Recently generated recipes don't display <!-- TODO: Bug -->
+- [ ] More in-depth quiz at profile setup to generate meals closer to user taste
+      (like Hello Fresh, specify foods you do/don't like) <!-- TODO: Feature -->
+- [ ] Only generate meals that match user preferences (e.g., Moroccan and Thai
+      generated even if not listed) <!-- TODO: Prompt/logic -->
+- [ ] Optimize weekly meal plan query so meals are aware of each other (avoid
+      all meals being the same cuisine) <!-- TODO: Logic -->
+- [ ] Regenerate one-by-one with loading state instead of selecting all to
+      regenerate <!-- TODO: UI/logic -->
+- [ ] In recipe, when disliked, allow feedback like (select ingredients you
+      didn't like, or other reasons) <!-- TODO: UI/logic -->
+- [ ] Allow ability to iterate on a recipe (e.g., add a sauce, substitutions)
+      <!-- TODO: Feature -->
+- [ ] Weekly meal plan: ability to set and organize by day
+      <!-- TODO: UI/logic -->
 - [ ] Shopping list: can't check off items <!-- TODO: UI polish -->
-- [ ] Some items are not put in the correct bucket (produce, canned, etc) <!-- TODO: Logic -->
+- [ ] Some items are not put in the correct bucket (produce, canned, etc)
+      <!-- TODO: Logic -->
 - [ ] Items get duplicated in shopping list <!-- TODO: Logic -->
 - [ ] Items should prefer cups, tbsp, etc instead of grams <!-- TODO: Logic -->
 - [ ] Maybe lower temperature of AI? <!-- TODO: Prompt/config -->
-- [ ] Add ability to create meal plans based off previous meals that you saved or liked (mix generated with saved) <!-- TODO: Feature -->
-- [ ] Dashboard: This week's meal plan is not displaying <!-- TODO: Bug -->
-- [ ] What is 00 on "your preferences" <!-- TODO: UI bug -->
-- [ ] Remove "your activity" section and "quick actions" <!-- TODO: UI polish -->
-- [ ] Weekly meal plan can still be used after switching to base account <!-- TODO: Subscription logic -->
+- [ ] Add ability to create meal plans based off previous meals that you saved
+      or liked (mix generated with saved) <!-- TODO: Feature -->
+- [x] Dashboard: This week's meal plan is not displaying <!-- TODO: Bug -->
+- [x] What is 00 on "your preferences" <!-- TODO: UI bug -->
+- [ ] Remove "your activity" section and "quick actions"
+      <!-- TODO: UI polish -->
+- [ ] Weekly meal plan can still be used after switching to base account
+      <!-- TODO: Subscription logic -->
 
 ## 🚀 Phase 1: Core Infrastructure (Week 1-2)
 
 ### Database Schema & Migrations
 
 - [x] **Create nutrition profiles table migration**
+
   - [x] Add `nutrition_profiles` table with all fields from architecture
   - [x] Set up foreign key relationship to existing `users` table
   - [x] Add indexes on `userId` and `createdAt`
   - [x] Test migration in development environment
 
 - [x] **Create recipes table migration**
-  - [x] Add `recipes` table with all fields including JSONB for ingredients/nutrition
+
+  - [x] Add `recipes` table with all fields including JSONB for
+        ingredients/nutrition
   - [x] Set up foreign key relationship to existing `users` table
   - [x] Add indexes on `userId`, `mealType`, `createdAt`, `isSaved`
   - [x] Add text search index on `name` and `description` fields
 
 - [x] **Create recipe feedback table migration**
+
   - [x] Add `recipe_feedback` table with recipe and user relationships
   - [x] Set up foreign keys to `recipes` and `users` tables
   - [x] Add composite index on `(recipeId, userId)`
 
 - [x] **Create usage tracking table migration**
+
   - [x] Add `usage_tracking` table for subscription limit enforcement
   - [x] Set up foreign key to `users` table
   - [x] Add composite index on `(userId, date, action)`
@@ -71,12 +101,14 @@
 ### AI SDK Integration Setup
 
 - [x] **Install AI SDK dependencies**
+
   - [x] Add `ai` package to dependencies
   - [x] Add `@ai-sdk/openai` package
   - [x] Add `zod` if not already present (already in package.json)
   - [x] Update package.json and run `pnpm install`
 
 - [x] **Environment configuration**
+
   - [x] Add `OPENAI_API_KEY` to environment variables
   - [x] Add AI-related config to existing environment setup
   - [x] Update `.env.example` with new required variables
@@ -91,6 +123,7 @@
 ### Core API Routes
 
 - [x] **Create recipe generation API endpoint**
+
   - [x] Create `app/api/recipes/generate/route.ts`
   - [x] Implement POST handler with user authentication
   - [x] Add basic request validation with Zod schemas
@@ -98,6 +131,7 @@
   - [x] Add error handling and response formatting
 
 - [x] **Create recipe save API endpoint**
+
   - [x] Create `app/api/recipes/save/route.ts`
   - [x] Implement POST handler to save recipes to database
   - [x] Add validation for recipe data structure
@@ -111,11 +145,13 @@
 ### Basic UI Foundation
 
 - [x] **Create recipe types and schemas**
+
   - [x] Create `types/recipe.ts` with all TypeScript interfaces
   - [x] Create Zod schemas for recipe validation
   - [x] Export types for component usage
 
 - [x] **Create basic recipe components**
+
   - [x] Create `components/recipes/` directory
   - [x] Create `components/recipes/RecipeCard/RecipeCard.tsx` basic component
   - [x] Create `components/recipes/RecipeCard/NutritionBadge.tsx`
@@ -132,12 +168,14 @@
 ### Nutrition Profile System
 
 - [x] **Create nutrition profile API routes**
+
   - [x] Create `app/api/nutrition/profile/route.ts`
   - [x] Implement GET/POST/PUT handlers for profile management
   - [x] Add validation for nutrition data
   - [x] Handle profile creation and updates
 
 - [x] **Create nutrition profile components**
+
   - [x] Create `components/nutrition/ProfileSetup.tsx`
   - [x] Create `components/nutrition/GoalsSelector.tsx` with preset options
   - [x] Create `components/nutrition/MacroTracker.tsx` visual component
@@ -152,12 +190,14 @@
 ### Recipe Generator Interface
 
 - [x] **Create recipe generator components**
+
   - [x] Create `components/recipes/RecipeGenerator/GeneratorForm.tsx`
   - [x] Create `components/recipes/RecipeGenerator/GenerationProgress.tsx`
   - [x] Add loading states and progress indicators
   - [x] Add error handling UI components
 
 - [x] **Create recipe generation page**
+
   - [x] Create `app/(dashboard)/dashboard/recipes/generate/page.tsx`
   - [x] Build main recipe generation interface
   - [x] Add meal type selector (breakfast, lunch, dinner, snack)
@@ -172,14 +212,17 @@
 ### Recipe Display & Management
 
 - [x] **Enhance recipe card components**
+
   - [x] Update `RecipeCard.tsx` with full recipe display
   - [x] Create `components/recipes/RecipeCard/FeedbackButtons.tsx`
   - [x] Add save/unsave functionality
   - [x] Add quick action buttons (regenerate, share)
 
 - [x] **Create recipe detail view**
+
   - [x] Create `app/(dashboard)/dashboard/recipes/[id]/page.tsx`
-  - [x] Create `components/recipes/RecipeDetail/RecipeDetail.tsx` (comprehensive component)
+  - [x] Create `components/recipes/RecipeDetail/RecipeDetail.tsx` (comprehensive
+        component)
   - [x] Add ingredients list display
   - [x] Add instructions view with step numbering
   - [x] Add nutrition panel with detailed breakdown
@@ -193,12 +236,14 @@
 ### Enhanced AI Integration
 
 - [x] **Improve prompt engineering**
+
   - [x] Enhance `lib/ai/prompt-builder.ts` with context-aware prompts
   - [x] Add few-shot learning examples
   - [x] Implement user preference integration
   - [x] Add nutritional target incorporation
 
 - [x] **Add recipe parsing and validation**
+
   - [x] Create `lib/ai/recipe-parser.ts`
   - [x] Add structured parsing of AI responses
   - [x] Implement nutrition validation logic
@@ -215,12 +260,14 @@
 ### Subscription Limits & Access Control
 
 - [x] **Create usage tracking system**
+
   - [x] Create `lib/subscriptions/usage-limits.ts`
   - [x] Implement daily usage tracking functions
   - [x] Add subscription tier checking functions
   - [x] Create usage limit enforcement middleware
 
 - [x] **Update API routes with usage limits**
+
   - [x] Add usage checking to recipe generation endpoint
   - [x] Implement graceful limit exceeded responses
   - [x] Add upgrade prompts for Essential users
@@ -235,12 +282,14 @@
 ### Meal Planning System (Premium Only)
 
 - [x] **Create meal planning API routes**
+
   - [x] Create `app/api/meal-plans/route.ts`
   - [x] Implement CRUD operations for meal plans
   - [x] Add weekly plan generation endpoint
   - [x] Create shopping list generation from meal plans
 
 - [x] **Create meal planning service layer**
+
   - [x] Create `lib/meal-planning/weekly-meal-planner.ts`
   - [x] Implement plan creation and management functions
   - [x] Add meal category processing logic (breakfast → lunch → dinner → snacks)
@@ -248,6 +297,7 @@
   - [x] Add plan archiving and cleanup functionality
 
 - [x] **Create meal planning components**
+
   - [x] Create `components/meal-planning/MealCountSelector.tsx`
   - [x] Create `components/meal-planning/WizardNavigation.tsx`
   - [x] Create `components/meal-planning/MealPlanCard.tsx`
@@ -263,12 +313,14 @@
 ### External API Integrations
 
 - [ ] **Set up nutrition APIs** <!-- NOT STARTED -->
+
   - [ ] Create `lib/integrations/edamam.ts`
   - [ ] Create `lib/integrations/spoonacular.ts`
   - [ ] Add API key configuration
   - [ ] Implement nutrition data fetching
 
 - [ ] **Create nutrition validation system** <!-- NOT STARTED -->
+
   - [ ] Create `lib/ai/nutrition-validator.ts`
   - [ ] Implement recipe nutrition verification
   - [ ] Add ingredient nutrition lookup
@@ -283,6 +335,7 @@
 ### Advanced Recipe Features
 
 - [ ] **Create recipe enhancement system** <!-- NOT STARTED -->
+
   - [ ] Add recipe difficulty calculation
   - [ ] Implement cooking time estimation
   - [ ] Add recipe tagging and categorization
@@ -299,12 +352,14 @@
 ### Performance Optimization
 
 - [ ] **Implement caching strategies** <!-- NOT STARTED -->
+
   - [ ] Add recipe caching for similar requests
   - [ ] Implement nutrition data caching
   - [ ] Add user preference caching
   - [ ] Create intelligent cache invalidation
 
 - [ ] **Optimize AI API usage** <!-- NOT STARTED -->
+
   - [ ] Implement request deduplication
   - [ ] Add response streaming for long generations
   - [ ] Create background recipe pre-generation
@@ -319,12 +374,14 @@
 ### Analytics & Monitoring
 
 - [ ] **Create analytics tracking system** <!-- NOT STARTED -->
+
   - [ ] Create `lib/analytics/recipe-events.ts`
   - [ ] Implement event tracking for all user actions
   - [ ] Add performance monitoring
   - [ ] Create error tracking and reporting
 
 - [ ] **Create analytics dashboard** <!-- NOT STARTED -->
+
   - [ ] Add admin analytics views (if applicable)
   - [ ] Create user engagement metrics
   - [ ] Add AI performance monitoring
@@ -339,12 +396,14 @@
 ### Testing & Quality Assurance
 
 - [x] **Create comprehensive test suite**
+
   - [x] Add unit tests for all service functions
   - [x] Create integration tests for API routes
   - [x] Add component tests for UI elements
   - [x] Create end-to-end user journey tests
 
 - [x] **Create test data and fixtures**
+
   - [x] Add test recipes and user profiles
   - [x] Create mock AI responses for testing
   - [x] Add test nutrition data
@@ -359,12 +418,14 @@
 ### Documentation & Deployment
 
 - [ ] **Create comprehensive documentation** <!-- TODO: Final docs -->
+
   - [ ] Document all API endpoints
   - [ ] Create component usage documentation
   - [ ] Add deployment and setup guides
   - [ ] Create troubleshooting documentation
 
 - [ ] **Prepare for production deployment** <!-- TODO: Final prep -->
+
   - [ ] Set up production environment variables
   - [ ] Configure production database
   - [ ] Set up monitoring and logging
@@ -381,12 +442,14 @@
 ### Maintenance & Iteration
 
 - [ ] **Regular prompt optimization** <!-- Ongoing -->
+
   - [ ] Analyze user feedback patterns
   - [ ] Update prompts based on performance data
   - [ ] A/B test different prompt strategies
   - [ ] Monitor AI model updates and improvements
 
 - [ ] **Feature iteration based on usage** <!-- Ongoing -->
+
   - [ ] Analyze user behavior and preferences
   - [ ] Iterate on UI/UX based on feedback
   - [ ] Add new cuisine types and dietary options

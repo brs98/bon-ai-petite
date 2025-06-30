@@ -98,15 +98,6 @@ export function MealCountSelector({
 
   return (
     <div className='space-y-6'>
-      {/* Header with Instructions */}
-      <div className='text-center space-y-2'>
-        <h2 className='text-2xl font-semibold'>Plan Your Week</h2>
-        <p className='text-muted-foreground'>
-          Select how many meals you'd like for each category. You can choose 0-7
-          meals per category.
-        </p>
-      </div>
-
       {/* Meal Category Selectors */}
       <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
         {MEAL_CATEGORIES.map(category => (

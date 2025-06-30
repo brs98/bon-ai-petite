@@ -10,14 +10,34 @@ export const revalidate = 3600;
 const featureList = [
   { label: 'AI-Generated Meals', essential: true, premium: true },
   { label: 'Personalized Dietary Preferences', essential: true, premium: true },
-  { label: 'Adaptive AI that learns user preferences over time', essential: true, premium: true },
-  { label: 'Detailed recipe creation with ingredients and instructions', essential: true, premium: true },
-  { label: 'Automatic macronutrient target calculation', essential: true, premium: true },
+  {
+    label: 'Adaptive AI that learns user preferences over time',
+    essential: true,
+    premium: true,
+  },
+  {
+    label: 'Detailed recipe creation with ingredients and instructions',
+    essential: true,
+    premium: true,
+  },
+  {
+    label: 'Automatic macronutrient target calculation',
+    essential: true,
+    premium: true,
+  },
   { label: 'Weekly Meal Planning', essential: false, premium: true },
   { label: 'Family Meal Planning', essential: false, premium: true },
   { label: 'Shopping List Creation', essential: false, premium: true },
-  { label: 'Instacart Integration (coming soon)', essential: false, premium: true },
-  { label: 'Amazon Fresh Integration (coming soon)', essential: false, premium: true },
+  {
+    label: 'Instacart Integration (coming soon)',
+    essential: false,
+    premium: true,
+  },
+  {
+    label: 'Amazon Fresh Integration (coming soon)',
+    essential: false,
+    premium: true,
+  },
 ];
 
 export default async function PricingPage() {
@@ -86,7 +106,10 @@ export default async function PricingPage() {
             price={basePrice?.unitAmount || 800}
             interval={basePrice?.interval || 'month'}
             trialDays={basePrice?.trialPeriodDays || 14}
-            features={featureList.map(f => ({ label: f.label, included: f.essential }))}
+            features={featureList.map(f => ({
+              label: f.label,
+              included: f.essential,
+            }))}
             planId='essential'
             popular={false}
           />
@@ -96,7 +119,10 @@ export default async function PricingPage() {
             price={plusPrice?.unitAmount || 1200}
             interval={plusPrice?.interval || 'month'}
             trialDays={plusPrice?.trialPeriodDays || 14}
-            features={featureList.map(f => ({ label: f.label, included: f.premium }))}
+            features={featureList.map(f => ({
+              label: f.label,
+              included: f.premium,
+            }))}
             planId='premium'
             popular={true}
           />
@@ -243,7 +269,11 @@ function PricingCard({
                 <span className='text-gray-400 font-bold text-lg'>×</span>
               )}
             </div>
-            <span className={`text-foreground ${!feature.included ? 'opacity-60 line-through' : ''}`}>{feature.label}</span>
+            <span
+              className={`text-foreground ${!feature.included ? 'opacity-60 line-through' : ''}`}
+            >
+              {feature.label}
+            </span>
           </li>
         ))}
       </ul>

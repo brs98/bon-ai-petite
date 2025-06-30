@@ -18,6 +18,14 @@ const SavedRecipesQuerySchema = z.object({
   mealType: z.enum(['breakfast', 'lunch', 'dinner', 'snack']).optional(),
   difficulty: z.enum(['easy', 'medium', 'hard']).optional(),
   sort: z.enum(['newest', 'oldest', 'name']).optional().default('newest'),
+  isSaved: z
+    .string()
+    .optional()
+    .transform(val => {
+      if (val === undefined) return true; // default to true
+      if (val === 'false') return false;
+      return true;
+    }),
 });
 
 export async function GET(request: NextRequest) {
@@ -31,13 +39,13 @@ export async function GET(request: NextRequest) {
     // Parse query parameters
     const { searchParams } = new URL(request.url);
     const queryParams = Object.fromEntries(searchParams.entries());
-    const { page, limit, search, mealType, difficulty, sort } =
+    const { page, limit, search, mealType, difficulty, sort, isSaved } =
       SavedRecipesQuerySchema.parse(queryParams);
 
     // Build where conditions
     let whereConditions = and(
       eq(recipes.userId, user.id),
-      eq(recipes.isSaved, true),
+      eq(recipes.isSaved, isSaved),
     );
 
     if (search) {

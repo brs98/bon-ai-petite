@@ -30,6 +30,8 @@ import { Suspense } from 'react';
 function getCurrentWeekRange() {
   const now = new Date();
   const dayOfWeek = now.getDay();
+  // Start of week: Sunday (0) or Monday (1) depending on convention
+  // This code uses Monday as start of week
   const monday = new Date(now);
   monday.setDate(now.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1));
   monday.setHours(0, 0, 0, 0);
@@ -95,6 +97,12 @@ async function getDashboardData() {
     orderBy: [desc(weeklyMealPlans.createdAt)],
   });
 
+  // Get all plans for debug UI if needed
+  const allPlans = await db.query.weeklyMealPlans.findMany({
+    where: eq(weeklyMealPlans.userId, user.id),
+    orderBy: [desc(weeklyMealPlans.createdAt)],
+  });
+
   // Get recent meal plans count
   const recentPlansCount = await db.$count(
     weeklyMealPlans,
@@ -106,6 +114,7 @@ async function getDashboardData() {
     nutritionProfile,
     currentWeekPlan,
     recentPlansCount,
+    allPlans, // for debug UI
   };
 }
 
@@ -124,7 +133,13 @@ export default async function DashboardPage() {
     );
   }
 
-  const { user, nutritionProfile, currentWeekPlan, recentPlansCount } = data;
+  const {
+    user,
+    nutritionProfile,
+    currentWeekPlan,
+    recentPlansCount,
+    allPlans,
+  } = data;
 
   // Calculate meal plan progress
   const totalMeals = currentWeekPlan?.totalMeals || 0;
@@ -450,26 +465,66 @@ export default async function DashboardPage() {
             </Card>
           </div>
         ) : (
-          <Card className='border-dashed border-2'>
-            <CardHeader className='text-center'>
-              <CardTitle className='text-lg flex items-center justify-center gap-2'>
-                <Calendar className='h-5 w-5 text-muted-foreground' />
-                No Meal Plan This Week
-              </CardTitle>
-            </CardHeader>
-            <CardContent className='text-center space-y-4'>
-              <p className='text-muted-foreground'>
-                Start planning your meals for the week to get personalized
-                recipes and shopping lists.
-              </p>
-              <Button asChild>
-                <Link href='/dashboard/meal-planning/weekly'>
-                  <Plus className='mr-2 h-4 w-4' />
-                  Create Meal Plan
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
+          <>
+            <Card className='border-dashed border-2'>
+              <CardHeader className='text-center'>
+                <CardTitle className='text-lg flex items-center justify-center gap-2'>
+                  <Calendar className='h-5 w-5 text-muted-foreground' />
+                  No Meal Plan This Week
+                </CardTitle>
+              </CardHeader>
+              <CardContent className='text-center space-y-4'>
+                <p className='text-muted-foreground'>
+                  Start planning your meals for the week to get personalized
+                  recipes and shopping lists.
+                </p>
+                <Button asChild>
+                  <Link href='/dashboard/meal-planning/weekly'>
+                    <Plus className='mr-2 h-4 w-4' />
+                    Create Meal Plan
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+            {/* Debug UI: Show all plans if no current week plan is found */}
+            {allPlans && allPlans.length > 0 && (
+              <div className='mt-8 p-4 border rounded bg-muted/30'>
+                <h3 className='font-semibold mb-2 text-sm'>
+                  Debug: All Your Meal Plans
+                </h3>
+                <div className='overflow-x-auto'>
+                  <table className='text-xs w-full'>
+                    <thead>
+                      <tr>
+                        <th className='px-2 py-1 text-left'>Name</th>
+                        <th className='px-2 py-1 text-left'>Start Date</th>
+                        <th className='px-2 py-1 text-left'>End Date</th>
+                        <th className='px-2 py-1 text-left'>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {allPlans.map(plan => (
+                        <tr key={plan.id}>
+                          <td className='px-2 py-1'>{plan.name}</td>
+                          <td className='px-2 py-1'>
+                            {plan.startDate?.toString?.() || plan.startDate}
+                          </td>
+                          <td className='px-2 py-1'>
+                            {plan.endDate?.toString?.() || plan.endDate}
+                          </td>
+                          <td className='px-2 py-1'>{plan.status}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <p className='mt-2 text-muted-foreground'>
+                  If you see a plan for this week but it is not showing above,
+                  check the date logic and plan status.
+                </p>
+              </div>
+            )}
+          </>
         )}
       </div>
 

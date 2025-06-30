@@ -347,7 +347,12 @@ export function PreferenceOverride({
                 min='5'
                 max='120'
                 step='5'
-                value={preferences.maxPrepTime || ''}
+                value={
+                  preferences.maxPrepTime === undefined ||
+                  preferences.maxPrepTime === 0
+                    ? ''
+                    : preferences.maxPrepTime
+                }
                 onChange={e =>
                   handleNumberChange('maxPrepTime', e.target.value)
                 }
@@ -367,7 +372,12 @@ export function PreferenceOverride({
                 min='5'
                 max='180'
                 step='5'
-                value={preferences.maxCookTime || ''}
+                value={
+                  preferences.maxCookTime === undefined ||
+                  preferences.maxCookTime === 0
+                    ? ''
+                    : preferences.maxCookTime
+                }
                 onChange={e =>
                   handleNumberChange('maxCookTime', e.target.value)
                 }
@@ -429,7 +439,12 @@ export function PreferenceOverride({
                     min={MEAL_CALORIE_SUGGESTIONS[mealCategory].min}
                     max={MEAL_CALORIE_SUGGESTIONS[mealCategory].max}
                     step='25'
-                    value={preferences.targetCalories || ''}
+                    value={
+                      preferences.targetCalories === undefined ||
+                      preferences.targetCalories === 0
+                        ? ''
+                        : preferences.targetCalories
+                    }
                     onChange={e =>
                       handleNumberChange('targetCalories', e.target.value)
                     }
@@ -450,7 +465,12 @@ export function PreferenceOverride({
                     min='5'
                     max='100'
                     step='5'
-                    value={preferences.targetProtein || ''}
+                    value={
+                      preferences.targetProtein === undefined ||
+                      preferences.targetProtein === 0
+                        ? ''
+                        : preferences.targetProtein
+                    }
                     onChange={e =>
                       handleNumberChange('targetProtein', e.target.value)
                     }
@@ -468,7 +488,12 @@ export function PreferenceOverride({
                     min='10'
                     max='150'
                     step='5'
-                    value={preferences.targetCarbs || ''}
+                    value={
+                      preferences.targetCarbs === undefined ||
+                      preferences.targetCarbs === 0
+                        ? ''
+                        : preferences.targetCarbs
+                    }
                     onChange={e =>
                       handleNumberChange('targetCarbs', e.target.value)
                     }
@@ -486,7 +511,12 @@ export function PreferenceOverride({
                     min='5'
                     max='80'
                     step='5'
-                    value={preferences.targetFat || ''}
+                    value={
+                      preferences.targetFat === undefined ||
+                      preferences.targetFat === 0
+                        ? ''
+                        : preferences.targetFat
+                    }
                     onChange={e =>
                       handleNumberChange('targetFat', e.target.value)
                     }

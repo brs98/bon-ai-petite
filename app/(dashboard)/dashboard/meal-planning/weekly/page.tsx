@@ -13,7 +13,6 @@ import {
   Calendar,
   ChefHat,
   Info,
-  Plus,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -157,8 +156,46 @@ export default function WeeklyMealPlanningPage() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to create meal plan');
+        // Parse error details from API
+        let errorMessage = 'Failed to create meal plan';
+        let errorDetails = '';
+        try {
+          const errorData = await response.json();
+          errorDetails = errorData.error || errorData.message || '';
+        } catch (err) {
+          console.error('Error:', err);
+        }
+        // Map status codes to user-friendly messages
+        switch (response.status) {
+          case 401:
+            errorMessage = 'You must be signed in to create a meal plan.';
+            break;
+          case 403:
+            errorMessage =
+              'Weekly meal plan generation is available to Premium subscribers only. Please upgrade your plan to access this feature.';
+            break;
+          case 429:
+            errorMessage =
+              'You have reached your weekly meal plan creation limit. Please try again next week or upgrade your plan for unlimited access.';
+            break;
+          case 400:
+            errorMessage =
+              'Invalid input. Please check your selections and try again.';
+            break;
+          case 500:
+            errorMessage = 'A server error occurred. Please try again later.';
+            break;
+          default:
+            errorMessage = errorDetails || errorMessage;
+        }
+        setError(
+          errorMessage +
+            (errorDetails && errorDetails !== errorMessage
+              ? `\nDetails: ${errorDetails}`
+              : ''),
+        );
+        setIsCreating(false); // Reset creating state so user can try again
+        return;
       }
 
       const result = await response.json();
@@ -167,12 +204,12 @@ export default function WeeklyMealPlanningPage() {
       // Navigate to the wizard page
       router.push(`/dashboard/meal-planning/weekly/${newPlan.id}`);
     } catch (error) {
+      // Catch network or unexpected errors
       console.error('Error creating meal plan:', error);
       setError(
         error instanceof Error ? error.message : 'Failed to create meal plan',
       );
-    } finally {
-      setIsCreating(false);
+      setIsCreating(false); // Reset creating state so user can try again
     }
   };
 
@@ -270,7 +307,21 @@ export default function WeeklyMealPlanningPage() {
         <Alert variant='destructive'>
           <div className='flex items-center gap-2'>
             <AlertTriangle className='h-4 w-4' />
-            <AlertDescription>{error}</AlertDescription>
+            <AlertDescription>
+              {error.split('\n').map((line, idx) => (
+                <div key={idx}>{line}</div>
+              ))}
+            </AlertDescription>
+          </div>
+          <div className='mt-4 flex justify-end'>
+            <Button
+              variant='outline'
+              size='sm'
+              onClick={() => setError(null)}
+              className='gap-2'
+            >
+              Try Again
+            </Button>
           </div>
         </Alert>
       )}
@@ -350,11 +401,6 @@ export default function WeeklyMealPlanningPage() {
 
       {/* Create New Plan Section */}
       <div className='space-y-6'>
-        <div className='flex items-center gap-2'>
-          <Plus className='h-5 w-5 text-muted-foreground' />
-          <h2 className='text-xl font-semibold'>Create New Weekly Plan</h2>
-        </div>
-
         <MealCountSelector
           initialCounts={selectedCounts}
           onCountsChange={setSelectedCounts}
@@ -385,54 +431,6 @@ export default function WeeklyMealPlanningPage() {
             )}
           </Button>
         </div>
-      </div>
-
-      {/* Information Cards */}
-      <div className='grid grid-cols-1 md:grid-cols-3 gap-6 mt-12'>
-        <Card>
-          <CardHeader>
-            <CardTitle className='text-lg flex items-center gap-2'>
-              <ChefHat className='h-5 w-5 text-primary' />
-              AI-Generated Recipes
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className='text-sm text-muted-foreground'>
-              Each meal is personally crafted by AI based on your nutrition
-              profile and preferences.
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className='text-lg flex items-center gap-2'>
-              <Calendar className='h-5 w-5 text-primary' />
-              Weekly Organization
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className='text-sm text-muted-foreground'>
-              Plan up to 7 meals per category with step-by-step guided meal
-              generation.
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className='text-lg flex items-center gap-2'>
-              <Plus className='h-5 w-5 text-primary' />
-              Smart Shopping Lists
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className='text-sm text-muted-foreground'>
-              Automatically consolidate ingredients with quantities organized by
-              grocery store sections.
-            </p>
-          </CardContent>
-        </Card>
       </div>
     </div>
   );

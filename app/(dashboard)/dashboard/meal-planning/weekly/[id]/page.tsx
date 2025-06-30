@@ -37,6 +37,11 @@ export default function WeeklyMealPlanPage() {
   );
   const [activeTab, setActiveTab] = useState<'meals' | 'shopping'>('meals');
   const [selectedMealIds, setSelectedMealIds] = useState<number[]>([]);
+  const [shoppingListError, setShoppingListError] = useState<string | null>(
+    null,
+  );
+  // Add local save state for mealPlan recipes
+  const [savedRecipeIds, setSavedRecipeIds] = useState<Set<number>>(new Set());
 
   // Load meal plan data
   useEffect(() => {
@@ -89,8 +94,11 @@ export default function WeeklyMealPlanPage() {
           );
           const shopData = await shopRes.json();
           if (shopData.shoppingList) setShoppingList(shopData.shoppingList);
-        } catch (err) {
-          console.error('Error:', err);
+          else if (shopData.error) setShoppingListError(shopData.error);
+        } catch {
+          setShoppingListError(
+            'Failed to generate shopping list. Please try again.',
+          );
         } finally {
           setIsGenerating(false);
         }
@@ -101,6 +109,7 @@ export default function WeeklyMealPlanPage() {
         .then(res => res.json())
         .then(data => {
           if (data.shoppingList) setShoppingList(data.shoppingList);
+          else if (data.error) setShoppingListError(data.error);
         });
     }
   }, [mealPlan, planId, isGenerating, shoppingList]);
@@ -168,6 +177,81 @@ export default function WeeklyMealPlanPage() {
     setSelectedMealIds(prev =>
       selected ? [...prev, mealId] : prev.filter(id => id !== mealId),
     );
+  };
+
+  // Add a function to handle manual shopping list generation (with error handling)
+  const handleGenerateShoppingList = async () => {
+    setIsGenerating(true);
+    setShoppingListError(null);
+    try {
+      const response = await fetch(
+        `/api/meal-plans/weekly/${planId}/shopping-list`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+        },
+      );
+      const data = await response.json();
+      if (data.shoppingList) setShoppingList(data.shoppingList);
+      else if (data.error) setShoppingListError(data.error);
+    } catch {
+      setShoppingListError(
+        'Failed to generate shopping list. Please try again.',
+      );
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  // Calculate completed and total meals
+  const completedMeals =
+    mealPlan?.mealPlanItems?.filter(item => item.status === 'generated')
+      .length || 0;
+  const totalMeals =
+    (mealPlan?.breakfastCount ?? 0) +
+    (mealPlan?.lunchCount ?? 0) +
+    (mealPlan?.dinnerCount ?? 0) +
+    (mealPlan?.snackCount ?? 0);
+  const allMealsGenerated = completedMeals === totalMeals && totalMeals > 0;
+
+  // Save/unsave handler for meal plan recipes
+  const handleToggleSave = async (
+    recipeId: number,
+    isCurrentlySaved: boolean,
+  ) => {
+    try {
+      await fetch('/api/recipes/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ recipeId, isSaved: !isCurrentlySaved }),
+      });
+      setSavedRecipeIds(prev => {
+        const newSet = new Set(prev);
+        if (isCurrentlySaved) {
+          newSet.delete(recipeId);
+        } else {
+          newSet.add(recipeId);
+        }
+        return newSet;
+      });
+      // Optionally update mealPlan state for instant UI feedback
+      setMealPlan(prev => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          mealPlanItems: prev.mealPlanItems.map(item =>
+            item.recipe && item.recipe.id === recipeId
+              ? {
+                  ...item,
+                  recipe: { ...item.recipe, isSaved: !isCurrentlySaved },
+                }
+              : item,
+          ),
+        };
+      });
+    } catch (err) {
+      console.error('Error toggling save:', err);
+    }
   };
 
   if (isLoading) {
@@ -288,7 +372,6 @@ export default function WeeklyMealPlanPage() {
                       : undefined
                   }
                   selected={selectedMealIds.includes(meal.id!)}
-                  // Make the entire card clickable for selection
                   onSelectChange={() =>
                     handleSelectMeal(
                       meal.id!,
@@ -296,6 +379,19 @@ export default function WeeklyMealPlanPage() {
                     )
                   }
                   disabled={isGenerating}
+                  isSaved={
+                    typeof meal.recipe?.isSaved === 'boolean'
+                      ? meal.recipe.isSaved
+                      : savedRecipeIds.has(meal.recipe?.id ?? -1)
+                  }
+                  onSave={id =>
+                    void handleToggleSave(
+                      id,
+                      !!(typeof meal.recipe?.isSaved === 'boolean'
+                        ? meal.recipe.isSaved
+                        : savedRecipeIds.has(id)),
+                    )
+                  }
                 />
               ))}
         </div>
@@ -316,6 +412,42 @@ export default function WeeklyMealPlanPage() {
           ) : (
             <div className='text-center text-muted-foreground'>
               No shopping list found.
+            </div>
+          )}
+          {/* Add a button to manually generate the shopping list, disabled if not all meals are generated */}
+          {activeTab === 'shopping' && (
+            <div className='mb-4 flex flex-col items-end gap-2'>
+              <Button
+                onClick={() => void handleGenerateShoppingList()}
+                disabled={!allMealsGenerated || isGenerating}
+                variant='default'
+              >
+                {isGenerating
+                  ? 'Generating Shopping List...'
+                  : 'Generate Shopping List'}
+              </Button>
+              {!allMealsGenerated && (
+                <div className='text-sm text-muted-foreground'>
+                  You need to generate all meals before creating a shopping
+                  list.
+                </div>
+              )}
+              {shoppingListError && (
+                <div className='text-sm text-destructive'>
+                  {shoppingListError}
+                  <Button
+                    variant='outline'
+                    size='sm'
+                    className='ml-2'
+                    onClick={() => {
+                      setShoppingListError(null);
+                      void handleGenerateShoppingList();
+                    }}
+                  >
+                    Retry
+                  </Button>
+                </div>
+              )}
             </div>
           )}
         </div>

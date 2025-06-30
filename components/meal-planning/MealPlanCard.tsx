@@ -13,8 +13,10 @@ import {
   Loader2,
   Settings,
   Sparkles,
+  Star,
   Users,
 } from 'lucide-react';
+const StarFilled = Star;
 
 interface MealPlanCardProps {
   mealPlanItem: MealPlanItem;
@@ -30,6 +32,8 @@ interface MealPlanCardProps {
   showCustomPreferences?: boolean;
   selected?: boolean;
   onSelectChange?: (selected: boolean) => void;
+  onSave?: (recipeId: number) => void;
+  isSaved?: boolean;
 }
 
 const CATEGORY_COLORS = {
@@ -77,6 +81,8 @@ export function MealPlanCard({
   showCustomPreferences = true,
   selected = false,
   onSelectChange,
+  onSave,
+  isSaved,
 }: MealPlanCardProps) {
   const status = isGenerating ? 'generating' : mealPlanItem.status;
   const statusConfig = STATUS_CONFIG[status];
@@ -162,17 +168,25 @@ export function MealPlanCard({
         );
       case 'generated':
         return (
-          <div className='space-y-4'>
+          <div className='flex flex-col flex-1 space-y-4'>
             {recipe && (
               <>
                 {/* Recipe Header */}
                 <div className='space-y-3'>
-                  <div>
-                    <h4 className='font-semibold line-clamp-2 mb-1'>
+                  <div
+                    style={{ minHeight: 60, maxHeight: 60, overflow: 'hidden' }}
+                  >
+                    <h4
+                      className='font-semibold mb-1 truncate'
+                      title={recipe.name}
+                    >
                       {recipe.name}
                     </h4>
                     {recipe.description && (
-                      <p className='text-sm text-muted-foreground line-clamp-2'>
+                      <p
+                        className='text-sm text-muted-foreground truncate'
+                        title={recipe.description}
+                      >
                         {recipe.description}
                       </p>
                     )}
@@ -208,8 +222,10 @@ export function MealPlanCard({
                     ))}
                   </div>
                 </div>
+                <div className='flex-1' />{' '}
+                {/* Spacer to push buttons to bottom */}
                 {/* Action Buttons */}
-                <div className='flex gap-2 items-center'>
+                <div className='flex gap-2 items-center pt-2'>
                   {recipe.id && onViewRecipe && (
                     <Button
                       variant='outline'
@@ -221,6 +237,27 @@ export function MealPlanCard({
                       }}
                     >
                       View Recipe
+                    </Button>
+                  )}
+                  {recipe.id && onSave && (
+                    <Button
+                      variant='outline'
+                      size='sm'
+                      className='font-semibold px-4 py-2 flex-1 flex items-center gap-2 shadow-md border-2 border-yellow-400 text-yellow-700 hover:bg-yellow-100 hover:text-yellow-700'
+                      onClick={e => {
+                        e.stopPropagation();
+                        onSave(recipe.id!);
+                      }}
+                      style={{ minWidth: 100 }}
+                    >
+                      {typeof isSaved !== 'undefined' && isSaved ? (
+                        <StarFilled className='h-5 w-5 fill-yellow-400 text-yellow-500' />
+                      ) : (
+                        <Star className='h-5 w-5 text-yellow-500' />
+                      )}
+                      {typeof isSaved !== 'undefined' && isSaved
+                        ? 'Saved'
+                        : 'Save Recipe'}
                     </Button>
                   )}
                 </div>

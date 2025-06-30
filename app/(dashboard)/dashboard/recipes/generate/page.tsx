@@ -120,23 +120,30 @@ export default function RecipeGeneratePage() {
     }
   };
 
-  const handleSaveRecipe = async (recipeId: number) => {
-    try {
-      const response = await fetch('/api/recipes/save', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ recipeId }),
-      });
-
-      if (response.ok) {
-        // Update the recipe in state to reflect saved status
-        setGeneratedRecipe(prev => (prev ? { ...prev, isSaved: true } : null));
-      }
-    } catch (error) {
-      console.error('Error saving recipe:', error);
-    }
+  const handleSaveRecipe = (recipeId: number) => {
+    setGeneratedRecipe(prev => {
+      if (!prev) return prev;
+      const newIsSaved = !prev.isSaved;
+      void (async () => {
+        try {
+          const response = await fetch('/api/recipes/save', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ recipeId, isSaved: newIsSaved }),
+          });
+          if (response.ok) {
+            setGeneratedRecipe(prev2 =>
+              prev2 ? { ...prev2, isSaved: newIsSaved } : null,
+            );
+          }
+        } catch (error) {
+          console.error('Error saving recipe:', error);
+        }
+      })();
+      return prev;
+    });
   };
 
   const handleViewRecipe = (recipeId: number) => {
@@ -145,12 +152,6 @@ export default function RecipeGeneratePage() {
 
   const handleSetupProfile = () => {
     router.push('/dashboard/settings/nutrition');
-  };
-
-  const handleStartOver = () => {
-    setGeneratedRecipe(null);
-    setError(null);
-    setLastRequest(null);
   };
 
   if (isLoadingProfile) {
@@ -228,17 +229,15 @@ export default function RecipeGeneratePage() {
             />
           </div>
 
-          <div className='flex justify-center gap-4'>
+          <div className='flex flex-col sm:flex-row justify-center gap-4'>
             <Button
               onClick={handleRegenerate}
-              variant='outline'
-              className='gap-2'
+              variant='default'
+              className='gap-2 text-lg px-6 py-3 font-semibold'
+              size='lg'
             >
-              <RefreshCw className='h-4 w-4' />
-              Generate Another
-            </Button>
-            <Button onClick={handleStartOver} variant='ghost'>
-              Start Over
+              <RefreshCw className='h-5 w-5' />
+              Generate Another Recipe
             </Button>
           </div>
         </div>

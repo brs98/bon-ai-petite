@@ -4,11 +4,11 @@ import { ProfileSetup } from '@/components/nutrition/ProfileSetup';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
 } from '@/components/ui/card';
 import { PaymentSuccessBanner } from '@/components/ui/PaymentSuccessBanner';
 import { type NutritionProfile } from '@/types/recipe';

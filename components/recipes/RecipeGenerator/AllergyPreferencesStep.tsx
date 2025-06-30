@@ -14,11 +14,23 @@ export const AllergyPreferencesStep: React.FC<AllergyPreferencesStepProps> = ({
   onChange,
   allOptions = COMMON_ALLERGIES,
 }) => {
+  const NONE_OPTION = 'None';
+  const optionsWithNone = [
+    NONE_OPTION,
+    ...allOptions.filter(opt => opt !== NONE_OPTION),
+  ];
+
   const toggleSelection = (item: string) => {
-    if (value.includes(item)) {
-      onChange(value.filter(i => i !== item));
+    if (item === NONE_OPTION) {
+      onChange([NONE_OPTION]);
     } else {
-      onChange([...value, item]);
+      let newSelection = value.filter(i => i !== NONE_OPTION);
+      if (value.includes(item)) {
+        newSelection = newSelection.filter(i => i !== item);
+      } else {
+        newSelection = [...newSelection, item];
+      }
+      onChange(newSelection);
     }
   };
 
@@ -33,7 +45,7 @@ export const AllergyPreferencesStep: React.FC<AllergyPreferencesStepProps> = ({
         </p>
       </div>
       <div className='flex flex-wrap gap-3 justify-center max-w-4xl mx-auto'>
-        {allOptions.map(allergy => (
+        {optionsWithNone.map(allergy => (
           <Badge
             key={allergy}
             variant={value.includes(allergy) ? 'default' : 'outline'}

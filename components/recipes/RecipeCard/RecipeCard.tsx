@@ -2,7 +2,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Recipe } from '@/types/recipe';
-import { ChefHat, Clock, Users } from 'lucide-react';
+import { ChefHat, Clock, Star, Star as StarFilled, Users } from 'lucide-react';
 import { FeedbackButtons } from './FeedbackButtons';
 import { NutritionBadge } from './NutritionBadge';
 
@@ -49,8 +49,8 @@ export function RecipeCard({
   };
 
   return (
-    <Card className='w-full max-w-md hover:shadow-lg transition-shadow duration-200'>
-      <CardHeader className='pb-3'>
+    <Card className='w-full max-w-md h-full flex flex-col hover:shadow-lg transition-shadow duration-200'>
+      <CardHeader className='pb-3 flex-shrink-0'>
         <div className='flex items-start justify-between'>
           <CardTitle className='text-lg font-semibold line-clamp-2'>
             {recipe.name}
@@ -66,7 +66,7 @@ export function RecipeCard({
         )}
       </CardHeader>
 
-      <CardContent className='space-y-4'>
+      <CardContent className='flex flex-col flex-1 space-y-4'>
         {/* Recipe Stats */}
         <div className='flex items-center justify-between text-sm text-muted-foreground'>
           <div className='flex items-center gap-1'>
@@ -82,10 +82,8 @@ export function RecipeCard({
             <span className='capitalize'>{recipe.difficulty}</span>
           </div>
         </div>
-
         {/* Nutrition Badge */}
         <NutritionBadge nutrition={recipe.nutrition} />
-
         {/* Cuisine and Tags */}
         <div className='flex flex-wrap gap-1'>
           {recipe.cuisineType && (
@@ -104,26 +102,32 @@ export function RecipeCard({
             </Badge>
           )}
         </div>
-
+        <div className='flex-1' /> {/* Spacer to push buttons to bottom */}
         {/* Action Buttons */}
         <div className='flex gap-2 pt-2'>
           <Button
             variant='default'
-            size='sm'
+            size='lg'
             className='flex-1'
             onClick={handleView}
           >
             View Recipe
           </Button>
           <Button
-            variant={recipe.isSaved ? 'default' : 'outline'}
-            size='sm'
+            variant='outline'
+            size='lg'
+            className='font-semibold px-6 py-2 flex-1 flex items-center gap-2 shadow-md border-2 border-yellow-400 text-yellow-700 hover:bg-yellow-100 hover:text-yellow-700'
             onClick={handleSave}
+            style={{ minWidth: 120 }}
           >
-            {recipe.isSaved ? 'Saved' : 'Save'}
+            {recipe.isSaved ? (
+              <StarFilled className='h-5 w-5 fill-yellow-400 text-yellow-500' />
+            ) : (
+              <Star className='h-5 w-5 text-yellow-500' />
+            )}
+            {recipe.isSaved ? 'Saved' : 'Save Recipe'}
           </Button>
         </div>
-
         {/* Feedback Buttons */}
         {showFeedback && (
           <div className='pt-2 border-t'>

@@ -83,29 +83,58 @@ export default function SavedRecipesPage() {
     }
   }, [search, mealType, difficulty, sort]);
 
-  const handleSave = async (recipeId: number) => {
+  const handleToggleSave = async (
+    recipeId: number,
+    isCurrentlySaved: boolean,
+  ) => {
     try {
-      const response = await fetch('/api/recipes/save', {
+      await fetch('/api/recipes/save', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          recipeId,
-          isSaved: false, // Unsaving since this is the saved recipes page
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ recipeId, isSaved: !isCurrentlySaved }),
       });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || 'Failed to unsave recipe');
-      }
-
-      // Refresh the list
-      void fetchSavedRecipes();
+      setData(prev => {
+        if (!prev) return prev;
+        const alreadyInList = prev.recipes.some(r => r.id === recipeId);
+        // If unsaving, remove from the list
+        if (isCurrentlySaved) {
+          return {
+            ...prev,
+            recipes: prev.recipes.filter(r => r.id !== recipeId),
+          };
+        }
+        // If saving and not already in list, fetch and add to top
+        if (!alreadyInList) {
+          // Fetch the full recipe object and add to the top
+          void fetch(`/api/recipes/${recipeId}`)
+            .then(res => res.json())
+            .then(data => {
+              if (data.recipe) {
+                setData(prev2 =>
+                  prev2
+                    ? {
+                        ...prev2,
+                        recipes: [
+                          { ...data.recipe, isSaved: true },
+                          ...prev2.recipes,
+                        ],
+                      }
+                    : prev2,
+                );
+              }
+            });
+          return prev;
+        }
+        // Otherwise, just update isSaved property
+        return {
+          ...prev,
+          recipes: prev.recipes.map(r =>
+            r.id === recipeId ? { ...r, isSaved: true } : r,
+          ),
+        };
+      });
     } catch (err) {
-      console.error('Error unsaving recipe:', err);
+      console.error('Error toggling save:', err);
     }
   };
 
@@ -246,19 +275,21 @@ export default function SavedRecipesPage() {
               </p>
               <Button
                 onClick={() => router.push('/dashboard/recipes/generate')}
+                variant='default'
+                size='lg'
               >
-                Generate New Recipe
+                Generate Your First Recipe
               </Button>
             </div>
           ) : (
             <>
               {/* Recipe Grid */}
-              <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8'>
+              <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8 items-stretch'>
                 {data.recipes.map(recipe => (
                   <RecipeCard
                     key={recipe.id}
                     recipe={recipe}
-                    onSave={recipeId => void handleSave(recipeId)}
+                    onSave={id => void handleToggleSave(id, !!recipe.isSaved)}
                     onView={handleView}
                   />
                 ))}
