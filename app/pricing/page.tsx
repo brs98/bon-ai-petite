@@ -1,10 +1,24 @@
 import { getStripePrices, getStripeProducts } from '@/lib/payments/stripe';
-import { Check, ChefHat, Sparkles, Star, Zap } from 'lucide-react';
+import { Check, ChefHat, Sparkles, Zap } from 'lucide-react';
 import Link from 'next/link';
 import { SubmitButton } from './submit-button';
 
 // Prices are fresh for one hour max
 export const revalidate = 3600;
+
+// Define the full feature list and which plan supports which
+const featureList = [
+  { label: 'AI-Generated Meals', essential: true, premium: true },
+  { label: 'Personalized Dietary Preferences', essential: true, premium: true },
+  { label: 'Adaptive AI that learns user preferences over time', essential: true, premium: true },
+  { label: 'Detailed recipe creation with ingredients and instructions', essential: true, premium: true },
+  { label: 'Automatic macronutrient target calculation', essential: true, premium: true },
+  { label: 'Weekly Meal Planning', essential: false, premium: true },
+  { label: 'Family Meal Planning', essential: false, premium: true },
+  { label: 'Shopping List Creation', essential: false, premium: true },
+  { label: 'Instacart Integration (coming soon)', essential: false, premium: true },
+  { label: 'Amazon Fresh Integration (coming soon)', essential: false, premium: true },
+];
 
 export default async function PricingPage() {
   const [prices, products] = await Promise.all([
@@ -72,14 +86,7 @@ export default async function PricingPage() {
             price={basePrice?.unitAmount || 800}
             interval={basePrice?.interval || 'month'}
             trialDays={basePrice?.trialPeriodDays || 14}
-            features={[
-              'AI-Generated Meal Plans',
-              'Basic Dietary Preferences',
-              'Shopping List Generation',
-              'Instacart Integration',
-              'Email Support',
-              'Mobile App Access',
-            ]}
+            features={featureList.map(f => ({ label: f.label, included: f.essential }))}
             planId='essential'
             popular={false}
           />
@@ -89,15 +96,7 @@ export default async function PricingPage() {
             price={plusPrice?.unitAmount || 1200}
             interval={plusPrice?.interval || 'month'}
             trialDays={plusPrice?.trialPeriodDays || 14}
-            features={[
-              'Everything in Essential, plus:',
-              'Advanced Nutrition Tracking',
-              'Family Meal Planning',
-              'Amazon Fresh Integration',
-              'Custom Recipe Requests',
-              'Priority Support',
-              'Nutritionist Consultations',
-            ]}
+            features={featureList.map(f => ({ label: f.label, included: f.premium }))}
             planId='premium'
             popular={true}
           />
@@ -106,20 +105,6 @@ export default async function PricingPage() {
         {/* Trust indicators */}
         <div className='text-center mb-12'>
           <div className='bg-gradient-to-r from-emerald-50 to-blue-50 rounded-2xl p-8 border border-emerald-200/50 max-w-4xl mx-auto'>
-            <div className='flex items-center justify-center mb-4'>
-              <Star className='h-5 w-5 text-yellow-500 fill-current' />
-              <Star className='h-5 w-5 text-yellow-500 fill-current' />
-              <Star className='h-5 w-5 text-yellow-500 fill-current' />
-              <Star className='h-5 w-5 text-yellow-500 fill-current' />
-              <Star className='h-5 w-5 text-yellow-500 fill-current' />
-              <span className='ml-2 text-foreground font-semibold'>
-                4.9/5 from 2,000+ users
-              </span>
-            </div>
-            <p className='text-muted-foreground mb-6'>
-              Join thousands of satisfied users who have transformed their
-              eating habits with AI Petite
-            </p>
             <div className='flex items-center justify-center space-x-8 text-sm text-muted-foreground'>
               <div className='flex items-center'>
                 <Check className='h-4 w-4 text-primary mr-2' />
@@ -128,10 +113,6 @@ export default async function PricingPage() {
               <div className='flex items-center'>
                 <Check className='h-4 w-4 text-primary mr-2' />
                 <span>Cancel anytime</span>
-              </div>
-              <div className='flex items-center'>
-                <Check className='h-4 w-4 text-primary mr-2' />
-                <span>30-day money back guarantee</span>
               </div>
             </div>
           </div>
@@ -193,7 +174,7 @@ function PricingCard({
   price: number;
   interval: string;
   trialDays: number;
-  features: string[];
+  features: { label: string; included: boolean }[];
   planId: string;
   popular?: boolean;
 }) {
@@ -240,7 +221,6 @@ function PricingCard({
             /{interval}
           </span>
         </div>
-        <p className='text-sm text-muted-foreground'>per person</p>
       </div>
 
       <ul className='space-y-4 mb-8'>
@@ -248,14 +228,22 @@ function PricingCard({
           <li key={index} className='flex items-start'>
             <div
               className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center mr-3 mt-0.5 ${
-                popular ? 'bg-primary/20' : 'bg-accent/20'
+                feature.included
+                  ? popular
+                    ? 'bg-primary/20'
+                    : 'bg-accent/20'
+                  : 'bg-gray-200 border border-gray-300'
               }`}
             >
-              <Check
-                className={`h-3 w-3 ${popular ? 'text-primary' : 'text-accent'}`}
-              />
+              {feature.included ? (
+                <Check
+                  className={`h-3 w-3 ${popular ? 'text-primary' : 'text-accent'}`}
+                />
+              ) : (
+                <span className='text-gray-400 font-bold text-lg'>×</span>
+              )}
             </div>
-            <span className='text-foreground'>{feature}</span>
+            <span className={`text-foreground ${!feature.included ? 'opacity-60 line-through' : ''}`}>{feature.label}</span>
           </li>
         ))}
       </ul>

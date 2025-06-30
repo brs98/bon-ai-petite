@@ -4,12 +4,13 @@ import { ProfileSetup } from '@/components/nutrition/ProfileSetup';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
 } from '@/components/ui/card';
+import { PaymentSuccessBanner } from '@/components/ui/PaymentSuccessBanner';
 import { type NutritionProfile } from '@/types/recipe';
 import { Loader2, Settings, User } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -90,6 +91,7 @@ export default function NutritionSettingsPage() {
   if (showSetup || !profile) {
     return (
       <div className='space-y-6'>
+        <PaymentSuccessBanner />
         <div className='flex items-center gap-2'>
           <Settings className='h-6 w-6' />
           <h1 className='text-2xl font-bold'>Nutrition Profile Setup</h1>
@@ -110,6 +112,7 @@ export default function NutritionSettingsPage() {
 
   return (
     <div className='space-y-6'>
+      <PaymentSuccessBanner />
       <div className='flex items-center justify-between'>
         <div className='flex items-center gap-2'>
           <User className='h-6 w-6' />
