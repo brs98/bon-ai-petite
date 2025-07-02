@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap');
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
@@ -467,4 +468,9 @@
     --sidebar-border: 0.2 0.02 240;
     --sidebar-ring: 0.637 0.237 164.25;
   }
+}
+
+.font-cursive {
+  font-family: 'Dancing Script', cursive;
+  font-weight: 700;
 }

@@ -4,11 +4,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ActionState } from '@/lib/auth/middleware';
-import { ChefHat, Loader2, Sparkles } from 'lucide-react';
+import { Loader2, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useActionState, useEffect } from 'react';
 import { signIn, signUp } from './actions';
+import Image from 'next/image';
 
 export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
   const searchParams = useSearchParams();
@@ -61,12 +62,12 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
       <div className='sm:mx-auto sm:w-full sm:max-w-md'>
         <div className='flex justify-center mb-6'>
           <Link href='/' className='flex items-center group'>
-            <div className='w-12 h-12 bg-gradient-to-r from-primary to-primary/90 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform duration-200'>
-              <ChefHat className='h-6 w-6 text-primary-foreground' />
-            </div>
-            <span className='ml-3 text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent'>
-              AI Petite
-            </span>
+            <Image
+              src='/logo.png'
+              alt='AI Petite Logo'
+              width={80}
+              height={80}
+            />
           </Link>
         </div>
 

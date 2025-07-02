@@ -72,6 +72,49 @@ export default function HomePage() {
         />
 
         <div className='relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+          {/* Hero heading with logo to the right, vertically centered with the two-line heading */}
+          <div className='flex justify-center lg:justify-start mb-8'>
+            <div className='flex items-center'>
+              {/* Two-line heading */}
+              <motion.h1
+                className='text-5xl font-bold text-foreground tracking-tight sm:text-6xl lg:text-7xl flex flex-col text-right sm:text-left'
+                variants={staggerItem}
+              >
+                <motion.span
+                  className='block font-cursive'
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2, duration: 0.6 }}
+                >
+                  Bon
+                </motion.span>
+                <motion.span
+                  className='block font-cursive bg-gradient-to-r from-primary via-emerald-500 to-accent bg-clip-text text-transparent'
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4, duration: 0.6 }}
+                >
+                  AI Petite
+                </motion.span>
+              </motion.h1>
+              {/* Logo to the right, vertically centered, with animation */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6, duration: 0.6 }}
+                className='ml-4 self-center'
+              >
+                <Image
+                  src='/logo.png'
+                  alt='AI Petite Logo'
+                  width={93}
+                  height={93}
+                  className='rounded-xl'
+                  priority
+                />
+              </motion.div>
+            </div>
+          </div>
           <div className='lg:grid lg:grid-cols-12 lg:gap-8 items-center'>
             <motion.div
               className='sm:text-center md:max-w-2xl md:mx-auto lg:col-span-6 lg:text-left'
@@ -106,28 +149,6 @@ export default function HomePage() {
                   </span>
                 </motion.div>
               </motion.div>
-
-              <motion.h1
-                className='text-5xl font-bold text-foreground tracking-tight sm:text-6xl lg:text-7xl'
-                variants={staggerItem}
-              >
-                <motion.span
-                  className='block'
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2, duration: 0.6 }}
-                >
-                  Meet
-                </motion.span>
-                <motion.span
-                  className='block bg-gradient-to-r from-primary via-emerald-500 to-accent bg-clip-text text-transparent'
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4, duration: 0.6 }}
-                >
-                  AI Petite
-                </motion.span>
-              </motion.h1>
 
               <motion.p
                 className='mt-6 text-xl text-muted-foreground sm:text-2xl lg:text-xl xl:text-2xl leading-relaxed'
@@ -318,7 +339,7 @@ export default function HomePage() {
                       <motion.div {...buttonHover} className='rounded-xl'>
                         <Button className='w-full bg-gradient-to-r from-primary to-emerald-500 hover:from-primary/90 hover:to-emerald-500/90 text-primary-foreground rounded-xl shadow-md transition-all duration-200'>
                           <ShoppingCart className='h-4 w-4 mr-2' />
-                          Add to Cart (12 items)
+                          View Shopping List
                         </Button>
                       </motion.div>
                     </motion.div>
@@ -329,6 +350,106 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* How It Works Section */}
+      <motion.section
+        className='py-20 bg-gradient-to-b from-background/60 to-emerald-50/30'
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true, margin: '-100px' }}
+        transition={{ duration: 0.8 }}
+      >
+        <div className='max-w-5xl mx-auto px-4 sm:px-6 lg:px-8'>
+          <motion.div
+            className='text-center mb-16'
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            <h2 className='text-4xl font-bold text-foreground mb-4'>
+              How It Works
+            </h2>
+            <p className='text-xl text-muted-foreground max-w-2xl mx-auto'>
+              Save time, eat healthier, and enjoy more variety—AI Petite makes
+              meal planning effortless in just three simple steps.
+            </p>
+          </motion.div>
+          <motion.div
+            className='flex flex-col md:flex-row justify-between items-center gap-12 md:gap-8'
+            initial='initial'
+            whileInView='animate'
+            viewport={{ once: true }}
+            variants={staggerContainer}
+          >
+            {/* Step 1 */}
+            <motion.div
+              className='flex-1 flex flex-col items-center text-center group'
+              variants={staggerItem}
+            >
+              <motion.div
+                className='w-20 h-20 mb-6 rounded-full bg-gradient-to-r from-primary/20 to-emerald-200 flex items-center justify-center shadow-lg'
+                whileHover={{ scale: 1.08, rotate: [0, 8, -8, 0] }}
+                transition={{ duration: 0.5 }}
+              >
+                <Users className='h-10 w-10 text-primary' />
+              </motion.div>
+              <h3 className='text-2xl font-bold text-foreground mb-2'>
+                Create Your Profile
+              </h3>
+              <p className='text-muted-foreground text-base'>
+                Tell us your goals, preferences, and dietary needs. Our AI gets
+                to know you for truly personalized nutrition.
+              </p>
+            </motion.div>
+            {/* Arrow for desktop */}
+            <div className='hidden md:block w-12 h-1 bg-gradient-to-r from-primary/30 to-emerald-200/30 rounded-full mx-2' />
+            {/* Step 2 */}
+            <motion.div
+              className='flex-1 flex flex-col items-center text-center group'
+              variants={staggerItem}
+            >
+              <motion.div
+                className='w-20 h-20 mb-6 rounded-full bg-gradient-to-r from-primary/20 to-accent/20 flex items-center justify-center shadow-lg'
+                whileHover={{ scale: 1.08, rotate: [0, 8, -8, 0] }}
+                transition={{ duration: 0.5 }}
+              >
+                <ChefHat className='h-10 w-10 text-accent' />
+              </motion.div>
+              <h3 className='text-2xl font-bold text-foreground mb-2'>
+                Personalized Meal Plan
+              </h3>
+              <p className='text-muted-foreground text-base'>
+                Instantly receive a week of delicious, healthy meals—customized
+                for your tastes and goals, with plenty of variety.
+              </p>
+            </motion.div>
+            {/* Arrow for desktop */}
+            <div className='hidden md:block w-12 h-1 bg-gradient-to-r from-accent/30 to-blue-200/30 rounded-full mx-2' />
+            {/* Step 3 */}
+            <motion.div
+              className='flex-1 flex flex-col items-center text-center group'
+              variants={staggerItem}
+            >
+              <motion.div
+                className='w-20 h-20 mb-6 rounded-full bg-gradient-to-r from-emerald-200 to-blue-100 flex items-center justify-center shadow-lg'
+                whileHover={{ scale: 1.08, rotate: [0, 8, -8, 0] }}
+                transition={{ duration: 0.5 }}
+              >
+                <ShoppingCart className='h-10 w-10 text-emerald-700' />
+              </motion.div>
+              <h3 className='text-2xl font-bold text-foreground mb-2'>
+                Smart Shopping List
+              </h3>
+              <p className='text-muted-foreground text-base'>
+                Instantly generate a categorized shopping list—shop in minutes
+                or send to your favorite delivery service. Less stress, more
+                time saved.
+              </p>
+            </motion.div>
+          </motion.div>
+        </div>
+      </motion.section>
 
       {/* Food Gallery Section */}
       <motion.section

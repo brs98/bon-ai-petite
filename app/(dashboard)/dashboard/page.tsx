@@ -130,13 +130,7 @@ export default async function DashboardPage() {
     );
   }
 
-  const {
-    user,
-    nutritionProfile,
-    currentWeekPlan,
-    recentPlansCount,
-    allPlans,
-  } = data;
+  const { user, nutritionProfile, currentWeekPlan, allPlans } = data;
 
   // Calculate meal plan progress
   const totalMeals = currentWeekPlan?.totalMeals || 0;
@@ -495,64 +489,6 @@ export default async function DashboardPage() {
             )}
           </>
         )}
-      </div>
-
-      {/* Stats Overview */}
-      <div className='space-y-4'>
-        <div className='flex items-center gap-2'>
-          <BarChart3 className='h-5 w-5 text-primary' />
-          <h2 className='text-xl font-semibold'>Your Activity</h2>
-        </div>
-
-        <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
-          <Card>
-            <CardHeader className='pb-3'>
-              <CardTitle className='text-sm font-medium text-muted-foreground'>
-                Total Meal Plans
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className='text-3xl font-bold text-primary'>
-                {recentPlansCount}
-              </div>
-              <p className='text-xs text-muted-foreground mt-1'>
-                Plans created
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className='pb-3'>
-              <CardTitle className='text-sm font-medium text-muted-foreground'>
-                Profile Completion
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className='text-3xl font-bold text-green-600'>
-                {nutritionProfile ? '100%' : '0%'}
-              </div>
-              <p className='text-xs text-muted-foreground mt-1'>
-                {nutritionProfile ? 'Complete' : 'Set up your profile'}
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className='pb-3'>
-              <CardTitle className='text-sm font-medium text-muted-foreground'>
-                This Week
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className='text-3xl font-bold text-blue-600'>
-                {Math.round(progressPercentage)}%
-              </div>
-              <p className='text-xs text-muted-foreground mt-1'>
-                Meal planning progress
-              </p>
-            </CardContent>
-          </Card>
-        </div>
       </div>
     </section>
   );
