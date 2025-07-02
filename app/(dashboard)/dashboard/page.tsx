@@ -13,13 +13,10 @@ import {
   Award,
   BarChart3,
   Calendar,
-  ChefHat,
   Clock,
   Heart,
   Plus,
-  Settings,
   Target,
-  TrendingUp,
   Utensils,
   Zap,
 } from 'lucide-react';
@@ -148,34 +145,6 @@ export default async function DashboardPage() {
       .length || 0;
   const progressPercentage =
     totalMeals > 0 ? (generatedMeals / totalMeals) * 100 : 0;
-
-  // Quick action cards
-  const quickActions = [
-    {
-      title: 'Generate Recipe',
-      description: 'Create a new AI-powered recipe',
-      href: '/dashboard/recipes/generate',
-      icon: ChefHat,
-      color: 'text-orange-600',
-      bgColor: 'bg-orange-50 dark:bg-orange-950/20',
-    },
-    {
-      title: 'Plan Meals',
-      description: 'Create your weekly meal plan',
-      href: '/dashboard/meal-planning/weekly',
-      icon: Calendar,
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-50 dark:bg-purple-950/20',
-    },
-    {
-      title: 'Update Profile',
-      description: 'Adjust your nutrition goals',
-      href: '/dashboard/settings/nutrition',
-      icon: Settings,
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-50 dark:bg-blue-950/20',
-    },
-  ];
 
   return (
     <section className='flex-1 p-4 lg:p-8 space-y-8'>
@@ -526,38 +495,6 @@ export default async function DashboardPage() {
             )}
           </>
         )}
-      </div>
-
-      {/* Quick Actions */}
-      <div className='space-y-4'>
-        <div className='flex items-center gap-2'>
-          <TrendingUp className='h-5 w-5 text-primary' />
-          <h2 className='text-xl font-semibold'>Quick Actions</h2>
-        </div>
-
-        <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
-          {quickActions.map(action => (
-            <Link key={action.href} href={action.href}>
-              <Card className='transition-all hover:shadow-md hover:border-primary/20 cursor-pointer group h-full'>
-                <CardHeader className='pb-4'>
-                  <div className='flex items-center space-x-3'>
-                    <div
-                      className={`p-3 rounded-lg ${action.bgColor} ${action.color} group-hover:scale-110 transition-transform`}
-                    >
-                      <action.icon className='h-6 w-6' />
-                    </div>
-                    <CardTitle className='text-lg'>{action.title}</CardTitle>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className='text-sm text-muted-foreground'>
-                    {action.description}
-                  </p>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
-        </div>
       </div>
 
       {/* Stats Overview */}

@@ -46,7 +46,8 @@
       <!-- TODO: Feature -->
 - [ ] Weekly meal plan: ability to set and organize by day
       <!-- TODO: UI/logic -->
-- [ ] Shopping list: can't check off items <!-- TODO: UI polish -->
+- [x] Shopping list: can't check off items
+      <!-- DONE: UI polish, check-off enabled in ShoppingList component and shopping list page June 2024 -->
 - [ ] Some items are not put in the correct bucket (produce, canned, etc)
       <!-- TODO: Logic -->
 - [ ] Items get duplicated in shopping list <!-- TODO: Logic -->
@@ -56,8 +57,8 @@
       or liked (mix generated with saved) <!-- TODO: Feature -->
 - [x] Dashboard: This week's meal plan is not displaying <!-- TODO: Bug -->
 - [x] What is 00 on "your preferences" <!-- TODO: UI bug -->
-- [ ] Remove "your activity" section and "quick actions"
-      <!-- TODO: UI polish -->
+- [x] Remove "your activity" section and "quick actions"
+      <!-- DONE: UI polish, removed from dashboard page June 2024 -->
 - [ ] Weekly meal plan can still be used after switching to base account
       <!-- TODO: Subscription logic -->
 

@@ -399,13 +399,71 @@ export default function WeeklyMealPlanPage() {
         <div>
           {shoppingList ? (
             <ShoppingList
-              ingredients={shoppingList.ingredients}
+              ingredients={shoppingList.ingredients.map(ingredient => ({
+                ...ingredient,
+                id: ingredient.name,
+              }))}
               planName={mealPlan ? mealPlan.name : ''}
-              onIngredientToggle={() => {}}
+              onIngredientToggle={(ingredientId, checked) => {
+                void (async () => {
+                  // Optimistically update UI
+                  const updatedIngredients = shoppingList.ingredients.map(
+                    ingredient => {
+                      if (ingredient.name === ingredientId) {
+                        return { ...ingredient, checked };
+                      }
+                      return ingredient;
+                    },
+                  );
+                  const updatedShoppingList = {
+                    ...shoppingList,
+                    ingredients: updatedIngredients,
+                    checkedItems: updatedIngredients.filter(i => i.checked)
+                      .length,
+                  };
+                  setShoppingList(updatedShoppingList);
+
+                  // Persist to backend
+                  try {
+                    const response = await fetch(
+                      `/api/meal-plans/weekly/${planId}/shopping-list/ingredient`,
+                      {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          ingredientName: ingredientId,
+                          checked,
+                        }),
+                      },
+                    );
+                    if (!response.ok) {
+                      throw new Error('Failed to update shopping list');
+                    }
+                  } catch (err) {
+                    console.error('Error:', err);
+                    // Roll back UI if failed
+                    const rolledBackIngredients = shoppingList.ingredients.map(
+                      ingredient => {
+                        if (ingredient.name === ingredientId) {
+                          return { ...ingredient, checked: !checked };
+                        }
+                        return ingredient;
+                      },
+                    );
+                    setShoppingList({
+                      ...shoppingList,
+                      ingredients: rolledBackIngredients,
+                      checkedItems: rolledBackIngredients.filter(i => i.checked)
+                        .length,
+                    });
+                    alert('Failed to update shopping list. Please try again.');
+                  }
+                })();
+              }}
               onIngredientEdit={() => {}}
               onIngredientAdd={() => {}}
               onIngredientRemove={() => {}}
-              isEditable={false}
+              isEditable={true}
               showRecipeOrigins={true}
               disabled={isGenerating}
             />
