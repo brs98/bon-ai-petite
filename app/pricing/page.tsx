@@ -43,16 +43,27 @@ export default async function PricingPage() {
   const [prices, products] = await Promise.all([
     getStripePrices(),
     getStripeProducts(),
-  ]);
+  ]).then(res => {
+    console.log('PRICES and PRODUCTS', res);
+    return res;
+  });
 
-  const basePlan = products.find(product => product.name === 'Base');
-  const plusPlan = products.find(product => product.name === 'Plus');
+  // Find Essential and Premium products by name
+  const essentialProduct = products.find(
+    product => product.name === 'Essential',
+  );
+  const premiumProduct = products.find(product => product.name === 'Premium');
 
-  const basePrice = prices.find(price => price.productId === basePlan?.id);
-  const plusPrice = prices.find(price => price.productId === plusPlan?.id);
+  // Find the price for each product by matching productId
+  const essentialPrice = prices.find(
+    price => price.productId === essentialProduct?.id,
+  );
+  const premiumPrice = prices.find(
+    price => price.productId === premiumProduct?.id,
+  );
 
   return (
-    <main className='min-h-screen bg-gradient-to-br from-emerald-50 via-background to-blue-50 relative overflow-hidden'>
+    <main className='min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary relative overflow-hidden'>
       {/* Background decorative elements */}
       <div className='absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent'></div>
       <div className='absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,_var(--tw-gradient-stops))] from-accent/5 via-transparent to-transparent'></div>
@@ -60,16 +71,13 @@ export default async function PricingPage() {
       <div className='relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12'>
         <div className='text-center mb-16'>
           <div className='flex items-center justify-center mb-6'>
-            <div className='w-16 h-16 bg-gradient-to-r from-primary via-emerald-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg'>
+            <div className='w-16 h-16 bg-gradient-to-r from-primary via-primary to-primary/80 rounded-2xl flex items-center justify-center shadow-lg'>
               <ChefHat className='h-8 w-8 text-primary-foreground' />
             </div>
           </div>
           <h1 className='text-5xl font-bold text-foreground mb-6'>
             Choose Your{' '}
-            <span className='bg-gradient-to-r from-primary via-emerald-500 to-accent bg-clip-text text-transparent'>
-              AI Petite
-            </span>{' '}
-            Plan
+            <span className='text-primary font-cursive'>AI Petite</span> Plan
           </h1>
           <p className='text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed'>
             Start your journey to healthier eating with personalized meal plans
@@ -79,12 +87,13 @@ export default async function PricingPage() {
         </div>
 
         <div className='grid md:grid-cols-2 gap-8 max-w-5xl mx-auto mb-16'>
+          {/* Essential Plan Card */}
           <PricingCard
             name='Essential'
-            displayName={basePlan?.name || 'Essential'}
-            price={basePrice?.unitAmount || 800}
-            interval={basePrice?.interval || 'month'}
-            trialDays={basePrice?.trialPeriodDays || 14}
+            displayName={essentialProduct?.name || 'Essential'}
+            price={essentialPrice?.unitAmount || 1999}
+            interval={essentialPrice?.interval || 'month'}
+            trialDays={essentialPrice?.trialPeriodDays || 14}
             features={featureList.map(f => ({
               label: f.label,
               included: f.essential,
@@ -92,12 +101,13 @@ export default async function PricingPage() {
             planId='essential'
             popular={false}
           />
+          {/* Premium Plan Card */}
           <PricingCard
             name='Premium'
-            displayName={plusPlan?.name || 'Premium'}
-            price={plusPrice?.unitAmount || 1200}
-            interval={plusPrice?.interval || 'month'}
-            trialDays={plusPrice?.trialPeriodDays || 14}
+            displayName={premiumProduct?.name || 'Premium'}
+            price={premiumPrice?.unitAmount || 2999}
+            interval={premiumPrice?.interval || 'month'}
+            trialDays={premiumPrice?.trialPeriodDays || 14}
             features={featureList.map(f => ({
               label: f.label,
               included: f.premium,
@@ -109,7 +119,7 @@ export default async function PricingPage() {
 
         {/* Trust indicators */}
         <div className='text-center mb-12'>
-          <div className='bg-gradient-to-r from-emerald-50 to-blue-50 rounded-2xl p-8 border border-emerald-200/50 max-w-4xl mx-auto'>
+          <div className='bg-gradient-to-r from-primary/5 to-secondary rounded-2xl p-8 border border-primary/20 max-w-4xl mx-auto'>
             <div className='flex items-center justify-center space-x-8 text-sm text-muted-foreground'>
               <div className='flex items-center'>
                 <Check className='h-4 w-4 text-primary mr-2' />
@@ -187,13 +197,13 @@ function PricingCard({
     <div
       className={`relative bg-card/80 backdrop-blur-sm rounded-3xl shadow-xl border transition-all duration-300 hover:shadow-2xl hover:scale-105 ${
         popular
-          ? 'border-primary/30 ring-2 ring-primary/20 bg-gradient-to-b from-card to-emerald-50/30'
+          ? 'border-primary/30 ring-2 ring-primary/20 bg-gradient-to-b from-card to-primary/5'
           : 'border-border hover:border-primary/20'
       } p-8`}
     >
       {popular && (
         <div className='absolute -top-4 left-1/2 transform -translate-x-1/2'>
-          <div className='bg-gradient-to-r from-primary via-emerald-500 to-emerald-600 text-primary-foreground px-6 py-2 rounded-full text-sm font-medium flex items-center shadow-lg'>
+          <div className='bg-primary text-primary-foreground px-6 py-2 rounded-full text-sm font-medium flex items-center shadow-lg'>
             <Sparkles className='h-4 w-4 mr-1' />
             Most Popular
           </div>
@@ -204,8 +214,8 @@ function PricingCard({
         <div
           className={`inline-flex items-center justify-center w-12 h-12 rounded-xl mb-4 ${
             popular
-              ? 'bg-gradient-to-r from-primary to-emerald-500'
-              : 'bg-gradient-to-r from-accent to-blue-500'
+              ? 'bg-gradient-to-r from-primary to-primary'
+              : 'bg-gradient-to-r from-accent to-secondary'
           }`}
         >
           {popular ? (

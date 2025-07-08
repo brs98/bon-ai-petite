@@ -10,7 +10,7 @@
       it) <!-- TODO: Needs further testing -->
 - [x] Sometimes, the shopping list isn't created along with the meals (might be
       related to above) <!-- TODO: Needs further testing -->
-- [ ] Update landing page so it doesn't look like 12 items in cart (confusing)
+- [x] Update landing page so it doesn't look like 12 items in cart (confusing)
       <!-- TODO: UI polish -->
 - [ ] Update landing page to give better idea of what somebody is buying (show
       process: profile creation → meal planning generation → shopping list
@@ -18,8 +18,8 @@
 - [x] Add 'None' option for nutrition profile setup <!-- TODO: UI polish -->
 - [ ] Macro targets might not be desired (indicate it's to help the AI model do
       healthy meals for your body) <!-- TODO: UI copy -->
-- [ ] Add button on nutrition profile summary to link to generate meal plans and
-      generate a single recipe <!-- TODO: UI polish -->
+- [ ] Add button on nutrition profile summary to link to generate weekly meal
+      plan or generate a single recipe <!-- TODO: UI polish -->
 - [x] Recipe page should look different if there are no meals to display
       <!-- TODO: UI polish -->
 - [ ] Custom nutrition targets feels weird (make it a little more hidden via a
@@ -61,6 +61,28 @@
       <!-- DONE: UI polish, removed from dashboard page June 2024 -->
 - [ ] Weekly meal plan can still be used after switching to base account
       <!-- TODO: Subscription logic -->
+- [P1] Allow users to select multiple physical goals in nutrition profile setup
+  <!-- TODO: Feature -->
+- [P1] Add gender and other relevant variables to macro calculation in nutrition
+  profile <!-- TODO: Feature -->
+- [P1] Ensure nutrition targets and recipe generation respect dietary
+  preferences (e.g., low-carb) <!-- TODO: Logic/UI -->
+- [P1] Add goal weight field and logic to nutrition profile and macro
+  calculation <!-- TODO: Feature -->
+- [P0] Fix bug: editing height in nutrition profile does not update/save
+  <!-- TODO: Bug -->
+- [P2] Allow users to customize recipe generation by available time and
+  ingredients at home <!-- TODO: Feature -->
+- [P2] Add filters for servings, cooking difficulty, and ensure recipes meet
+  user needs <!-- TODO: Feature -->
+- [P3] Remove default meal type selection (e.g., Dinner) in recipe generation
+  <!-- TODO: UI polish -->
+- [P2] Make time, servings, and cooking difficulty configurable in recipe
+  generation UI; hide less-used options <!-- TODO: UI polish -->
+- [P3] Remove or update ‘tossing salad’ text in loading state for recipe
+  generation <!-- TODO: UI polish -->
+- [P1] Default to easy and fast meals in recipe generation; allow users to
+  opt-in for more difficult recipes <!-- TODO: Logic/UI -->
 
 ## 🚀 Phase 1: Core Infrastructure (Week 1-2)
 

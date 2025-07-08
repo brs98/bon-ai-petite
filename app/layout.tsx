@@ -6,6 +6,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import Logo from '@/components/ui/Logo';
 import { getUser } from '@/lib/db/queries';
 import {
   Calendar,
@@ -17,7 +18,6 @@ import {
 } from 'lucide-react';
 import type { Metadata, Viewport } from 'next';
 import { Manrope } from 'next/font/google';
-import Image from 'next/image';
 import Link from 'next/link';
 import { use } from 'react';
 import { SWRConfig } from 'swr';
@@ -46,7 +46,6 @@ export default function RootLayout({
   // Navigation items for dashboard
   const navItems = [
     { href: '/dashboard', icon: Home, label: 'Dashboard' },
-    { href: '/dashboard/settings', icon: Settings, label: 'Settings' },
     { href: '/dashboard/recipes', icon: ChefHat, label: 'Recipes' },
     {
       href: '/dashboard/meal-planning/weekly',
@@ -58,6 +57,7 @@ export default function RootLayout({
       icon: Utensils,
       label: 'Nutrition Profile',
     },
+    { href: '/dashboard/settings', icon: Settings, label: 'Settings' },
   ];
 
   return (
@@ -78,13 +78,8 @@ export default function RootLayout({
           {/* Header/NavBar */}
           <header className='sticky top-0 z-30 w-full bg-white/80 dark:bg-background/80 backdrop-blur border-b border-border flex items-center justify-between px-6 py-3 shadow-sm'>
             <Link href='/' className='flex items-center gap-2'>
-              <Image
-                src='/logo.png'
-                alt='AI Petite Logo'
-                width={40}
-                height={40}
-              />
-              <span className='ml-2 font-cursive text-2xl bg-gradient-to-r from-primary via-emerald-500 to-accent bg-clip-text text-transparent'>
+              <Logo width={40} height={40} className='rounded-xl' />
+              <span className='ml-2 font-cursive text-2xl text-primary'>
                 AI Petite
               </span>
             </Link>
@@ -105,7 +100,7 @@ export default function RootLayout({
                           href={item.href}
                           className='flex items-center gap-2'
                         >
-                          <item.icon className='h-4 w-4' />
+                          <item.icon className='h-4 w-4 hover:text-primary-foreground' />
                           {item.label}
                         </Link>
                       </DropdownMenuItem>

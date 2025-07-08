@@ -50,6 +50,7 @@ interface PreferencesWizardProps {
   onComplete: (preferences: Partial<NutritionProfile>) => void;
   isLoading: boolean;
   initialData?: Partial<NutritionProfile>;
+  onStepChange?: (preferences: Partial<NutritionProfile>) => void; // NEW PROP
 }
 
 const STEPS = [
@@ -83,6 +84,7 @@ export function PreferencesWizard({
   onComplete,
   isLoading,
   initialData,
+  onStepChange,
 }: PreferencesWizardProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [selectedCuisines, setSelectedCuisines] = useState<string[]>(
@@ -118,13 +120,23 @@ export function PreferencesWizard({
     }
   };
 
+  const getCurrentPreferences = (): Partial<NutritionProfile> => ({
+    cuisinePreferences:
+      selectedCuisines.length > 0 ? selectedCuisines : undefined,
+    dietaryRestrictions:
+      selectedRestrictions.length > 0 ? selectedRestrictions : undefined,
+    allergies: selectedAllergies.length > 0 ? selectedAllergies : undefined,
+  });
+
   const handleNext = () => {
+    if (onStepChange) onStepChange(getCurrentPreferences());
     if (currentStep < STEPS.length - 1) {
       setCurrentStep(currentStep + 1);
     }
   };
 
   const handlePrevious = () => {
+    if (onStepChange) onStepChange(getCurrentPreferences());
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
     }

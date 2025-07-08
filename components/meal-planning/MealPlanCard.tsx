@@ -40,11 +40,10 @@ const CATEGORY_COLORS = {
   breakfast:
     'border-orange-200 bg-orange-50/50 dark:border-orange-800 dark:bg-orange-950/20',
   lunch:
-    'border-blue-200 bg-blue-50/50 dark:border-blue-800 dark:bg-blue-950/20',
+    'border-secondary bg-secondary/50 dark:border-secondary dark:bg-secondary',
   dinner:
     'border-purple-200 bg-purple-50/50 dark:border-purple-800 dark:bg-purple-950/20',
-  snack:
-    'border-green-200 bg-green-50/50 dark:border-green-800 dark:bg-green-950/20',
+  snack: 'border-primary bg-primary/10 dark:border-primary dark:bg-primary/20',
 } as const;
 
 const STATUS_CONFIG = {
@@ -56,14 +55,14 @@ const STATUS_CONFIG = {
   },
   generating: {
     icon: Loader2,
-    color: 'text-blue-600',
-    bgColor: 'bg-blue-50 dark:bg-blue-950/20',
+    color: 'text-secondary-foreground',
+    bgColor: 'bg-secondary dark:bg-secondary',
     label: 'Generating recipe...',
   },
   generated: {
     icon: Sparkles,
-    color: 'text-green-600',
-    bgColor: 'bg-green-50 dark:bg-green-950/20',
+    color: 'text-primary',
+    bgColor: 'bg-primary/10 dark:bg-primary/20',
     label: 'Recipe generated',
   },
 } as const;
@@ -149,10 +148,10 @@ export function MealPlanCard({
           <div className='space-y-4'>
             <div className='text-center py-8'>
               <div className='relative'>
-                <Loader2 className='h-12 w-12 text-blue-600 mx-auto mb-3 animate-spin' />
-                <div className='absolute inset-0 rounded-full border-2 border-blue-200 dark:border-blue-800 animate-pulse' />
+                <Loader2 className='h-12 w-12 text-secondary-foreground mx-auto mb-3 animate-spin' />
+                <div className='absolute inset-0 rounded-full border-2 border-secondary dark:border-secondary animate-pulse' />
               </div>
-              <h4 className='font-medium text-blue-600 mb-2'>
+              <h4 className='font-medium text-secondary-foreground mb-2'>
                 Generating your recipe...
               </h4>
               <p className='text-sm text-muted-foreground'>

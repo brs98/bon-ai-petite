@@ -86,6 +86,23 @@ export default function PreferencesSetupPage() {
     }
   };
 
+  const handleStepChange = async (preferences: Partial<NutritionProfile>) => {
+    try {
+      const profileData = existingProfile
+        ? { ...existingProfile, ...preferences }
+        : preferences;
+      const method = existingProfile ? 'PUT' : 'POST';
+      await fetch('/api/nutrition/profile', {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(profileData),
+      });
+      // No redirect, no error handling, silent
+    } catch {
+      // Silently ignore errors
+    }
+  };
+
   if (isLoading) {
     return (
       <div className='flex items-center justify-center min-h-[400px]'>
@@ -139,6 +156,9 @@ export default function PreferencesSetupPage() {
         }}
         isLoading={isSaving}
         initialData={existingProfile || undefined}
+        onStepChange={preferences => {
+          void handleStepChange(preferences);
+        }} // ensure void return
       />
     </div>
   );

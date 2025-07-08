@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:wght@400;700&family=Dancing+Script:wght@700&display=swap');
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
@@ -137,19 +137,6 @@
   --color-green-800: oklch(0.444 0.177 142.5);
   --color-green-900: oklch(0.396 0.141 142.5);
   --color-green-950: oklch(0.271 0.105 142.5);
-
-  /* Emerald */
-  --color-emerald-50: oklch(0.971 0.014 164.25);
-  --color-emerald-100: oklch(0.936 0.032 164.25);
-  --color-emerald-200: oklch(0.885 0.062 164.25);
-  --color-emerald-300: oklch(0.808 0.114 164.25);
-  --color-emerald-400: oklch(0.704 0.191 164.25);
-  --color-emerald-500: oklch(0.637 0.237 164.25);
-  --color-emerald-600: oklch(0.577 0.245 164.25);
-  --color-emerald-700: oklch(0.505 0.213 164.25);
-  --color-emerald-800: oklch(0.444 0.177 164.25);
-  --color-emerald-900: oklch(0.396 0.141 164.25);
-  --color-emerald-950: oklch(0.271 0.105 164.25);
 
   /* Teal */
   --color-teal-50: oklch(0.971 0.014 180);
@@ -370,107 +357,117 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'Manrope', Arial, Helvetica, sans-serif;
+    /* Use IBM Plex Serif as the default font, fallback to Arial, Helvetica, sans-serif */
+    font-family: 'IBM Plex Serif', Arial, Helvetica, sans-serif;
   }
 }
 
 @layer base {
   :root {
-    --background: 1 0 0; /* white */
-    --foreground: 0.22 0.04 180; /* dark neutral for text */
+    --background: 0.99 0.01 188.67; /* very light blue background */
+    --foreground: 0.22 0.04 188.67; /* dark blue-gray for text */
 
-    --card: 1 0 0;
-    --card-foreground: 0.22 0.04 180;
+    --card: 0.98 0.008 188.67; /* slightly off-white card */
+    --card-foreground: 0.22 0.04 188.67;
 
-    --popover: 1 0 0;
-    --popover-foreground: 0.22 0.04 180;
+    --popover: 0.98 0.008 188.67;
+    --popover-foreground: 0.22 0.04 188.67;
 
-    --primary: 0.637 0.237 164.25; /* emerald-600 */
-    --primary-foreground: 1 0 0; /* white */
+    --primary: 0.4263 0.0579 188.67; /* main brand blue */
+    --primary-foreground: 1 0 0; /* white text on primary */
+    --primary-color: oklch(var(--primary));
 
-    --secondary: 0.96 0.01 240; /* neutral gray */
-    --secondary-foreground: 0.22 0.04 180;
+    --secondary: 0.92 0.03 200; /* soft teal-cyan tint for secondary backgrounds */
+    --secondary-foreground: 0.22 0.04 188.67; /* keep your current dark blue-gray for text */
 
-    --muted: 0.97 0.005 240; /* very light neutral */
-    --muted-foreground: 0.55 0.015 240; /* medium gray */
+    --muted: 0.95 0.01 188.67; /* subtle blue for muted backgrounds */
+    --muted-foreground: 0.45 0.02 188.67; /* medium blue-gray for muted text */
 
-    --accent: 0.65 0.25 200; /* blue (for contrast and highlights) */
-    --accent-foreground: 1 0 0;
+    /*
+      Accent color is set to a warm cream (oklch(0.99 0.02 100) in light mode, oklch(0.85 0.02 100) in dark mode) for visual harmony and contrast with the primary blue. This ensures accessibility and a modern, inviting look.
+    */
+    --accent: 0.94 0.02 100;
+    --accent-foreground: 0.4263 0.0579 188.67;
 
-    --destructive: 0.6 0.3 10; /* warm red-orange */
+    --destructive: 0.6 0.18 25; /* warm red-orange for errors */
     --destructive-foreground: 1 0 0;
 
-    --border: 0.91 0.01 240; /* neutral border */
-    --input: 0.91 0.01 240;
+    --border: 0.88 0.01 188.67; /* light blue border */
+    --input: 0.91 0.01 188.67;
 
-    --ring: 0.637 0.237 164.25; /* emerald ring */
+    --ring: 0.4263 0.0579 188.67; /* match primary for focus ring */
 
-    --chart-1: 145 70% 45%; /* emerald */
-    --chart-2: 200 65% 55%; /* blue */
-    --chart-3: 155 60% 35%; /* deeper emerald */
-    --chart-4: 190 80% 50%; /* teal-blue */
-    --chart-5: 165 70% 50%; /* mint green */
+    --chart-1: 188.67 60% 45%; /* primary blue */
+    --chart-2: 210 65% 55%; /* accent blue */
+    --chart-3: 160 50% 40%; /* teal */
+    --chart-4: 25 80% 50%; /* orange for contrast */
+    --chart-5: 120 60% 50%; /* green for success */
 
     --radius: 0.6rem;
 
-    --sidebar-background: 0.99 0.002 240; /* very light neutral */
-    --sidebar-foreground: 0.22 0.04 180;
+    --sidebar-background: 0.97 0.008 188.67; /* sidebar matches card */
+    --sidebar-foreground: 0.22 0.04 188.67;
 
-    --sidebar-primary: 0.637 0.237 164.25; /* emerald */
+    --sidebar-primary: 0.4263 0.0579 188.67;
     --sidebar-primary-foreground: 1 0 0;
 
-    --sidebar-accent: 0.96 0.01 240;
-    --sidebar-accent-foreground: 0.22 0.04 180;
+    --sidebar-accent: 0.93 0.02 188.67;
+    --sidebar-accent-foreground: 0.22 0.04 188.67;
 
-    --sidebar-border: 0.91 0.01 240; /* neutral border */
-    --sidebar-ring: 0.637 0.237 164.25;
+    --sidebar-border: 0.88 0.01 188.67;
+    --sidebar-ring: 0.4263 0.0579 188.67;
   }
 
   .dark {
-    --background: 0.11 0.01 240; /* dark neutral */
-    --foreground: 0.95 0.01 240; /* light text */
+    --background: 0.13 0.01 188.67; /* deep blue background */
+    --foreground: 0.98 0.01 188.67; /* light text */
 
-    --card: 0.11 0.01 240;
-    --card-foreground: 0.95 0.01 240;
+    --card: 0.16 0.01 188.67; /* dark card */
+    --card-foreground: 0.98 0.01 188.67;
 
-    --popover: 0.11 0.01 240;
-    --popover-foreground: 0.95 0.01 240;
+    --popover: 0.16 0.01 188.67;
+    --popover-foreground: 0.98 0.01 188.67;
 
-    --primary: 0.637 0.237 164.25; /* emerald-600 */
-    --primary-foreground: 1 0 0; /* white */
+    --primary: 0.4263 0.0579 188.67; /* main brand blue */
+    --primary-foreground: 1 0 0;
+    --primary-color: oklch(var(--primary));
 
-    --secondary: 0.15 0.02 240; /* dark neutral */
-    --secondary-foreground: 0.95 0.01 240;
+    --secondary: 0.22 0.03 200; /* deeper teal-cyan for dark mode */
+    --secondary-foreground: 0.98 0.01 188.67;
 
-    --muted: 0.15 0.02 240; /* dark neutral */
-    --muted-foreground: 0.65 0.02 240; /* medium gray */
+    --muted: 0.18 0.01 188.67; /* muted dark blue */
+    --muted-foreground: 0.65 0.01 188.67;
 
-    --accent: 0.65 0.25 200; /* blue */
+    /*
+      Accent color is set to a slightly less bright cream (oklch(0.85 0.02 100)) in dark mode to maintain warmth and contrast without being too stark against the dark background.
+    */
+    --accent: 0.85 0.02 100; /* cream accent for highlights in dark mode */
     --accent-foreground: 1 0 0;
 
-    --destructive: 0.6 0.3 10; /* warm red-orange */
+    --destructive: 0.6 0.18 25; /* warm red-orange for errors */
     --destructive-foreground: 1 0 0;
 
-    --border: 0.2 0.02 240; /* dark border */
-    --input: 0.2 0.02 240;
+    --border: 0.22 0.01 188.67; /* dark blue border */
+    --input: 0.22 0.01 188.67;
 
-    --ring: 0.637 0.237 164.25; /* emerald ring */
+    --ring: 0.4263 0.0579 188.67;
 
-    --sidebar-background: 0.08 0.01 240;
-    --sidebar-foreground: 0.95 0.01 240;
+    --sidebar-background: 0.15 0.01 188.67;
+    --sidebar-foreground: 0.98 0.01 188.67;
 
-    --sidebar-primary: 0.637 0.237 164.25; /* emerald */
+    --sidebar-primary: 0.4263 0.0579 188.67;
     --sidebar-primary-foreground: 1 0 0;
 
-    --sidebar-accent: 0.15 0.02 240;
-    --sidebar-accent-foreground: 0.95 0.01 240;
+    --sidebar-accent: 0.18 0.01 188.67;
+    --sidebar-accent-foreground: 0.98 0.01 188.67;
 
-    --sidebar-border: 0.2 0.02 240;
-    --sidebar-ring: 0.637 0.237 164.25;
+    --sidebar-border: 0.22 0.01 188.67;
+    --sidebar-ring: 0.4263 0.0579 188.67;
   }
 }
 
 .font-cursive {
+  /* Retain Dancing Script for branding/cursive elements */
   font-family: 'Dancing Script', cursive;
   font-weight: 700;
 }

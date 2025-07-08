@@ -45,8 +45,9 @@ const CATEGORY_DETAILS = {
   },
   lunch: {
     emoji: '🥙',
-    color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100',
-    ring: 'ring-blue-200 dark:ring-blue-800',
+    color:
+      'bg-secondary text-secondary-foreground dark:bg-secondary dark:text-secondary-foreground',
+    ring: 'ring-secondary dark:ring-secondary',
   },
   dinner: {
     emoji: '🍽️',
@@ -56,8 +57,9 @@ const CATEGORY_DETAILS = {
   },
   snack: {
     emoji: '🍎',
-    color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100',
-    ring: 'ring-green-200 dark:ring-green-800',
+    color:
+      'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-foreground',
+    ring: 'ring-primary dark:ring-primary',
   },
 } as const;
 
@@ -167,7 +169,7 @@ export function WizardNavigation({
                           )]: status === 'active',
 
                           // Complete state
-                          'border-green-200 bg-green-50 text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-100':
+                          'border-primary bg-primary/10 text-primary dark:border-primary dark:bg-primary/20 dark:text-primary-foreground':
                             status === 'complete',
 
                           // Accessible state (clickable previous steps)
@@ -188,7 +190,7 @@ export function WizardNavigation({
                       <span className='font-medium'>{step.label}</span>
 
                       {status === 'complete' && (
-                        <Check className='h-4 w-4 text-green-600' />
+                        <Check className='h-4 w-4 text-primary' />
                       )}
 
                       {status === 'skipped' && (

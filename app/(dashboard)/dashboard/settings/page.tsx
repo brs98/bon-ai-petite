@@ -157,11 +157,7 @@ export default function SettingsPage() {
             {accountState.success && (
               <p className='text-primary text-sm'>{accountState.success}</p>
             )}
-            <Button
-              type='submit'
-              className='bg-accent hover:bg-accent/90 text-accent-foreground'
-              disabled={isAccountPending}
-            >
+            <Button type='submit' disabled={isAccountPending}>
               {isAccountPending ? (
                 <>
                   <Loader2 className='mr-2 h-4 w-4 animate-spin' />
@@ -235,11 +231,7 @@ export default function SettingsPage() {
             {passwordState.success && (
               <p className='text-primary text-sm'>{passwordState.success}</p>
             )}
-            <Button
-              type='submit'
-              className='bg-accent hover:bg-accent/90 text-accent-foreground'
-              disabled={isPasswordPending}
-            >
+            <Button type='submit' disabled={isPasswordPending}>
               {isPasswordPending ? (
                 <>
                   <Loader2 className='mr-2 h-4 w-4 animate-spin' />

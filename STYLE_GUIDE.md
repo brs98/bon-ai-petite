@@ -64,8 +64,8 @@ plans, and seamless grocery delivery integration.
 
 All colors use semantic naming for consistency and maintainability:
 
-- **Primary**: Main brand color (red-based)
-- **Secondary**: Light background tints
+- **Primary**: Main brand color (blue-based)
+- **Secondary**: Soft teal-cyan tint for backgrounds and secondary UI
 - **Accent**: Warm accent color (orange-based)
 - **Muted**: Subtle text and backgrounds
 - **Destructive**: Error states

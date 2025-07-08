@@ -148,9 +148,10 @@ The user prefers to avoid (when possible): ${userContext.avoidedIngredients.join
         const _mealCalories = calories || Math.round(profile.dailyCalories / 4); // Rough quarter of daily
         prompt += `- Context: User's daily target is ${profile.dailyCalories} kcal\n`;
       }
-      if (profile.goals) {
-        prompt += `- User goal: ${profile.goals.replace('_', ' ')}\n`;
-      }
+      const userGoal = Array.isArray(profile.goals)
+        ? (profile.goals[0] || '').replace('_', ' ')
+        : (profile.goals || '').replace('_', ' ');
+      prompt += `- User goal: ${userGoal}\n`;
       if (profile.weight) {
         prompt += `- User weight: ${profile.weight} lbs\n`;
       }
@@ -185,17 +186,21 @@ The user prefers to avoid (when possible): ${userContext.avoidedIngredients.join
       prompt += '\n## User Context:\n';
 
       const profile = userProfile || userContext?.nutritionProfile;
-      if (profile?.goals)
-        prompt += `- Goal: ${profile.goals.replace('_', ' ')}\n`;
-      if (profile?.activityLevel) {
-        prompt += `- Activity Level: ${profile.activityLevel.replace('_', ' ')}\n`;
+      if (profile) {
+        const goal = Array.isArray(profile.goals)
+          ? (profile.goals[0] || '').replace('_', ' ')
+          : (profile.goals || '').replace('_', ' ');
+        prompt += `- Goal: ${goal}\n`;
+        if (profile.activityLevel) {
+          prompt += `- Activity Level: ${profile.activityLevel.replace('_', ' ')}\n`;
 
-        // Add cooking complexity based on activity level
-        if (
-          profile.activityLevel === 'very_active' ||
-          profile.activityLevel === 'extremely_active'
-        ) {
-          prompt += `- Prefer quick, energy-dense recipes for active lifestyle\n`;
+          // Add cooking complexity based on activity level
+          if (
+            profile.activityLevel === 'very_active' ||
+            profile.activityLevel === 'extremely_active'
+          ) {
+            prompt += `- Prefer quick, energy-dense recipes for active lifestyle\n`;
+          }
         }
       }
 

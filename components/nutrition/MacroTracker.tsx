@@ -63,7 +63,7 @@ export function MacroTracker({
             <div className='space-y-2'>
               <div className='flex justify-between items-center'>
                 <div className='flex items-center gap-2'>
-                  <div className='w-3 h-3 bg-blue-500 rounded-full' />
+                  <div className='w-3 h-3 bg-secondary rounded-full' />
                   <span className='font-medium'>Protein</span>
                 </div>
                 <div className='text-right'>
@@ -88,7 +88,7 @@ export function MacroTracker({
             <div className='space-y-2'>
               <div className='flex justify-between items-center'>
                 <div className='flex items-center gap-2'>
-                  <div className='w-3 h-3 bg-green-500 rounded-full' />
+                  <div className='w-3 h-3 bg-primary rounded-full' />
                   <span className='font-medium'>Carbohydrates</span>
                 </div>
                 <div className='text-right'>

@@ -116,14 +116,16 @@ export const NutritionProfileSchema = z.object({
     ])
     .optional(),
   goals: z
-    .enum([
-      'lose_weight',
-      'gain_weight',
-      'maintain_weight',
-      'gain_muscle',
-      'improve_health',
-    ])
-    .optional(),
+    .array(
+      z.enum([
+        'lose_weight',
+        'gain_weight',
+        'maintain_weight',
+        'gain_muscle',
+        'improve_health',
+      ]),
+    )
+    .optional(), // now supports multiple goals
   dailyCalories: z.number().positive().optional(),
   macroProtein: z.number().nonnegative().optional(), // in grams
   macroCarbs: z.number().nonnegative().optional(), // in grams

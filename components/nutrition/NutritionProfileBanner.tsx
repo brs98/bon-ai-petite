@@ -58,24 +58,24 @@ export function NutritionProfileBanner({
 
   return (
     <Card
-      className={`border-l-4 border-l-green-500 bg-green-50 dark:bg-green-950/20 ${className}`}
+      className={`border-l-4 border-l-primary bg-primary/10 dark:bg-primary/20 ${className}`}
     >
       <CardContent className='p-4'>
         <div className='flex items-start justify-between'>
           <div className='flex items-start space-x-3 flex-1'>
-            <div className='p-2 bg-green-100 dark:bg-green-900/30 rounded-lg mt-0.5'>
-              <Utensils className='h-5 w-5 text-green-600 dark:text-green-400' />
+            <div className='p-2 bg-primary/10 dark:bg-primary/20 rounded-lg mt-0.5'>
+              <Utensils className='h-5 w-5 text-primary dark:text-primary-foreground' />
             </div>
             <div className='flex-1'>
               <div className='flex items-center gap-2 mb-1'>
-                <h3 className='font-semibold text-green-900 dark:text-green-100'>
+                <h3 className='font-semibold text-muted-foreground dark:text-primary'>
                   Set Up Your Nutrition Profile
                 </h3>
                 <Badge variant='secondary' className='text-xs'>
                   Recommended
                 </Badge>
               </div>
-              <p className='text-sm text-green-800 dark:text-green-200 mb-3'>
+              <p className='text-sm text-primary dark:text-primary-foreground mb-3'>
                 Get personalized recipe recommendations by setting up your
                 dietary goals, restrictions, and preferences. Takes less than 2
                 minutes!
@@ -84,7 +84,7 @@ export function NutritionProfileBanner({
                 <Button
                   asChild
                   size='sm'
-                  className='bg-green-600 hover:bg-green-700'
+                  className='bg-primary hover:bg-primary/80 text-primary-foreground'
                 >
                   <Link href='/settings/nutrition'>
                     Get Started
@@ -95,7 +95,7 @@ export function NutritionProfileBanner({
                   variant='ghost'
                   size='sm'
                   onClick={handleDismiss}
-                  className='text-green-700 hover:text-green-800 hover:bg-green-100 dark:text-green-300 dark:hover:text-green-200 dark:hover:bg-green-900/30'
+                  className='text-primary hover:text-primary-foreground hover:bg-primary/10 dark:text-primary-foreground dark:hover:text-primary dark:hover:bg-primary/20'
                 >
                   Maybe later
                 </Button>
@@ -106,7 +106,7 @@ export function NutritionProfileBanner({
             variant='ghost'
             size='sm'
             onClick={handleDismiss}
-            className='p-1 h-auto text-green-600 hover:text-green-700 hover:bg-green-100 dark:text-green-400 dark:hover:text-green-300 dark:hover:bg-green-900/30'
+            className='p-1 h-auto text-primary hover:text-primary-foreground hover:bg-primary/10 dark:text-primary-foreground dark:hover:text-primary dark:hover:bg-primary/20'
           >
             <X className='h-4 w-4' />
           </Button>

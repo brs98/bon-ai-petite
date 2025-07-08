@@ -1,0 +1,1 @@
+ALTER TABLE nutrition_profiles ALTER COLUMN goals TYPE text[] USING ARRAY[goals];

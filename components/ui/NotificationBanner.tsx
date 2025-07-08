@@ -13,15 +13,15 @@ interface NotificationBannerProps {
 }
 
 const icons = {
-  success: <CheckCircle className='h-5 w-5 text-green-600' />,
+  success: <CheckCircle className='h-5 w-5 text-primary' />,
   error: <XCircle className='h-5 w-5 text-red-600' />,
-  info: <Info className='h-5 w-5 text-blue-600' />,
+  info: <Info className='h-5 w-5 text-secondary-foreground' />,
 };
 
 const bgColors = {
-  success: 'bg-green-50 dark:bg-green-950/20 border-l-green-500',
+  success: 'bg-primary/10 dark:bg-primary/20 border-l-primary',
   error: 'bg-red-50 dark:bg-red-950/20 border-l-red-500',
-  info: 'bg-blue-50 dark:bg-blue-950/20 border-l-blue-500',
+  info: 'bg-secondary dark:bg-secondary border-l-secondary',
 };
 
 export function NotificationBanner({

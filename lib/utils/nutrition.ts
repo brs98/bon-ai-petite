@@ -93,13 +93,15 @@ export function calculateDailyCalories({
  */
 export function calculateMacros(
   totalCalories: number,
-  goals: string,
+  goals: string | string[],
 ): MacroResult {
   let proteinRatio: number;
   let carbRatio: number;
   let fatRatio: number;
-
-  switch (goals) {
+  const primaryGoal = Array.isArray(goals)
+    ? goals[0] || 'maintain_weight'
+    : goals;
+  switch (primaryGoal) {
     case 'gain_muscle':
       // High protein for muscle building
       proteinRatio = 0.3; // 30% protein
@@ -143,12 +145,15 @@ export function calculateMacros(
 /**
  * Get macro distribution percentages based on goals
  */
-export function getMacroDistribution(goals: string): {
+export function getMacroDistribution(goals: string | string[]): {
   protein: number;
   carbs: number;
   fat: number;
 } {
-  switch (goals) {
+  const primaryGoal = Array.isArray(goals)
+    ? goals[0] || 'maintain_weight'
+    : goals;
+  switch (primaryGoal) {
     case 'gain_muscle':
       return { protein: 30, carbs: 40, fat: 30 };
     case 'lose_weight':

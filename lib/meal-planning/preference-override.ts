@@ -138,7 +138,9 @@ export class PreferenceOverrideService {
             weight: userNutritionProfile.weight || undefined,
             height: userNutritionProfile.height || undefined,
             activityLevel: userNutritionProfile.activityLevel || undefined,
-            goals: userNutritionProfile.goals || undefined,
+            goals: Array.isArray(userNutritionProfile.goals)
+              ? userNutritionProfile.goals[0] || undefined
+              : userNutritionProfile.goals || undefined,
           }
         : undefined,
     };
@@ -442,6 +444,7 @@ export class PreferenceOverrideService {
       fat: profile.macroFat
         ? Math.round(profile.macroFat * mealFraction)
         : undefined,
+      // goals property removed to match MealPreferences type
     };
   }
 

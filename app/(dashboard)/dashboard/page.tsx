@@ -173,7 +173,11 @@ export default async function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className='text-2xl font-bold text-primary'>
-                  {formatGoal(nutritionProfile.goals || '')}
+                  {formatGoal(
+                    Array.isArray(nutritionProfile.goals)
+                      ? nutritionProfile.goals[0] || ''
+                      : '',
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -391,7 +395,7 @@ export default async function DashboardPage() {
                     <div className='text-xs text-muted-foreground'>Lunches</div>
                   </div>
                   <div className='text-center p-3 bg-muted/50 rounded-lg'>
-                    <div className='text-lg font-bold text-blue-600'>
+                    <div className='text-lg font-bold text-secondary-foreground'>
                       {currentWeekPlan.dinnerCount}
                     </div>
                     <div className='text-xs text-muted-foreground'>Dinners</div>

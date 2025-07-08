@@ -300,7 +300,7 @@ export function ShoppingList({
               <div className='text-sm text-muted-foreground'>Total Items</div>
             </div>
             <div className='text-center'>
-              <div className='text-2xl font-bold text-green-600'>
+              <div className='text-2xl font-bold text-primary'>
                 {stats.checked}
               </div>
               <div className='text-sm text-muted-foreground'>Completed</div>
@@ -312,7 +312,7 @@ export function ShoppingList({
               <div className='text-sm text-muted-foreground'>Remaining</div>
             </div>
             <div className='text-center'>
-              <div className='text-2xl font-bold text-blue-600'>
+              <div className='text-2xl font-bold text-secondary-foreground'>
                 {stats.categories}
               </div>
               <div className='text-sm text-muted-foreground'>Categories</div>
@@ -523,7 +523,7 @@ export function ShoppingList({
                       className={cn(
                         'flex items-center gap-3 p-3 rounded-lg border transition-all',
                         ingredient.checked
-                          ? 'bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800'
+                          ? 'bg-primary/10 dark:bg-primary/20 border-primary dark:border-primary'
                           : 'bg-background hover:bg-muted/50',
                       )}
                     >

@@ -37,7 +37,7 @@ function Alert({
   const bgColor =
     variant === 'destructive'
       ? 'bg-red-50 border-red-200 dark:bg-red-950/20 dark:border-red-800'
-      : 'bg-blue-50 border-blue-200 dark:bg-blue-950/20 dark:border-blue-800';
+      : 'bg-secondary border-secondary dark:bg-secondary dark:border-secondary';
   return (
     <div className={`rounded-lg border p-4 ${bgColor} ${className}`}>
       {children}

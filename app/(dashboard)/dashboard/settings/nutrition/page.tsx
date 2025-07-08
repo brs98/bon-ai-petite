@@ -52,7 +52,10 @@ export default function NutritionSettingsPage() {
     }
   };
 
-  const handleSaveProfile = async (data: Partial<NutritionProfile>) => {
+  const handleSaveProfile = async (
+    data: Partial<NutritionProfile>,
+    isFinalSave: boolean,
+  ) => {
     setIsSaving(true);
     try {
       const method = profile ? 'PUT' : 'POST';
@@ -66,8 +69,10 @@ export default function NutritionSettingsPage() {
 
       if (response.ok) {
         const savedProfile = await response.json();
-        setProfile(savedProfile);
-        setShowSetup(false);
+        if (isFinalSave) {
+          setProfile(savedProfile);
+          setShowSetup(false);
+        }
       } else {
         const error = await response.json();
         console.error('Error saving profile:', error);
@@ -160,7 +165,9 @@ export default function NutritionSettingsPage() {
             <div className='space-y-2'>
               <p className='text-sm font-medium'>Primary Goal</p>
               <Badge variant='default'>
-                {profile.goals?.replace('_', ' ')}
+                {Array.isArray(profile.goals)
+                  ? profile.goals.map(g => g.replace('_', ' ')).join(', ')
+                  : ''}
               </Badge>
             </div>
           </CardContent>
@@ -175,8 +182,8 @@ export default function NutritionSettingsPage() {
           <CardContent className='space-y-4'>
             <div className='grid grid-cols-3 gap-4'>
               <div className='text-center'>
-                <div className='flex items-center justify-center w-12 h-12 bg-blue-100 rounded-full mx-auto mb-2'>
-                  <span className='text-blue-600 font-bold'>P</span>
+                <div className='flex items-center justify-center w-12 h-12 bg-secondary rounded-full mx-auto mb-2'>
+                  <span className='text-secondary-foreground font-bold'>P</span>
                 </div>
                 <p className='text-sm text-muted-foreground'>Protein</p>
                 <p className='text-xl font-bold'>{profile.macroProtein}g</p>

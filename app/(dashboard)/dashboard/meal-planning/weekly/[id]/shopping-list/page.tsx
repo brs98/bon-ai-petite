@@ -34,7 +34,7 @@ function Alert({
   const bgColor =
     variant === 'destructive'
       ? 'bg-red-50 border-red-200 dark:bg-red-950/20 dark:border-red-800'
-      : 'bg-blue-50 border-blue-200 dark:bg-blue-950/20 dark:border-blue-800';
+      : 'bg-secondary border-secondary dark:bg-secondary dark:border-secondary';
   return <div className={`rounded-lg border p-4 ${bgColor}`}>{children}</div>;
 }
 
@@ -382,7 +382,7 @@ export default function ShoppingListPage() {
               </div>
 
               {planComplete ? (
-                <div className='flex items-center gap-2 text-green-600'>
+                <div className='flex items-center gap-2 text-primary'>
                   <CheckCircle2 className='h-5 w-5' />
                   <span className='text-sm font-medium'>Plan Complete</span>
                 </div>

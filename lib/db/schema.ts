@@ -39,7 +39,7 @@ export const nutritionProfiles = pgTable(
     height: integer('height_in'), // height in inches
     weight: integer('weight_lbs'), // weight in pounds
     activityLevel: varchar('activity_level', { length: 20 }),
-    goals: varchar('goals', { length: 50 }), // lose_weight, gain_muscle, maintain
+    goals: text('goals').array(), // lose_weight, gain_muscle, maintain, now supports multiple
     dailyCalories: integer('daily_calories'),
     macroProtein: integer('macro_protein_g'),
     macroCarbs: integer('macro_carbs_g'),

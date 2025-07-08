@@ -3,13 +3,13 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import Logo from '@/components/ui/Logo';
 import { ActionState } from '@/lib/auth/middleware';
 import { Loader2, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useActionState, useEffect } from 'react';
 import { signIn, signUp } from './actions';
-import Image from 'next/image';
 
 export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
   const searchParams = useSearchParams();
@@ -62,12 +62,7 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
       <div className='sm:mx-auto sm:w-full sm:max-w-md'>
         <div className='flex justify-center mb-6'>
           <Link href='/' className='flex items-center group'>
-            <Image
-              src='/logo.png'
-              alt='AI Petite Logo'
-              width={80}
-              height={80}
-            />
+            <Logo width={80} height={80} className='rounded-xl' />
           </Link>
         </div>
 
@@ -81,7 +76,7 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
               : 'Create your account and get AI-powered nutrition in minutes'}
           </p>
           {mode === 'signup' && selectedPlan && (
-            <div className='mt-4 p-4 bg-gradient-to-r from-primary/10 to-emerald-100/50 rounded-xl border border-primary/20'>
+            <div className='mt-4 p-4 bg-gradient-to-r from-primary/10 to-primary/10 rounded-xl border border-primary/20'>
               <div className='flex items-center justify-center mb-2'>
                 <Sparkles className='h-5 w-5 text-primary mr-2' />
                 <span className='font-semibold text-primary'>

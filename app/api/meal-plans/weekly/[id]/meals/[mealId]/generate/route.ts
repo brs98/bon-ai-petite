@@ -189,7 +189,9 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
             weight: nutritionProfile.weight || undefined,
             height: nutritionProfile.height || undefined,
             activityLevel: nutritionProfile.activityLevel || undefined,
-            goals: nutritionProfile.goals || undefined,
+            goals: Array.isArray(nutritionProfile.goals)
+              ? nutritionProfile.goals[0] || undefined
+              : nutritionProfile.goals || undefined,
           },
           calories: nutritionProfile.dailyCalories
             ? Math.round(nutritionProfile.dailyCalories / 3)

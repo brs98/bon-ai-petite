@@ -178,9 +178,9 @@ export function PreferenceOverride({
         <div className='flex items-center justify-between'>
           <div className='flex items-center gap-3'>
             {isGlobalOverride ? (
-              <Globe className='h-5 w-5 text-blue-600' />
+              <Globe className='h-5 w-5 text-secondary-foreground' />
             ) : (
-              <User className='h-5 w-5 text-green-600' />
+              <User className='h-5 w-5 text-primary' />
             )}
             <div>
               <CardTitle className='text-lg'>

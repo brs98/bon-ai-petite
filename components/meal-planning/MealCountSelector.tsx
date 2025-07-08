@@ -184,7 +184,7 @@ export function MealCountSelector({
       <Card
         className={`transition-all duration-200 ${
           hasValidSelection
-            ? 'bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800'
+            ? 'bg-primary/10 dark:bg-primary/20 border-primary dark:border-primary'
             : ''
         }`}
       >
@@ -205,7 +205,7 @@ export function MealCountSelector({
             </div>
 
             {hasValidSelection && (
-              <Badge className='bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100'>
+              <Badge className='bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-foreground'>
                 Ready to generate
               </Badge>
             )}

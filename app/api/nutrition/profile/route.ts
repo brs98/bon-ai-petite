@@ -12,7 +12,7 @@ type NutritionProfileInsert = {
   height?: number;
   weight?: number;
   activityLevel?: string;
-  goals?: string;
+  goals?: string[];
   dailyCalories?: number;
   macroProtein?: number;
   macroCarbs?: number;

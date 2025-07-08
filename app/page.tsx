@@ -2,6 +2,7 @@
 
 import { NutritionProfileBanner } from '@/components/nutrition/NutritionProfileBanner';
 import { Button } from '@/components/ui/button';
+import Logo from '@/components/ui/Logo';
 import {
   ArrowRight,
   CheckCircle,
@@ -15,7 +16,6 @@ import {
 import { motion } from 'motion/react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState } from 'react';
 
 const fadeInLeft = {
   initial: { opacity: 0, x: -60 },
@@ -52,10 +52,8 @@ const buttonHover = {
 };
 
 export default function HomePage() {
-  const [hoveredCard, setHoveredCard] = useState<number | null>(null);
-
   return (
-    <main className='min-h-screen bg-gradient-to-br from-emerald-50 via-background to-blue-50'>
+    <main className='min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary'>
       {/* Hero Section */}
       <section className='relative py-20 lg:py-32 overflow-hidden'>
         <motion.div
@@ -89,7 +87,7 @@ export default function HomePage() {
                   Bon
                 </motion.span>
                 <motion.span
-                  className='block font-cursive bg-gradient-to-r from-primary via-emerald-500 to-accent bg-clip-text text-transparent'
+                  className='block font-cursive text-primary'
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.4, duration: 0.6 }}
@@ -97,22 +95,7 @@ export default function HomePage() {
                   AI Petite
                 </motion.span>
               </motion.h1>
-              {/* Logo to the right, vertically centered, with animation */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6, duration: 0.6 }}
-                className='ml-4 self-center'
-              >
-                <Image
-                  src='/logo.png'
-                  alt='AI Petite Logo'
-                  width={93}
-                  height={93}
-                  className='rounded-xl'
-                  priority
-                />
-              </motion.div>
+              <Logo width={64} height={84} className='ml-4' />
             </div>
           </div>
           <div className='lg:grid lg:grid-cols-12 lg:gap-8 items-center'>
@@ -127,7 +110,7 @@ export default function HomePage() {
                 variants={staggerItem}
               >
                 <motion.div
-                  className='flex items-center space-x-2 bg-gradient-to-r from-primary/10 to-emerald-100 px-4 py-2 rounded-full border border-primary/20'
+                  className='flex items-center space-x-2 bg-gradient-to-r from-primary/10 to-primary/10 px-4 py-2 rounded-full border border-primary/20'
                   whileHover={{
                     scale: 1.05,
                     backgroundColor: 'rgba(16, 185, 129, 0.15)',
@@ -167,7 +150,7 @@ export default function HomePage() {
                   <motion.div {...buttonHover} className='rounded-xl'>
                     <Button
                       size='lg'
-                      className='w-full sm:w-auto bg-gradient-to-r from-primary via-emerald-500 to-emerald-600 hover:from-primary/90 hover:via-emerald-500/90 hover:to-emerald-600/90 text-primary-foreground px-8 py-4 text-lg rounded-xl shadow-lg transition-all duration-300'
+                      className='w-full sm:w-auto bg-gradient-to-r from-primary via-primary to-primary/80 hover:from-primary/90 hover:via-primary/90 hover:to-primary/80 text-primary-foreground px-8 py-4 text-lg rounded-xl shadow-lg transition-all duration-300'
                     >
                       Start Your Journey
                       <motion.div
@@ -211,7 +194,7 @@ export default function HomePage() {
             >
               <div className='relative'>
                 <motion.div
-                  className='absolute inset-0 bg-gradient-to-r from-primary/20 via-emerald-400/20 to-accent/20 rounded-3xl blur-3xl opacity-30'
+                  className='absolute inset-0 bg-gradient-to-r from-primary/20 via-primary/20 to-accent/20 rounded-3xl blur-3xl opacity-30'
                   animate={{
                     scale: [1, 1.05, 1],
                     opacity: [0.3, 0.4, 0.3],
@@ -232,117 +215,72 @@ export default function HomePage() {
                     animate='animate'
                     variants={staggerContainer}
                   >
-                    <motion.div
-                      className='flex items-center space-x-4'
-                      variants={staggerItem}
-                    >
-                      <motion.div
-                        className='w-12 h-12 bg-gradient-to-r from-primary to-emerald-500 rounded-xl flex items-center justify-center'
-                        whileHover={{ rotate: 360 }}
-                        transition={{ duration: 0.6 }}
-                      >
-                        <ChefHat className='h-6 w-6 text-primary-foreground' />
-                      </motion.div>
-                      <div>
-                        <h3 className='font-semibold text-card-foreground'>
-                          Today's Meal Plan
-                        </h3>
-                        <p className='text-muted-foreground text-sm'>
-                          Personalized for your goals
-                        </p>
+                    {/* --- Redesigned Value Proposition Section --- */}
+                    {/* Food Image Collage - contained within the card */}
+                    <div className='flex justify-center items-center mb-6 gap-4'>
+                      {/* Left image */}
+                      <div className='relative w-20 h-20 sm:w-28 sm:h-28 rounded-2xl overflow-hidden shadow-lg border-4 border-background bg-background'>
+                        <Image
+                          src='https://images.unsplash.com/photo-1525351484163-7529414344d8?w=400&h=400&fit=crop&crop=center'
+                          alt='Avocado Toast with Poached Egg'
+                          fill
+                          className='object-cover'
+                        />
                       </div>
-                    </motion.div>
+                      {/* Main (center) image */}
+                      <div className='relative w-28 h-28 sm:w-36 sm:h-36 rounded-2xl overflow-hidden shadow-xl border-4 border-background bg-background z-10'>
+                        <Image
+                          src='https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400&h=400&fit=crop&crop=center'
+                          alt='Mediterranean Quinoa Bowl'
+                          fill
+                          className='object-cover'
+                        />
+                      </div>
+                      {/* Right image */}
+                      <div className='relative w-20 h-20 sm:w-28 sm:h-28 rounded-2xl overflow-hidden shadow-lg border-4 border-background bg-background'>
+                        <Image
+                          src='https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=400&h=400&fit=crop&crop=center'
+                          alt='Grilled Salmon with Roasted Vegetables'
+                          fill
+                          className='object-cover'
+                        />
+                      </div>
+                    </div>
 
-                    <motion.div
-                      className='space-y-4'
-                      variants={staggerContainer}
-                    >
-                      {[
-                        {
-                          gradient: 'from-emerald-50 to-emerald-100/50',
-                          border: 'border-emerald-200/50',
-                          image:
-                            'https://images.unsplash.com/photo-1525351484163-7529414344d8?w=400&h=400&fit=crop&crop=center',
-                          alt: 'Avocado Toast with Poached Egg',
-                          meal: 'Breakfast',
-                          calories: '320 cal',
-                          calorieColor: 'text-primary',
-                          dish: 'Avocado Toast with Poached Egg',
-                        },
-                        {
-                          gradient: 'from-blue-50 to-blue-100/50',
-                          border: 'border-blue-200/50',
-                          image:
-                            'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400&h=400&fit=crop&crop=center',
-                          alt: 'Mediterranean Quinoa Bowl',
-                          meal: 'Lunch',
-                          calories: '450 cal',
-                          calorieColor: 'text-accent',
-                          dish: 'Mediterranean Quinoa Bowl',
-                        },
-                        {
-                          gradient: 'from-emerald-50 to-emerald-100/50',
-                          border: 'border-emerald-200/50',
-                          image:
-                            'https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=400&h=400&fit=crop&crop=center',
-                          alt: 'Grilled Salmon with Roasted Vegetables',
-                          meal: 'Dinner',
-                          calories: '520 cal',
-                          calorieColor: 'text-primary',
-                          dish: 'Grilled Salmon with Roasted Vegetables',
-                        },
-                      ].map((item, index) => (
-                        <motion.div
-                          key={index}
-                          className={`bg-gradient-to-r ${item.gradient} rounded-xl p-4 border ${item.border} flex items-center space-x-4`}
-                          variants={staggerItem}
-                          whileHover={{
-                            scale: 1.02,
-                            boxShadow: '0 8px 25px rgba(0,0,0,0.1)',
-                          }}
-                          onHoverStart={() => setHoveredCard(index)}
-                          onHoverEnd={() => setHoveredCard(null)}
-                        >
-                          <div className='relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0'>
-                            <Image
-                              src={item.image}
-                              alt={item.alt}
-                              fill
-                              className='object-cover'
-                            />
-                          </div>
-                          <div className='flex-1'>
-                            <div className='flex justify-between items-center mb-1'>
-                              <span className='font-medium text-foreground'>
-                                {item.meal}
-                              </span>
-                              <motion.span
-                                className={`text-sm ${item.calorieColor} font-semibold`}
-                                animate={
-                                  hoveredCard === index
-                                    ? { scale: 1.1 }
-                                    : { scale: 1 }
-                                }
-                              >
-                                {item.calories}
-                              </motion.span>
-                            </div>
-                            <p className='text-muted-foreground text-sm'>
-                              {item.dish}
-                            </p>
-                          </div>
+                    {/* Value Proposition Bar (Time-Saving & Personalization only) */}
+                    <div className='flex justify-between items-center bg-gradient-to-r from-primary/10 via-background to-accent/10 rounded-lg px-6 py-4 border border-primary/10 shadow-sm mb-4'>
+                      {/* Time-Saving */}
+                      <div className='flex flex-col items-center flex-1'>
+                        <Clock className='h-7 w-7 text-primary mb-1' />
+                        <span className='font-semibold text-base text-foreground'>
+                          Save 3+ hours/week
+                        </span>
+                        <span className='text-xs text-muted-foreground'>
+                          Automated planning & shopping
+                        </span>
+                      </div>
+                      {/* Personalization */}
+                      <div className='flex flex-col items-center flex-1'>
+                        <Sparkles className='h-7 w-7 text-accent mb-1' />
+                        <span className='font-semibold text-base text-foreground'>
+                          Personalized for you
+                        </span>
+                        <span className='text-xs text-muted-foreground'>
+                          Adapts to your goals & tastes
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* CTA Button - now generic, no shopping cart icon */}
+                    <Link href='/pricing'>
+                      <motion.div variants={staggerItem}>
+                        <motion.div {...buttonHover} className='rounded-xl'>
+                          <Button className='w-full bg-gradient-to-r from-primary to-primary hover:from-primary/90 hover:to-primary/90 text-primary-foreground rounded-xl shadow-md transition-all duration-200'>
+                            Get Started
+                          </Button>
                         </motion.div>
-                      ))}
-                    </motion.div>
-
-                    <motion.div variants={staggerItem}>
-                      <motion.div {...buttonHover} className='rounded-xl'>
-                        <Button className='w-full bg-gradient-to-r from-primary to-emerald-500 hover:from-primary/90 hover:to-emerald-500/90 text-primary-foreground rounded-xl shadow-md transition-all duration-200'>
-                          <ShoppingCart className='h-4 w-4 mr-2' />
-                          View Shopping List
-                        </Button>
                       </motion.div>
-                    </motion.div>
+                    </Link>
                   </motion.div>
                 </motion.div>
               </div>
@@ -353,7 +291,7 @@ export default function HomePage() {
 
       {/* How It Works Section */}
       <motion.section
-        className='py-20 bg-gradient-to-b from-background/60 to-emerald-50/30'
+        className='py-20 bg-gradient-to-b from-background/60 to-primary/5'
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         viewport={{ once: true, margin: '-100px' }}
@@ -388,11 +326,11 @@ export default function HomePage() {
               variants={staggerItem}
             >
               <motion.div
-                className='w-20 h-20 mb-6 rounded-full bg-gradient-to-r from-primary/20 to-emerald-200 flex items-center justify-center shadow-lg'
+                className='w-20 h-20 mb-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg'
                 whileHover={{ scale: 1.08, rotate: [0, 8, -8, 0] }}
                 transition={{ duration: 0.5 }}
               >
-                <Users className='h-10 w-10 text-primary' />
+                <Users className='h-10 w-10 text-primary-foreground' />
               </motion.div>
               <h3 className='text-2xl font-bold text-foreground mb-2'>
                 Create Your Profile
@@ -403,18 +341,18 @@ export default function HomePage() {
               </p>
             </motion.div>
             {/* Arrow for desktop */}
-            <div className='hidden md:block w-12 h-1 bg-gradient-to-r from-primary/30 to-emerald-200/30 rounded-full mx-2' />
+            <div className='hidden md:block w-12 h-1 bg-gradient-to-r from-primary/30 to-primary/30 rounded-full mx-2' />
             {/* Step 2 */}
             <motion.div
               className='flex-1 flex flex-col items-center text-center group'
               variants={staggerItem}
             >
               <motion.div
-                className='w-20 h-20 mb-6 rounded-full bg-gradient-to-r from-primary/20 to-accent/20 flex items-center justify-center shadow-lg'
+                className='w-20 h-20 mb-6 rounded-full bg-primary flex items-center justify-center shadow-lg'
                 whileHover={{ scale: 1.08, rotate: [0, 8, -8, 0] }}
                 transition={{ duration: 0.5 }}
               >
-                <ChefHat className='h-10 w-10 text-accent' />
+                <ChefHat className='h-10 w-10 text-primary-foreground' />
               </motion.div>
               <h3 className='text-2xl font-bold text-foreground mb-2'>
                 Personalized Meal Plan
@@ -425,18 +363,18 @@ export default function HomePage() {
               </p>
             </motion.div>
             {/* Arrow for desktop */}
-            <div className='hidden md:block w-12 h-1 bg-gradient-to-r from-accent/30 to-blue-200/30 rounded-full mx-2' />
+            <div className='hidden md:block w-12 h-1 bg-gradient-to-r from-accent/30 to-secondary/30 rounded-full mx-2' />
             {/* Step 3 */}
             <motion.div
               className='flex-1 flex flex-col items-center text-center group'
               variants={staggerItem}
             >
               <motion.div
-                className='w-20 h-20 mb-6 rounded-full bg-gradient-to-r from-emerald-200 to-blue-100 flex items-center justify-center shadow-lg'
+                className='w-20 h-20 mb-6 rounded-full bg-primary flex items-center justify-center shadow-lg'
                 whileHover={{ scale: 1.08, rotate: [0, 8, -8, 0] }}
                 transition={{ duration: 0.5 }}
               >
-                <ShoppingCart className='h-10 w-10 text-emerald-700' />
+                <ShoppingCart className='h-10 w-10 text-primary-foreground' />
               </motion.div>
               <h3 className='text-2xl font-bold text-foreground mb-2'>
                 Smart Shopping List
@@ -453,7 +391,7 @@ export default function HomePage() {
 
       {/* Food Gallery Section */}
       <motion.section
-        className='py-20 bg-gradient-to-b from-background to-emerald-50/30'
+        className='py-20 bg-gradient-to-b from-background to-primary/5'
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         viewport={{ once: true, margin: '-100px' }}
@@ -542,7 +480,7 @@ export default function HomePage() {
 
       {/* Features Section */}
       <motion.section
-        className='py-20 bg-gradient-to-b from-emerald-50/30 to-background'
+        className='py-20 bg-gradient-to-b from-primary/5 to-background'
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         viewport={{ once: true, margin: '-100px' }}
@@ -556,7 +494,7 @@ export default function HomePage() {
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            <h2 className='text-4xl font-bold text-foreground mb-4'>
+            <h2 className='text-4xl font-bold text-primary mb-4'>
               Why Choose AI Petite?
             </h2>
             <p className='text-xl text-muted-foreground max-w-3xl mx-auto'>
@@ -575,21 +513,21 @@ export default function HomePage() {
             {[
               {
                 icon: Sparkles,
-                gradient: 'from-primary to-emerald-500',
+                gradient: 'from-primary to-primary/80',
                 title: 'AI-Powered Personalization',
                 description:
                   'Our advanced AI analyzes your dietary preferences, health goals, and lifestyle to create perfectly tailored meal plans that evolve with you.',
               },
               {
                 icon: ShoppingCart,
-                gradient: 'from-accent to-blue-500',
+                gradient: 'from-accent to-secondary',
                 title: 'Seamless Shopping Integration',
                 description:
                   'One-click integration with Instacart and Amazon Fresh. Your ingredients are automatically added to your cart and delivered to your door.',
               },
               {
                 icon: Clock,
-                gradient: 'from-emerald-400 to-emerald-600',
+                gradient: 'from-primary/400 to-primary/600',
                 title: 'Save Time & Reduce Waste',
                 description:
                   'Spend less time planning and shopping, more time enjoying delicious meals. Our smart portions reduce food waste by up to 40%.',
@@ -603,7 +541,7 @@ export default function HomePage() {
                 transition={{ type: 'spring', stiffness: 300 }}
               >
                 <motion.div
-                  className={`inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-r ${feature.gradient} text-primary-foreground mb-6 shadow-lg`}
+                  className={`inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary text-primary-foreground mb-6 shadow-lg`}
                   whileHover={{
                     scale: 1.1,
                     rotate: [0, -10, 10, 0],
@@ -613,7 +551,7 @@ export default function HomePage() {
                 >
                   <feature.icon className='h-8 w-8' />
                 </motion.div>
-                <h3 className='text-2xl font-bold text-foreground mb-4'>
+                <h3 className='text-2xl font-bold text-primary mb-4'>
                   {feature.title}
                 </h3>
                 <p className='text-muted-foreground leading-relaxed'>
@@ -627,7 +565,7 @@ export default function HomePage() {
 
       {/* Benefits Section */}
       <motion.section
-        className='py-20 bg-gradient-to-r from-emerald-50 via-background to-blue-50'
+        className='py-20 bg-gradient-to-r from-primary/5 via-background to-secondary'
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         viewport={{ once: true, margin: '-100px' }}
@@ -657,24 +595,24 @@ export default function HomePage() {
                 {[
                   {
                     icon: Heart,
-                    gradient: 'from-primary/20 to-emerald-200',
-                    iconColor: 'text-primary',
+                    gradient: 'from-primary/20 to-primary/10',
+                    iconColor: 'text-primary-foreground',
                     title: 'Healthier Lifestyle',
                     description:
                       'Achieve your wellness goals with nutritionally balanced meals designed by experts.',
                   },
                   {
                     icon: Clock,
-                    gradient: 'from-accent/20 to-blue-200',
-                    iconColor: 'text-accent',
+                    gradient: 'from-accent/20 to-secondary',
+                    iconColor: 'text-primary-foreground',
                     title: 'More Free Time',
                     description:
                       'Reclaim hours each week with automated meal planning and grocery shopping.',
                   },
                   {
                     icon: Users,
-                    gradient: 'from-emerald-200 to-emerald-300',
-                    iconColor: 'text-emerald-700',
+                    gradient: 'from-primary/100 to-primary/200',
+                    iconColor: 'text-primary-foreground',
                     title: 'Family-Friendly',
                     description:
                       "Create meal plans that satisfy everyone's tastes and dietary requirements.",
@@ -688,7 +626,7 @@ export default function HomePage() {
                     transition={{ type: 'spring', stiffness: 300 }}
                   >
                     <motion.div
-                      className={`flex-shrink-0 w-8 h-8 bg-gradient-to-r ${benefit.gradient} rounded-lg flex items-center justify-center`}
+                      className={`flex-shrink-0 w-8 h-8 bg-primary text-primary-foreground rounded-lg flex items-center justify-center`}
                       whileHover={{ scale: 1.2, rotate: 360 }}
                       transition={{ duration: 0.3 }}
                     >
@@ -723,24 +661,22 @@ export default function HomePage() {
               >
                 {[
                   {
-                    gradient: 'from-emerald-50 to-emerald-100/50',
-                    border: 'border-emerald-200/50',
+                    gradient: 'from-primary/5 to-primary/10',
+                    border: 'border-primary/20',
                     quote:
                       "AI Petite has completely transformed how my family eats. We're healthier, happier, and I save 5 hours every week!",
                     name: 'Sarah M.',
                     role: 'Busy Mom of 3',
                     avatar: 'SM',
-                    avatarGradient: 'from-primary to-emerald-500',
                   },
                   {
-                    gradient: 'from-blue-50 to-blue-100/50',
-                    border: 'border-blue-200/50',
+                    gradient: 'from-primary/5 to-primary/10',
+                    border: 'border-primary/20',
                     quote:
                       "The AI recommendations are spot-on. I've discovered so many new healthy recipes that I actually enjoy cooking!",
                     name: 'Michael J.',
                     role: 'Software Engineer',
                     avatar: 'MJ',
-                    avatarGradient: 'from-accent to-blue-500',
                   },
                 ].map((testimonial, index) => (
                   <motion.div
@@ -782,7 +718,7 @@ export default function HomePage() {
                       transition={{ delay: 0.4 }}
                     >
                       <motion.div
-                        className={`w-10 h-10 bg-gradient-to-r ${testimonial.avatarGradient} rounded-full flex items-center justify-center`}
+                        className={`w-10 h-10 bg-primary text-primary-foreground rounded-full flex items-center justify-center`}
                         whileHover={{ scale: 1.1 }}
                       >
                         <span className='text-primary-foreground font-semibold'>
@@ -808,7 +744,7 @@ export default function HomePage() {
 
       {/* CTA Section */}
       <motion.section
-        className='py-20 bg-gradient-to-r from-primary via-emerald-500 to-emerald-600 text-primary-foreground relative overflow-hidden'
+        className='py-20 bg-gradient-to-r from-primary via-primary to-primary/80 text-primary-foreground relative overflow-hidden'
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         viewport={{ once: true }}

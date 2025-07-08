@@ -37,7 +37,10 @@ import { MacroTracker } from './MacroTracker';
 
 interface ProfileSetupProps {
   initialData?: Partial<NutritionProfile>;
-  onSave: (data: Partial<NutritionProfile>) => Promise<void>;
+  onSave: (
+    data: Partial<NutritionProfile>,
+    isFinalSave: boolean,
+  ) => Promise<void>;
   isLoading?: boolean;
 }
 
@@ -51,6 +54,7 @@ function formatHeight(heightIn?: number) {
 export function ProfileSetup({
   initialData,
   isLoading = false,
+  onSave,
 }: ProfileSetupProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [calculatedCalories, setCalculatedCalories] = useState<
@@ -75,7 +79,7 @@ export function ProfileSetup({
       height: initialData?.height || undefined,
       weight: initialData?.weight || undefined,
       activityLevel: initialData?.activityLevel || undefined,
-      goals: initialData?.goals || undefined,
+      goals: initialData?.goals || [],
       dailyCalories: initialData?.dailyCalories || undefined,
       macroProtein: initialData?.macroProtein || undefined,
       macroCarbs: initialData?.macroCarbs || undefined,
@@ -119,12 +123,14 @@ export function ProfileSetup({
 
     if (age && weight && height && activityLevel) {
       // Assuming male for now - in a real app, you'd ask for gender
+      const primaryGoal =
+        Array.isArray(goals) && goals.length > 0 ? goals[0] : 'maintain_weight';
       const calories = calculateDailyCalories({
         age,
         weight,
         height,
         activityLevel,
-        goals: goals || 'maintain_weight',
+        goals: primaryGoal,
         gender: 'male', // Default assumption
       });
 
@@ -132,7 +138,7 @@ export function ProfileSetup({
       form.setValue('dailyCalories', calories);
 
       // Auto-calculate macros
-      const macros = calculateMacros(calories, goals || 'maintain_weight');
+      const macros = calculateMacros(calories, primaryGoal);
       form.setValue('macroProtein', macros.protein);
       form.setValue('macroCarbs', macros.carbs);
       form.setValue('macroFat', macros.fat);
@@ -147,7 +153,7 @@ export function ProfileSetup({
     }
   }, watchedValues);
 
-  const onSubmit = (data: Partial<NutritionProfile>) => {
+  const onSubmit = async (data: Partial<NutritionProfile>) => {
     // Ensure height and weight are set from local state
     data.height =
       typeof heightFeet === 'number' && typeof heightInches === 'number'
@@ -156,17 +162,39 @@ export function ProfileSetup({
     data.weight = typeof weightLbs === 'number' ? weightLbs : undefined;
     // Simulate save, but do not call parent onSave yet
     setProfileSaved(true);
-    // Optionally, you could call an internal save API here if needed
-    // await onSave(data);
+    // Final save
+    await onSave(data, true);
   };
 
-  const nextStep = () => {
+  // Add this function to handle silent save after every step
+  const handleStepChange = async () => {
+    // Get the latest form values
+    const values = form.getValues();
+    // Ensure height and weight are set from local state
+    const profileData = {
+      ...values,
+      height:
+        typeof heightFeet === 'number' && typeof heightInches === 'number'
+          ? heightFeet * 12 + heightInches
+          : undefined,
+      weight: typeof weightLbs === 'number' ? weightLbs : undefined,
+    };
+    try {
+      await onSave(profileData, false); // background save
+    } catch {
+      // Silently ignore errors
+    }
+  };
+
+  const nextStep = async () => {
+    await handleStepChange();
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
     }
   };
 
-  const prevStep = () => {
+  const prevStep = async () => {
+    await handleStepChange();
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
     }
@@ -228,9 +256,8 @@ export function ProfileSetup({
 
           <Form {...form}>
             <form
-              onSubmit={e => {
-                e.preventDefault();
-                void form.handleSubmit(onSubmit)(e);
+              onSubmit={() => {
+                void form.handleSubmit(onSubmit)();
               }}
               className='space-y-8'
             >
@@ -305,8 +332,8 @@ export function ProfileSetup({
                                 value={
                                   heightFeet === undefined ? '' : heightFeet
                                 }
-                                onChange={e => {
-                                  const val = e.target.value;
+                                onChange={event => {
+                                  const val = event.target.value;
                                   setHeightFeet(
                                     val === '' ? undefined : parseInt(val),
                                   );
@@ -323,8 +350,8 @@ export function ProfileSetup({
                                 value={
                                   heightInches === undefined ? '' : heightInches
                                 }
-                                onChange={e => {
-                                  const val = e.target.value;
+                                onChange={event => {
+                                  const val = event.target.value;
                                   setHeightInches(
                                     val === '' ? undefined : parseInt(val),
                                   );
@@ -348,8 +375,8 @@ export function ProfileSetup({
                               min={0}
                               placeholder='Pounds'
                               value={weightLbs === undefined ? '' : weightLbs}
-                              onChange={e => {
-                                const val = e.target.value;
+                              onChange={event => {
+                                const val = event.target.value;
                                 setWeightLbs(
                                   val === '' ? undefined : parseInt(val),
                                 );
@@ -414,26 +441,39 @@ export function ProfileSetup({
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel className='flex items-center gap-2 justify-center'>
-                                Fitness Goal
+                                Fitness Goals (select one or more)
                               </FormLabel>
                               <div className='flex flex-wrap gap-3 justify-center'>
-                                {FITNESS_GOALS.map(goal => (
-                                  <Button
-                                    key={goal.value}
-                                    type='button'
-                                    variant={
-                                      field.value === goal.value
-                                        ? 'default'
-                                        : 'outline'
-                                    }
-                                    className='py-2 px-4 text-sm'
-                                    onClick={() => {
-                                      field.onChange(goal.value);
-                                    }}
-                                  >
-                                    {goal.label}
-                                  </Button>
-                                ))}
+                                {FITNESS_GOALS.map(goal => {
+                                  const selected = Array.isArray(field.value)
+                                    ? field.value.includes(goal.value)
+                                    : false;
+                                  return (
+                                    <Button
+                                      key={goal.value}
+                                      type='button'
+                                      variant={selected ? 'default' : 'outline'}
+                                      className='py-2 px-4 text-sm'
+                                      onClick={() => {
+                                        let newGoals = Array.isArray(
+                                          field.value,
+                                        )
+                                          ? [...field.value]
+                                          : [];
+                                        if (selected) {
+                                          newGoals = newGoals.filter(
+                                            g => g !== goal.value,
+                                          );
+                                        } else {
+                                          newGoals.push(goal.value);
+                                        }
+                                        field.onChange(newGoals);
+                                      }}
+                                    >
+                                      {goal.label}
+                                    </Button>
+                                  );
+                                })}
                               </div>
                               <FormMessage />
                             </FormItem>
@@ -670,8 +710,15 @@ export function ProfileSetup({
                                 {formValues.activityLevel}
                               </span>
                             )}
-                            {formValues.goals && (
-                              <span className='badge'>{formValues.goals}</span>
+                            {Array.isArray(formValues.goals) &&
+                            formValues.goals.length > 0 ? (
+                              formValues.goals.map(goal => (
+                                <span className='badge' key={goal}>
+                                  {goal}
+                                </span>
+                              ))
+                            ) : (
+                              <span className='badge'>None</span>
                             )}
                           </div>
                         </div>
@@ -798,7 +845,9 @@ export function ProfileSetup({
                 <Button
                   type='button'
                   variant='outline'
-                  onClick={prevStep}
+                  onClick={() => {
+                    void prevStep();
+                  }}
                   disabled={currentStep === 0}
                 >
                   Previous
@@ -806,7 +855,12 @@ export function ProfileSetup({
 
                 <div className='flex gap-2'>
                   {currentStep < steps.length - 1 ? (
-                    <Button type='button' onClick={nextStep}>
+                    <Button
+                      type='button'
+                      onClick={() => {
+                        void nextStep();
+                      }}
+                    >
                       Next
                     </Button>
                   ) : (

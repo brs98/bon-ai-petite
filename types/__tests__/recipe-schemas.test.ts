@@ -249,7 +249,7 @@ describe('Recipe Schemas', () => {
           weight: 70,
           height: 175,
           activityLevel: 'moderately_active',
-          goals: 'gain_muscle',
+          goals: ['gain_muscle'],
         },
       };
 
@@ -326,7 +326,7 @@ describe('Recipe Schemas', () => {
       height: 175,
       weight: 70,
       activityLevel: 'moderately_active' as const,
-      goals: 'maintain_weight' as const,
+      goals: ['maintain_weight'],
       dailyCalories: 2000,
       macroProtein: 150,
       macroCarbs: 200,
@@ -370,7 +370,7 @@ describe('Recipe Schemas', () => {
     it('should reject invalid goals', () => {
       const invalidProfile = {
         ...validProfile,
-        goals: 'become_superhuman' as any,
+        goals: ['become_superhuman'] as any,
       };
 
       expect(() => NutritionProfileSchema.parse(invalidProfile)).toThrow();
@@ -567,12 +567,12 @@ describe('Recipe Schemas', () => {
       const profile: NutritionProfile = {
         userId: 123,
         activityLevel: 'very_active',
-        goals: 'gain_muscle',
+        goals: ['gain_muscle'],
       };
 
       expect(profile.userId).toBe(123);
       expect(profile.activityLevel).toBe('very_active');
-      expect(profile.goals).toBe('gain_muscle');
+      expect(profile.goals).toEqual(['gain_muscle']);
     });
   });
 
