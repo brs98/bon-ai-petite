@@ -93,6 +93,10 @@ export const RecipeGenerationRequestSchema = z.object({
   varietyBoost: z.boolean().optional(),
   avoidSimilarRecipes: z.boolean().optional(),
   sessionId: z.string().optional(),
+  mealComplexity: z.enum(['simple', 'medium', 'hard']).optional(),
+  servings: z.number().positive().optional(),
+  timeToMake: z.number().positive().optional(),
+  difficulty: z.enum(['easy', 'medium', 'hard']).optional(),
 });
 
 export type RecipeGenerationRequest = z.infer<
@@ -103,29 +107,24 @@ export type RecipeGenerationRequest = z.infer<
 export const NutritionProfileSchema = z.object({
   id: z.number().optional(),
   userId: z.number(),
-  age: z.number().positive().optional(),
-  height: z.number().positive().optional(), // in inches
-  weight: z.number().positive().optional(), // in lbs
-  activityLevel: z
-    .enum([
-      'sedentary',
-      'lightly_active',
-      'moderately_active',
-      'very_active',
-      'extremely_active',
-    ])
-    .optional(),
-  goals: z
-    .array(
-      z.enum([
-        'lose_weight',
-        'gain_weight',
-        'maintain_weight',
-        'gain_muscle',
-        'improve_health',
-      ]),
-    )
-    .optional(), // now supports multiple goals
+  age: z.number().positive({ message: 'Age is required and must be positive' }),
+  height: z.number().positive({ message: 'Height is required and must be positive' }), // in inches
+  weight: z.number().positive({ message: 'Weight is required and must be positive' }), // in lbs
+  goalWeight: z.number().positive().optional(), // user's target weight in lbs (optional)
+  activityLevel: z.enum([
+    'sedentary',
+    'lightly_active',
+    'moderately_active',
+    'very_active',
+    'extremely_active',
+  ], { message: 'Activity level is required' }),
+  goals: z.array(z.enum([
+    'lose_weight',
+    'gain_weight',
+    'maintain_weight',
+    'gain_muscle',
+    'improve_health',
+  ])).min(1, { message: 'At least one goal is required' }), // now supports multiple goals
   dailyCalories: z.number().positive().optional(),
   macroProtein: z.number().nonnegative().optional(), // in grams
   macroCarbs: z.number().nonnegative().optional(), // in grams
@@ -133,6 +132,7 @@ export const NutritionProfileSchema = z.object({
   allergies: z.array(z.string()).optional(),
   dietaryRestrictions: z.array(z.string()).optional(),
   cuisinePreferences: z.array(z.string()).optional(),
+  gender: z.enum(['male', 'female']),
   createdAt: z.date().optional(),
   updatedAt: z.date().optional(),
 });
@@ -383,6 +383,16 @@ export type WeeklyMealPlanWithItems = WeeklyMealPlan & {
 export type MealPlanItemWithRecipe = MealPlanItem & {
   recipe?: Recipe;
 };
+
+// Schema for batch AI weekly meal plan output
+export const WeeklyMealPlanAISchema = z.object({
+  breakfasts: z.array(RecipeGenerationSchema).max(7),
+  lunches: z.array(RecipeGenerationSchema).max(7),
+  dinners: z.array(RecipeGenerationSchema).max(7),
+  snacks: z.array(RecipeGenerationSchema).max(7),
+});
+
+export type WeeklyMealPlanAIResponse = z.infer<typeof WeeklyMealPlanAISchema>;
 
 // Grocery categories for shopping list organization
 export const GROCERY_CATEGORIES = [

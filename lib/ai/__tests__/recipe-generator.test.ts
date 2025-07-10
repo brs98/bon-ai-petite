@@ -4,6 +4,7 @@ import { RecipeGeneratorService } from '../recipe-generator';
 // Mock the AI SDK
 jest.mock('ai', () => ({
   generateText: jest.fn(),
+  generateObject: jest.fn(),
 }));
 
 const mockedGenerateText = generateText as jest.MockedFunction<

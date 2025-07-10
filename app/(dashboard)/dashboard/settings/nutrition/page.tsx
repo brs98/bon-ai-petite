@@ -59,13 +59,27 @@ export default function NutritionSettingsPage() {
     setIsSaving(true);
     try {
       const method = profile ? 'PUT' : 'POST';
-      const response = await fetch('/api/nutrition/profile', {
+      let response = await fetch('/api/nutrition/profile', {
         method,
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(data),
       });
+
+      // If POST fails with 409, refetch and retry as PUT
+      if (!response.ok && method === 'POST' && response.status === 409) {
+        // Refetch profile
+        await fetchProfile();
+        // Retry as PUT
+        response = await fetch('/api/nutrition/profile', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data),
+        });
+      }
 
       if (response.ok) {
         const savedProfile = await response.json();
@@ -76,10 +90,15 @@ export default function NutritionSettingsPage() {
       } else {
         const error = await response.json();
         console.error('Error saving profile:', error);
-        // You could add toast notifications here
+        // Optionally show a toast or error message to the user
+        alert(
+          error?.error ||
+            'Failed to save profile. Please refresh and try again.',
+        );
       }
     } catch (error) {
       console.error('Error saving profile:', error);
+      alert('Failed to save profile. Please refresh and try again.');
     } finally {
       setIsSaving(false);
     }
@@ -227,18 +246,26 @@ export default function NutritionSettingsPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className='space-y-4'>
-              {profile.allergies?.length && (
+              {
                 <div>
                   <p className='text-sm font-medium mb-2'>Allergies</p>
                   <div className='flex flex-wrap gap-2'>
-                    {profile.allergies.map(allergy => (
-                      <Badge key={allergy} variant='destructive'>
-                        {allergy}
+                    {!profile.allergies || profile.allergies?.length === 0 ? (
+                      <Badge key={'None'} variant='default'>
+                        None
                       </Badge>
-                    ))}
+                    ) : (
+                      <>
+                        {profile.allergies?.map(allergy => (
+                          <Badge key={allergy} variant='destructive'>
+                            {allergy}
+                          </Badge>
+                        ))}
+                      </>
+                    )}
                   </div>
                 </div>
-              )}
+              }
 
               {profile.dietaryRestrictions?.length && (
                 <div>

@@ -2,11 +2,11 @@ import { openai } from '@ai-sdk/openai';
 import { generateObject } from 'ai';
 import * as dotenv from 'dotenv';
 import {
-  RecipeGenerationRequestSchema,
-  RecipeGenerationSchema,
-  type Recipe,
-  type RecipeFeedback,
-  type RecipeGenerationRequest,
+    RecipeGenerationRequestSchema,
+    RecipeGenerationSchema,
+    type Recipe,
+    type RecipeFeedback,
+    type RecipeGenerationRequest,
 } from '../../types/recipe';
 import { type NutritionProfile } from '../db/schema';
 import { feedbackProcessor, type FeedbackInsights } from './feedback-processor';
@@ -18,14 +18,9 @@ dotenv.config();
 
 // Enhanced variety mechanisms
 interface VarietyConfig {
-  temperature: number;
-  creativitySeed: string;
   avoidanceTerms: string[];
   cuisineRotation: string[];
-  ingredientFocus: string[];
-  cookingTechniqueSuggestion: string;
   complexityTarget: 'simple' | 'moderate' | 'complex';
-  culturalFusion: boolean;
 }
 
 interface RecipeGenerationSession {
@@ -57,13 +52,19 @@ export interface RecipeGenerationResult {
     feedbackInsights?: FeedbackInsights;
     varietyConfig: VarietyConfig;
     sessionInfo: {
-      temperature: number;
-      creativitySeed: string;
       avoidanceTermsUsed: string[];
     };
   };
 }
 
+/**
+ * RecipeGeneratorService
+ *
+ * This class generates recipes and enforces all requirements from:
+ *   - recipe_prompt.md (see /Users/brandon/Downloads/recipe_prompt.md)
+ *
+ * Each validation block below is mapped to a section in the markdown for maintainability.
+ */
 export class RecipeGeneratorService {
   private model = openai('gpt-4.1-nano', {
     structuredOutputs: true,
@@ -167,26 +168,6 @@ export class RecipeGeneratorService {
       'mirin',
       'bonito flakes',
     ],
-    creativitySeeds: [
-      'fusion-experiment',
-      'comfort-food-twist',
-      'health-conscious-makeover',
-      'seasonal-ingredients',
-      'one-pot-wonder',
-      'color-theme',
-      'texture-focus',
-      'spice-adventure',
-      'ancestral-modern',
-      'street-food-elevated',
-      'breakfast-dinner',
-      'dessert-savory',
-      'fermented-flavors',
-      'umami-bomb',
-      'fresh-herb-garden',
-      'smoky-charred',
-      'citrus-bright',
-      'nutty-richness',
-    ],
   };
 
   constructor() {
@@ -209,124 +190,295 @@ export class RecipeGeneratorService {
   ): Promise<RecipeGenerationResult> {
     const startTime = Date.now();
 
-    try {
-      // Validate the input request
-      const validatedRequest = RecipeGenerationRequestSchema.parse(request);
+    const maxAttempts = 3;
+    let lastResult: RecipeGenerationResult | undefined;
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        // Validate the input request
+        const validatedRequest = RecipeGenerationRequestSchema.parse(request);
 
-      // Get or create generation session for variety tracking
-      const session = this.getOrCreateSession(
-        request.sessionId || 'default',
-        userRecipes,
-      );
+        // Get or create generation session for variety tracking
+        const session = this.getOrCreateSession(
+          request.sessionId || 'default',
+          userRecipes,
+        );
 
-      // Generate variety configuration
-      const varietyConfig = this.generateVarietyConfig(
-        validatedRequest,
-        session,
-        request.varietyBoost || false,
-        userRecipes,
-      );
+        // Generate variety configuration
+        const varietyConfig = this.generateVarietyConfig(
+          validatedRequest,
+          session,
+        );
 
-      // Build user context for enhanced prompting
-      const userContext = this.buildUserContext(
-        request.userContext,
-        userRecipes,
-        userFeedbacks,
-        nutritionProfile,
-      );
-
-      // Generate enhanced prompt with variety mechanisms
-      const promptTemplate = promptBuilder.buildVarietyEnhancedPrompt(
-        validatedRequest,
-        userContext,
-        varietyConfig,
-        session.recentRecipes,
-      );
-
-      // Generate recipe using structured output with dynamic temperature
-      const { object: generatedRecipe } = await generateObject({
-        model: this.model,
-        schema: RecipeGenerationSchema,
-        schemaName: 'Recipe',
-        schemaDescription:
-          'A creative and unique recipe that avoids repetition while meeting nutritional requirements',
-        system: promptTemplate.system,
-        prompt: promptTemplate.user,
-        temperature: varietyConfig.temperature,
-        // Add some randomness to model selection occasionally
-        ...(Math.random() > 0.8 && { model: openai('gpt-4-turbo') }),
-      });
-
-      // Convert generated recipe to full Recipe type
-      const recipe: Recipe = {
-        ...generatedRecipe,
-        cuisineType:
-          generatedRecipe.cuisineType ||
-          varietyConfig.cuisineRotation[0] ||
-          'American',
-        tags: this.enhanceTagsWithVariety(
-          generatedRecipe.tags || [],
-          varietyConfig,
-        ),
-        id: undefined,
-        isSaved: false,
-        rating: undefined,
-        userId: undefined,
-        createdAt: undefined,
-      };
-
-      // Apply post-processing improvements with variety considerations
-      const enhancedRecipe = this.enhanceRecipeWithVariety(
-        recipe,
-        validatedRequest,
-        userContext,
-        varietyConfig,
-      );
-
-      // Calculate variety score
-      const varietyScore = this.calculateVarietyScore(
-        enhancedRecipe,
-        session.recentRecipes,
-      );
-
-      // Update session with new recipe
-      this.updateSessionWithNewRecipe(session, enhancedRecipe);
-
-      const processingTime = Date.now() - startTime;
-
-      // Generate feedback insights if learning is enabled
-      let feedbackInsights: FeedbackInsights | undefined;
-      if (request.learningEnabled && userRecipes && userFeedbacks) {
-        feedbackInsights = feedbackProcessor.processFeedback(
+        // Build user context for enhanced prompting
+        const userContext = this.buildUserContext(
+          request.userContext,
           userRecipes,
           userFeedbacks,
           nutritionProfile,
         );
-      }
 
-      return {
-        recipe: enhancedRecipe,
-        confidence: 1.0,
-        issues: [],
-        nutritionAccuracy: 0.95,
-        varietyScore,
-        generationMetadata: {
-          promptUsed: promptTemplate.user,
-          modelResponse: JSON.stringify(recipe),
-          processingTime,
-          feedbackInsights,
+        // Generate enhanced prompt with variety mechanisms
+        const promptTemplate = promptBuilder.buildVarietyEnhancedPrompt(
+          validatedRequest,
+          userContext,
           varietyConfig,
-          sessionInfo: {
-            temperature: varietyConfig.temperature,
-            creativitySeed: varietyConfig.creativitySeed,
-            avoidanceTermsUsed: varietyConfig.avoidanceTerms,
+          session.recentRecipes,
+        );
+
+        // Generate recipe using structured output with dynamic temperature
+        const { object: generatedRecipe } = await generateObject({
+          model: this.model,
+          schema: RecipeGenerationSchema,
+          schemaName: 'Recipe',
+          schemaDescription:
+            'A creative and unique recipe that avoids repetition while meeting nutritional requirements',
+          system: promptTemplate.system,
+          prompt: promptTemplate.user, // Ensure prompt is always provided
+          temperature: 0.7,
+        });
+
+        // Convert generated recipe to full Recipe type
+        const recipe: Recipe = {
+          ...generatedRecipe,
+          cuisineType:
+            generatedRecipe.cuisineType ||
+            varietyConfig.cuisineRotation[0] ||
+            'American',
+          tags: this.enhanceTagsWithVariety(
+            generatedRecipe.tags || [],
+            varietyConfig,
+          ),
+          id: undefined,
+          isSaved: false,
+          rating: undefined,
+          userId: undefined,
+          createdAt: undefined,
+        };
+
+        // Apply post-processing improvements with variety considerations
+        const enhancedRecipe = this.enhanceRecipeWithVariety(
+          recipe,
+          validatedRequest,
+          userContext,
+          varietyConfig,
+        );
+
+        // === Post-processing validation for user preferences ===
+        // See: recipe_prompt.md > User Preferences, Required Recipe Components, Avoid Repetition, Final Quality Check
+        const issues: string[] = [];
+        // Cuisine preference check
+        const cuisinePrefs = validatedRequest.cuisinePreferences ?? [];
+        if (
+          cuisinePrefs.length > 0 &&
+          !cuisinePrefs.includes(enhancedRecipe.cuisineType || '')
+        ) {
+          issues.push(
+            `Recipe cuisine (${enhancedRecipe.cuisineType}) does not match user preferences (${cuisinePrefs.join(', ')})`,
+          );
+        }
+        // Dietary restrictions check (simple string match on ingredient names)
+        const dietaryRestrictions = validatedRequest.dietaryRestrictions ?? [];
+        if (dietaryRestrictions.length > 0 && enhancedRecipe.ingredients) {
+          const lowerRestrictions = dietaryRestrictions.map(r => r.toLowerCase());
+          for (const ingredient of enhancedRecipe.ingredients) {
+            for (const restriction of lowerRestrictions) {
+              if (ingredient.name.toLowerCase().includes(restriction)) {
+                issues.push(
+                  `Ingredient '${ingredient.name}' may violate dietary restriction '${restriction}'`,
+                );
+              }
+            }
+          }
+        }
+        // --- Strict allergen check (markdown: strictly avoid all allergens) ---
+        // See: recipe_prompt.md > Required Recipe Components, Avoid Repetition
+        const allergens = validatedRequest.allergies ?? [];
+        if (allergens.length > 0 && enhancedRecipe.ingredients) {
+          const lowerAllergens = allergens.map(a => a.toLowerCase());
+          for (const ingredient of enhancedRecipe.ingredients) {
+            for (const allergen of lowerAllergens) {
+              if (ingredient.name.toLowerCase().includes(allergen)) {
+                issues.push(
+                  `Ingredient '${ingredient.name}' may contain allergen '${allergen}'`,
+                );
+              }
+            }
+          }
+        }
+        // --- Forbidden ingredients and cuisine themes (markdown: avoid repetition section) ---
+        // See: recipe_prompt.md > Avoid Repetition
+        const forbiddenIngredients = [
+          'tamari',
+          'soy sauce',
+          'cayenne pepper',
+          'garlic powder',
+          'spring onion',
+          'cucumber',
+        ];
+        const forbiddenCuisines = [
+          'mediterranean',
+          'scandinavian-inspired',
+          'asian',
+        ];
+        if (enhancedRecipe.ingredients) {
+          for (const ingredient of enhancedRecipe.ingredients) {
+            for (const forbidden of forbiddenIngredients) {
+              if (ingredient.name.toLowerCase().includes(forbidden)) {
+                issues.push(
+                  `Ingredient '${ingredient.name}' is forbidden by prompt requirements (${forbidden})`,
+                );
+              }
+            }
+          }
+        }
+        if (enhancedRecipe.cuisineType && forbiddenCuisines.some(c => (enhancedRecipe.cuisineType || '').toLowerCase().includes(c))) {
+          issues.push(
+            `Cuisine type '${enhancedRecipe.cuisineType}' is forbidden by prompt requirements`,
+          );
+        }
+        // --- Nutrition targets (markdown: meets all nutritional targets) ---
+        // See: recipe_prompt.md > User Preferences, Final Quality Check
+        const nutrition = enhancedRecipe.nutrition;
+        function withinTolerance(val: number, target: number, tolerance = 0.1) {
+          return val >= target * (1 - tolerance) && val <= target * (1 + tolerance);
+        }
+        if (validatedRequest.calories && nutrition && typeof nutrition.calories === 'number') {
+          if (!withinTolerance(nutrition.calories, validatedRequest.calories)) {
+            issues.push(`Calories (${nutrition.calories}) not within 10% of target (${validatedRequest.calories})`);
+          }
+        }
+        if (validatedRequest.protein && nutrition && typeof nutrition.protein === 'number') {
+          if (nutrition.protein < validatedRequest.protein) {
+            issues.push(`Protein (${nutrition.protein}) is less than requested minimum (${validatedRequest.protein})`);
+          }
+        }
+        if (validatedRequest.carbs && nutrition && typeof nutrition.carbs === 'number') {
+          if (!withinTolerance(nutrition.carbs, validatedRequest.carbs)) {
+            issues.push(`Carbohydrates (${nutrition.carbs}) not within 10% of target (${validatedRequest.carbs})`);
+          }
+        }
+        if (validatedRequest.fat && nutrition && typeof nutrition.fat === 'number') {
+          if (!withinTolerance(nutrition.fat, validatedRequest.fat)) {
+            issues.push(`Fat (${nutrition.fat}) not within 10% of target (${validatedRequest.fat})`);
+          }
+        }
+        // --- Serving size (markdown: meets serving size) ---
+        // See: recipe_prompt.md > User Preferences, Final Quality Check
+        if (validatedRequest.servings && enhancedRecipe.servings !== validatedRequest.servings) {
+          issues.push(`Servings (${enhancedRecipe.servings}) does not match requested (${validatedRequest.servings})`);
+        }
+        // --- Total time (markdown: can be prepared in 20 minutes or less) ---
+        // See: recipe_prompt.md > User Preferences, Final Quality Check
+        const totalTime = (typeof validatedRequest.timeToMake === 'number') ? validatedRequest.timeToMake : 20;
+        if ((enhancedRecipe.prepTime || 0) + (enhancedRecipe.cookTime || 0) > totalTime) {
+          issues.push(`Total time (prep + cook = ${(enhancedRecipe.prepTime || 0) + (enhancedRecipe.cookTime || 0)}) exceeds allowed (${totalTime})`);
+        }
+        // --- Difficulty, meal type, complexity (markdown: matches user’s request) ---
+        // See: recipe_prompt.md > User Preferences, Final Quality Check
+        if (validatedRequest.difficulty && enhancedRecipe.difficulty !== validatedRequest.difficulty) {
+          issues.push(`Difficulty (${enhancedRecipe.difficulty}) does not match requested (${validatedRequest.difficulty})`);
+        }
+        if (validatedRequest.mealType && enhancedRecipe.mealType !== validatedRequest.mealType) {
+          issues.push(`Meal type (${enhancedRecipe.mealType}) does not match requested (${validatedRequest.mealType})`);
+        }
+        if (validatedRequest.mealComplexity && enhancedRecipe.tags && !enhancedRecipe.tags.includes(validatedRequest.mealComplexity)) {
+          issues.push(`Recipe tags do not include requested complexity (${validatedRequest.mealComplexity})`);
+        }
+        // --- Instructions clarity/simplicity (markdown: clear and simple instructions) ---
+        // See: recipe_prompt.md > Final Quality Check
+        if (enhancedRecipe.instructions) {
+          if (enhancedRecipe.instructions.length > 10) {
+            issues.push('Recipe has more than 10 instruction steps (may not be simple enough)');
+          }
+          for (const step of enhancedRecipe.instructions) {
+            if (step.length > 300) {
+              issues.push('One or more instruction steps are too long (over 300 characters)');
+            }
+          }
+        }
+        // --- End enhanced post-processing validation ---
+
+        // Calculate variety score
+        const varietyScore = this.calculateVarietyScore(
+          enhancedRecipe,
+          session.recentRecipes,
+        );
+
+        // --- Variety/uniqueness enforcement (markdown: distinctly different from recent ones) ---
+        // See: recipe_prompt.md > Avoid Repetition
+        // If variety score is low, or if name, main ingredients, or cooking methods are highly similar, flag as issue
+        if (varietyScore < 0.5) {
+          issues.push('Recipe is too similar to a recent one (low variety score)');
+        }
+        // Check for highly similar name
+        if (session.recentRecipes.some(r => this.calculateStringSimilarity(r.name.toLowerCase(), enhancedRecipe.name.toLowerCase()) > 0.8)) {
+          issues.push('Recipe name is too similar to a recent one');
+        }
+        // Check for highly similar main ingredients
+        const mainIngredients = (enhancedRecipe.ingredients || []).map(i => i.name.toLowerCase()).slice(0, 3).sort().join(',');
+        if (session.recentRecipes.some(r => (r.ingredients || []).map(i => i.name.toLowerCase()).slice(0, 3).sort().join(',') === mainIngredients)) {
+          issues.push('Main ingredients are too similar to a recent recipe');
+        }
+        // Check for highly similar cooking methods
+        const currentMethods = this.extractCookingMethodsFromInstructions(enhancedRecipe.instructions || []);
+        if (session.recentRecipes.some(r => {
+          const prevMethods = this.extractCookingMethodsFromInstructions(r.instructions || []);
+          return prevMethods.length > 0 && currentMethods.length > 0 && prevMethods.join(',') === currentMethods.join(',');
+        })) {
+          issues.push('Cooking methods are too similar to a recent recipe');
+        }
+        // --- End Healthy Balanced Meal Component Validation ---
+
+        // Update session with new recipe
+        this.updateSessionWithNewRecipe(session, enhancedRecipe);
+
+        const processingTime = Date.now() - startTime;
+
+        // Generate feedback insights if learning is enabled
+        let feedbackInsights: FeedbackInsights | undefined;
+        if (request.learningEnabled && userRecipes && userFeedbacks) {
+          feedbackInsights = feedbackProcessor.processFeedback(
+            userRecipes,
+            userFeedbacks,
+            nutritionProfile,
+          );
+        }
+
+        const result: RecipeGenerationResult = {
+          recipe: enhancedRecipe,
+          confidence: 1.0,
+          issues,
+          nutritionAccuracy: 0.95,
+          varietyScore,
+          generationMetadata: {
+            promptUsed: promptTemplate.user,
+            modelResponse: JSON.stringify(recipe),
+            processingTime,
+            feedbackInsights,
+            varietyConfig,
+            sessionInfo: {
+              avoidanceTermsUsed: varietyConfig.avoidanceTerms,
+            },
           },
-        },
-      };
-    } catch (error) {
-      console.error('Enhanced recipe generation failed:', error);
-      return this.fallbackGeneration(request);
+        };
+        lastResult = result;
+        // If no issues, return immediately; otherwise, retry
+        if (issues.length === 0) {
+          return result;
+        }
+        // Optionally, you could log or collect issues here for debugging
+      } catch (error) {
+        // On error, break and fallback
+        console.error('Enhanced recipe generation failed:', error);
+        break;
+      }
     }
+    // If all attempts had issues, return the last result (with issues)
+    if (lastResult) {
+      return lastResult;
+    }
+    // If everything failed, fallback
+    return this.fallbackGeneration(request);
   }
 
   /**
@@ -396,85 +548,45 @@ export class RecipeGeneratorService {
   private generateVarietyConfig(
     request: RecipeGenerationRequest,
     session: RecipeGenerationSession,
-    varietyBoost: boolean,
     _userRecipes?: Recipe[],
   ): VarietyConfig {
-    const timeSinceLastGeneration =
-      Date.now() - session.lastGenerationTime.getTime();
-    const minutesSinceLastGeneration = timeSinceLastGeneration / (1000 * 60);
-
-    // Dynamic temperature based on variety needs
-    let temperature = 0.6; // Base temperature
-    if (varietyBoost) temperature += 0.3;
-    if (minutesSinceLastGeneration < 30) temperature += 0.2; // Rapid successive generations need more variety
-    if (session.recentRecipes.length > 5) temperature += 0.1; // More history = more variety needed
-    temperature = Math.min(temperature, 1.4); // Cap at reasonable maximum
-
     // Get recent ingredients/cuisines to avoid
     const recentIngredients = this.extractRecentIngredients(
       session.recentRecipes,
     );
     const recentCuisines = this.extractRecentCuisines(session.recentRecipes);
 
-    // Select diverse cuisines
-    const availableCuisines = this.varietyPools.cuisines.filter(
-      c =>
-        !recentCuisines.includes(c) &&
-        (!request.cuisinePreferences?.length ||
-          request.cuisinePreferences.includes(c)),
-    );
-    const cuisineRotation = this.shuffleArray([
-      ...availableCuisines.slice(0, 3),
-      ...(request.cuisinePreferences || []),
-    ]).slice(0, 2);
-
-    // Select unique ingredients to suggest
-    const availableUniqueIngredients =
-      this.varietyPools.uniqueIngredients.filter(
-        i =>
-          !recentIngredients.some(ri =>
-            ri.toLowerCase().includes(i.toLowerCase()),
-          ),
-      );
-    const ingredientFocus = this.shuffleArray(availableUniqueIngredients).slice(
-      0,
-      2,
+    // Define userCuisinePrefs early so it can be used for filtering
+    const userCuisinePrefs = (request.cuisinePreferences || []).map(c =>
+      c.toLowerCase(),
     );
 
-    // Select cooking technique
-    const recentTechniques = this.extractRecentCookingTechniques(
-      session.recentRecipes,
-    );
-    const availableTechniques = this.varietyPools.cookingTechniques.filter(
-      t => !recentTechniques.includes(t),
-    );
-    const cookingTechniqueSuggestion =
-      this.shuffleArray(availableTechniques)[0] || 'sautéing';
-
-    // Select creativity seed
-    const creativitySeed = this.shuffleArray(
-      this.varietyPools.creativitySeeds,
-    )[0];
-
-    // Determine complexity target based on recent recipes
-    const recentComplexities = session.recentRecipes.map(
-      r => r.difficulty || 'medium',
+    // Filter recentCuisines to exclude user cuisine preferences before adding to avoidanceTerms
+    const filteredRecentCuisines = recentCuisines.filter(
+      c => !userCuisinePrefs.includes((c || '').toLowerCase()),
     );
     const complexityTarget =
-      this.selectAlternatingComplexity(recentComplexities);
+      (request.mealComplexity as 'simple' | 'moderate' | 'complex') || 'simple';
+
+    // STRICT: Only use user cuisine preferences if provided
+    let cuisineRotation: string[] = [];
+    if (request.cuisinePreferences && request.cuisinePreferences.length > 0) {
+      cuisineRotation = [...request.cuisinePreferences];
+    } else {
+      // If no user preference, fallback to global pool (with variety)
+      const availableCuisines = this.varietyPools.cuisines.filter(
+        c => !recentCuisines.includes(c),
+      );
+      cuisineRotation = this.shuffleArray(availableCuisines).slice(0, 2);
+    }
 
     return {
-      temperature,
-      creativitySeed,
       avoidanceTerms: [
         ...recentIngredients.slice(0, 5),
-        ...recentCuisines.slice(0, 3),
+        ...filteredRecentCuisines.slice(0, 3),
       ],
       cuisineRotation,
-      ingredientFocus,
-      cookingTechniqueSuggestion,
       complexityTarget,
-      culturalFusion: Math.random() > 0.7, // 30% chance for fusion
     };
   }
 
@@ -483,14 +595,9 @@ export class RecipeGeneratorService {
    */
   private createBaseVarietyConfig(): VarietyConfig {
     return {
-      temperature: 0.6,
-      creativitySeed: 'balanced-nutrition',
       avoidanceTerms: [],
       cuisineRotation: ['American'],
-      ingredientFocus: [],
-      cookingTechniqueSuggestion: 'sautéing',
-      complexityTarget: 'moderate',
-      culturalFusion: false,
+      complexityTarget: 'simple',
     };
   }
 
@@ -503,30 +610,14 @@ export class RecipeGeneratorService {
   ): string[] {
     const tags = [...baseTags];
 
-    // Add creativity-based tags
-    if (varietyConfig.creativitySeed.includes('fusion'))
-      tags.push('fusion-cuisine');
-    if (varietyConfig.creativitySeed.includes('comfort'))
-      tags.push('comfort-food');
-    if (varietyConfig.creativitySeed.includes('health'))
-      tags.push('health-focused');
-    if (varietyConfig.creativitySeed.includes('one-pot'))
-      tags.push('one-pot-meal');
-    if (varietyConfig.creativitySeed.includes('color')) tags.push('colorful');
-    if (varietyConfig.creativitySeed.includes('spice'))
-      tags.push('spicy-adventure');
-    if (varietyConfig.creativitySeed.includes('street-food'))
-      tags.push('street-food-inspired');
+    // Remove all creativitySeed-based tag logic
+    // Only add technique-based and complexity tags
+    tags.push(`${varietyConfig.cuisineRotation[0]}-technique`);
 
-    // Add technique-based tags
-    tags.push(`${varietyConfig.cookingTechniqueSuggestion}-technique`);
-
-    // Add complexity tags
     if (varietyConfig.complexityTarget === 'simple')
       tags.push('quick-and-easy');
     if (varietyConfig.complexityTarget === 'complex')
       tags.push('gourmet-level');
-    if (varietyConfig.culturalFusion) tags.push('cultural-fusion');
 
     return [...new Set(tags)]; // Remove duplicates
   }
@@ -632,14 +723,6 @@ export class RecipeGeneratorService {
   }
 
   /**
-   * Extract cooking techniques from recipe history
-   */
-  private extractRecentCookingTechniques(recipes: Recipe[]): string[] {
-    const allInstructions = recipes.flatMap(r => r.instructions || []);
-    return this.extractCookingMethodsFromInstructions(allInstructions);
-  }
-
-  /**
    * Extract cooking methods from instructions
    */
   private extractCookingMethodsFromInstructions(
@@ -655,37 +738,6 @@ export class RecipeGeneratorService {
     });
 
     return [...new Set(methods)];
-  }
-
-  /**
-   * Select alternating complexity to avoid repetition
-   */
-  private selectAlternatingComplexity(
-    recentComplexities: string[],
-  ): 'simple' | 'moderate' | 'complex' {
-    if (recentComplexities.length === 0) return 'moderate';
-
-    const lastComplexity = recentComplexities[recentComplexities.length - 1];
-    const secondLastComplexity =
-      recentComplexities[recentComplexities.length - 2];
-
-    // Avoid same complexity twice in a row
-    if (lastComplexity === secondLastComplexity) {
-      const alternatives = ['simple', 'moderate', 'complex'].filter(
-        c => c !== lastComplexity,
-      );
-      return alternatives[Math.floor(Math.random() * alternatives.length)] as
-        | 'simple'
-        | 'moderate'
-        | 'complex';
-    }
-
-    // Random selection weighted towards moderate
-    const weights = { simple: 0.3, moderate: 0.5, complex: 0.2 };
-    const random = Math.random();
-    if (random < weights.simple) return 'simple';
-    if (random < weights.simple + weights.moderate) return 'moderate';
-    return 'complex';
   }
 
   /**
@@ -812,15 +864,10 @@ export class RecipeGeneratorService {
 
     // Add variety-specific tags if config provided
     if (varietyConfig) {
-      if (varietyConfig.culturalFusion) {
+      if (varietyConfig.cuisineRotation.length > 0) {
         tags.push('fusion-cuisine');
       }
-      if (varietyConfig.creativitySeed.includes('health')) {
-        tags.push('health-conscious');
-      }
-      if (varietyConfig.ingredientFocus.length > 0) {
-        tags.push('unique-ingredients');
-      }
+      // Remove all checks for creativitySeed and ingredientFocus
     }
 
     recipe.tags = [...new Set(tags)]; // Remove duplicates
@@ -917,8 +964,6 @@ export class RecipeGeneratorService {
           processingTime: 0,
           varietyConfig: fallbackVarietyConfig,
           sessionInfo: {
-            temperature: 0.6,
-            creativitySeed: 'balanced-nutrition',
             avoidanceTermsUsed: [],
           },
         },

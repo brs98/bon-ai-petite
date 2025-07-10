@@ -6,7 +6,7 @@ import { Progress } from '@/components/ui/progress';
 import { db } from '@/lib/db/drizzle';
 import { getUser } from '@/lib/db/queries';
 import { nutritionProfiles, weeklyMealPlans } from '@/lib/db/schema';
-import { and, desc, eq, gte, lte } from 'drizzle-orm';
+import { desc, eq } from 'drizzle-orm';
 import {
   Activity,
   ArrowRight,
@@ -22,26 +22,6 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { Suspense } from 'react';
-
-// Helper function to get current week date range
-function getCurrentWeekRange() {
-  const now = new Date();
-  const dayOfWeek = now.getDay();
-  // Start of week: Sunday (0) or Monday (1) depending on convention
-  // This code uses Monday as start of week
-  const monday = new Date(now);
-  monday.setDate(now.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1));
-  monday.setHours(0, 0, 0, 0);
-
-  const sunday = new Date(monday);
-  sunday.setDate(monday.getDate() + 6);
-  sunday.setHours(23, 59, 59, 999);
-
-  return {
-    start: monday.toISOString().split('T')[0],
-    end: sunday.toISOString().split('T')[0],
-  };
-}
 
 // Helper function to format goal text
 function formatGoal(goal: string) {
@@ -76,14 +56,9 @@ async function getDashboardData() {
     where: eq(nutritionProfiles.userId, user.id),
   });
 
-  // Get current week meal plan
-  const weekRange = getCurrentWeekRange();
-  const currentWeekPlan = await db.query.weeklyMealPlans.findFirst({
-    where: and(
-      eq(weeklyMealPlans.userId, user.id),
-      gte(weeklyMealPlans.startDate, weekRange.start),
-      lte(weeklyMealPlans.endDate, weekRange.end),
-    ),
+  // Get the most recent meal plan (regardless of week or status)
+  const mostRecentPlan = await db.query.weeklyMealPlans.findFirst({
+    where: eq(weeklyMealPlans.userId, user.id),
     with: {
       mealPlanItems: {
         with: {
@@ -109,7 +84,7 @@ async function getDashboardData() {
   return {
     user,
     nutritionProfile,
-    currentWeekPlan,
+    mostRecentPlan,
     recentPlansCount,
     allPlans, // for debug UI
   };
@@ -130,12 +105,12 @@ export default async function DashboardPage() {
     );
   }
 
-  const { user, nutritionProfile, currentWeekPlan, allPlans } = data;
+  const { user, nutritionProfile, mostRecentPlan, allPlans } = data;
 
   // Calculate meal plan progress
-  const totalMeals = currentWeekPlan?.totalMeals || 0;
+  const totalMeals = mostRecentPlan?.totalMeals || 0;
   const generatedMeals =
-    currentWeekPlan?.mealPlanItems?.filter(item => item.status === 'generated')
+    mostRecentPlan?.mealPlanItems?.filter(item => item.status === 'generated')
       .length || 0;
   const progressPercentage =
     totalMeals > 0 ? (generatedMeals / totalMeals) * 100 : 0;
@@ -244,24 +219,25 @@ export default async function DashboardPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className='space-y-4'>
-                {nutritionProfile.allergies?.length && (
-                  <div>
-                    <p className='text-sm font-medium text-muted-foreground mb-2'>
-                      Allergies
-                    </p>
-                    <div className='flex flex-wrap gap-2'>
-                      {nutritionProfile.allergies.map(allergy => (
-                        <Badge
-                          key={allergy}
-                          variant='destructive'
-                          className='text-xs'
-                        >
-                          {allergy}
-                        </Badge>
-                      ))}
-                    </div>
+                <div>
+                  <p className='text-sm font-medium mb-2'>Allergies</p>
+                  <div className='flex flex-wrap gap-2'>
+                    {!nutritionProfile.allergies ||
+                    nutritionProfile.allergies?.length === 0 ? (
+                      <Badge key={'None'} variant='default'>
+                        None
+                      </Badge>
+                    ) : (
+                      <>
+                        {nutritionProfile.allergies?.map(allergy => (
+                          <Badge key={allergy} variant='destructive'>
+                            {allergy}
+                          </Badge>
+                        ))}
+                      </>
+                    )}
                   </div>
-                )}
+                </div>
 
                 {nutritionProfile.dietaryRestrictions?.length && (
                   <div>
@@ -327,40 +303,35 @@ export default async function DashboardPage() {
         </Card>
       )}
 
-      {/* Current Week Meal Plan */}
+      {/* Most Recent Meal Plan */}
       <div className='space-y-4'>
         <div className='flex items-center justify-between'>
           <div className='flex items-center gap-2'>
             <Calendar className='h-5 w-5 text-primary' />
-            <h2 className='text-xl font-semibold'>This Week's Meal Plan</h2>
+            <h2 className='text-xl font-semibold'>Most Recent Meal Plan</h2>
           </div>
-          {currentWeekPlan && (
-            <Badge variant='outline' className='text-xs'>
-              {currentWeekPlan.status.replace('_', ' ').toUpperCase()}
-            </Badge>
-          )}
         </div>
 
-        {currentWeekPlan ? (
+        {mostRecentPlan ? (
           <div className='space-y-4'>
             <Card>
               <CardHeader>
                 <div className='flex items-center justify-between'>
                   <CardTitle className='text-lg'>
-                    {currentWeekPlan.name}
+                    {mostRecentPlan.name}
                   </CardTitle>
                   <Button asChild size='sm' variant='outline'>
                     <Link
-                      href={`/dashboard/meal-planning/weekly/${currentWeekPlan.id}`}
+                      href={`/dashboard/meal-planning/weekly/${mostRecentPlan.id}`}
                     >
                       View Plan
                       <ArrowRight className='ml-2 h-4 w-4' />
                     </Link>
                   </Button>
                 </div>
-                {currentWeekPlan.description && (
+                {mostRecentPlan.description && (
                   <p className='text-sm text-muted-foreground'>
-                    {currentWeekPlan.description}
+                    {mostRecentPlan.description}
                   </p>
                 )}
               </CardHeader>
@@ -382,7 +353,7 @@ export default async function DashboardPage() {
                 <div className='grid grid-cols-2 lg:grid-cols-4 gap-4'>
                   <div className='text-center p-3 bg-muted/50 rounded-lg'>
                     <div className='text-lg font-bold text-orange-600'>
-                      {currentWeekPlan.breakfastCount}
+                      {mostRecentPlan.breakfastCount}
                     </div>
                     <div className='text-xs text-muted-foreground'>
                       Breakfasts
@@ -390,19 +361,19 @@ export default async function DashboardPage() {
                   </div>
                   <div className='text-center p-3 bg-muted/50 rounded-lg'>
                     <div className='text-lg font-bold text-green-600'>
-                      {currentWeekPlan.lunchCount}
+                      {mostRecentPlan.lunchCount}
                     </div>
                     <div className='text-xs text-muted-foreground'>Lunches</div>
                   </div>
                   <div className='text-center p-3 bg-muted/50 rounded-lg'>
                     <div className='text-lg font-bold text-secondary-foreground'>
-                      {currentWeekPlan.dinnerCount}
+                      {mostRecentPlan.dinnerCount}
                     </div>
                     <div className='text-xs text-muted-foreground'>Dinners</div>
                   </div>
                   <div className='text-center p-3 bg-muted/50 rounded-lg'>
                     <div className='text-lg font-bold text-purple-600'>
-                      {currentWeekPlan.snackCount}
+                      {mostRecentPlan.snackCount}
                     </div>
                     <div className='text-xs text-muted-foreground'>Snacks</div>
                   </div>
@@ -412,7 +383,7 @@ export default async function DashboardPage() {
                 <div className='flex gap-2 pt-2'>
                   <Button asChild size='sm' variant='outline'>
                     <Link
-                      href={`/dashboard/meal-planning/weekly/${currentWeekPlan.id}/shopping-list`}
+                      href={`/dashboard/meal-planning/weekly/${mostRecentPlan.id}/shopping-list`}
                     >
                       <Clock className='mr-2 h-4 w-4' />
                       Shopping List
@@ -421,7 +392,7 @@ export default async function DashboardPage() {
                   {progressPercentage < 100 && (
                     <Button asChild size='sm'>
                       <Link
-                        href={`/dashboard/meal-planning/weekly/${currentWeekPlan.id}`}
+                        href={`/dashboard/meal-planning/weekly/${mostRecentPlan.id}`}
                       >
                         Continue Planning
                       </Link>
@@ -437,13 +408,13 @@ export default async function DashboardPage() {
               <CardHeader className='text-center'>
                 <CardTitle className='text-lg flex items-center justify-center gap-2'>
                   <Calendar className='h-5 w-5 text-muted-foreground' />
-                  No Meal Plan This Week
+                  No Meal Plans Found
                 </CardTitle>
               </CardHeader>
               <CardContent className='text-center space-y-4'>
                 <p className='text-muted-foreground'>
-                  Start planning your meals for the week to get personalized
-                  recipes and shopping lists.
+                  Start planning your meals to get personalized recipes and
+                  shopping lists.
                 </p>
                 <Button asChild>
                   <Link href='/dashboard/meal-planning/weekly'>
@@ -453,7 +424,7 @@ export default async function DashboardPage() {
                 </Button>
               </CardContent>
             </Card>
-            {/* Debug UI: Show all plans if no current week plan is found */}
+            {/* Debug UI: Show all plans if no plan is found */}
             {allPlans && allPlans.length > 0 && (
               <div className='mt-8 p-4 border rounded bg-muted/30'>
                 <h3 className='font-semibold mb-2 text-sm'>
@@ -486,8 +457,8 @@ export default async function DashboardPage() {
                   </table>
                 </div>
                 <p className='mt-2 text-muted-foreground'>
-                  If you see a plan for this week but it is not showing above,
-                  check the date logic and plan status.
+                  If you see a plan but it is not showing above, check the plan
+                  creation logic.
                 </p>
               </div>
             )}

@@ -1,7 +1,7 @@
 import { recipeGenerator } from '@/lib/ai/recipe-generator';
 import { db } from '@/lib/db/drizzle';
 import { getUser } from '@/lib/db/queries';
-import { recipes } from '@/lib/db/schema';
+import { nutritionProfiles, recipes } from '@/lib/db/schema';
 import {
   checkUsageLimit,
   incrementUsage,
@@ -79,15 +79,105 @@ export async function POST(request: NextRequest) {
         createdAt: recipe.createdAt,
       }));
 
+    // Fetch user's nutrition profile for dietary preferences and macro targets
+    const userNutritionProfile = await db.query.nutritionProfiles.findFirst({
+      where: eq(nutritionProfiles.userId, user.id),
+    });
+
+    // DEBUG: Log user nutrition profile and request data
+    console.debug('[API] userNutritionProfile:', userNutritionProfile);
+    console.debug('[API] validatedRequest:', validatedRequest);
+
+    // Normalize allergies: if ['None'], treat as []
+    const normalizedAllergies = (
+      validatedRequest.allergies ||
+      userNutritionProfile?.allergies ||
+      []
+    ).filter(a => a && a !== 'None');
+
+    // Unpack customPreferences and spread into generationRequest
+    const { customPreferences = {}, ...rest } =
+      validatedRequest as typeof validatedRequest & {
+        customPreferences?: Record<string, unknown>;
+      };
+
+    const allowedComplexities = ['simple', 'medium', 'hard'];
+    let mealComplexity: 'simple' | 'medium' | 'hard' | undefined = undefined;
+    if (
+      typeof validatedRequest.mealComplexity === 'string' &&
+      allowedComplexities.includes(validatedRequest.mealComplexity)
+    ) {
+      mealComplexity = validatedRequest.mealComplexity as
+        | 'simple'
+        | 'medium'
+        | 'hard';
+    } else if (
+      typeof userNutritionProfile?.mealComplexity === 'string' &&
+      allowedComplexities.includes(userNutritionProfile.mealComplexity)
+    ) {
+      mealComplexity = userNutritionProfile.mealComplexity as
+        | 'simple'
+        | 'medium'
+        | 'hard';
+    } else {
+      mealComplexity = 'simple';
+    }
+
+    const generationRequest = {
+      ...rest,
+      ...customPreferences,
+      learningEnabled: true,
+      varietyBoost,
+      avoidSimilarRecipes,
+      sessionId,
+      nutritionProfile: userNutritionProfile, // <-- Pass full profile for normalization
+      dietaryRestrictions:
+        validatedRequest.dietaryRestrictions ||
+        userNutritionProfile?.dietaryRestrictions ||
+        [],
+      cuisinePreferences:
+        validatedRequest.cuisinePreferences ||
+        userNutritionProfile?.cuisinePreferences ||
+        [],
+      allergies: normalizedAllergies,
+      protein:
+        validatedRequest.protein ??
+        userNutritionProfile?.macroProtein ??
+        undefined,
+      carbs:
+        validatedRequest.carbs ?? userNutritionProfile?.macroCarbs ?? undefined,
+      fat: validatedRequest.fat ?? userNutritionProfile?.macroFat ?? undefined,
+      calories:
+        validatedRequest.calories ??
+        userNutritionProfile?.dailyCalories ??
+        undefined, // <-- Explicitly add calories
+      mealComplexity,
+      userProfile: validatedRequest.userProfile || {
+        age:
+          typeof userNutritionProfile?.age === 'number'
+            ? userNutritionProfile.age
+            : undefined,
+        weight:
+          typeof userNutritionProfile?.weight === 'number'
+            ? userNutritionProfile.weight
+            : undefined,
+        height:
+          typeof userNutritionProfile?.height === 'number'
+            ? userNutritionProfile.height
+            : undefined,
+        activityLevel: userNutritionProfile?.activityLevel || undefined,
+        goals: Array.isArray(userNutritionProfile?.goals)
+          ? userNutritionProfile.goals.join(', ')
+          : userNutritionProfile?.goals || undefined,
+      },
+    };
+
+    // DEBUG: Log final generationRequest
+    console.debug('[API] generationRequest:', generationRequest);
+
     // Generate recipe using enhanced AI service with variety features
     const generationResult = await recipeGenerator.generateRecipe(
-      {
-        ...validatedRequest,
-        learningEnabled: true,
-        varietyBoost,
-        avoidSimilarRecipes,
-        sessionId,
-      },
+      generationRequest,
       userRecipes, // Pass user's recipe history
       undefined, // userFeedbacks - could be fetched from DB in the future
       undefined, // nutritionProfile - could be fetched from DB
@@ -137,8 +227,6 @@ export async function POST(request: NextRequest) {
       nutrition: generatedRecipe.nutrition,
       mealType: generatedRecipe.mealType,
       varietyScore: generationResult.varietyScore,
-      creativitySeed:
-        generationResult.generationMetadata.varietyConfig.creativitySeed,
     });
 
     // Store recipe in database
@@ -183,19 +271,10 @@ export async function POST(request: NextRequest) {
         varietyScore: generationResult.varietyScore,
         processingTime: generationResult.generationMetadata.processingTime,
         varietyInfo: {
-          creativitySeed:
-            generationResult.generationMetadata.varietyConfig.creativitySeed,
           cuisineRotation:
             generationResult.generationMetadata.varietyConfig.cuisineRotation,
-          cookingTechnique:
-            generationResult.generationMetadata.varietyConfig
-              .cookingTechniqueSuggestion,
           complexityTarget:
             generationResult.generationMetadata.varietyConfig.complexityTarget,
-          culturalFusion:
-            generationResult.generationMetadata.varietyConfig.culturalFusion,
-          temperature:
-            generationResult.generationMetadata.sessionInfo.temperature,
         },
       },
     });

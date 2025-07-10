@@ -249,7 +249,7 @@ describe('Recipe Schemas', () => {
           weight: 70,
           height: 175,
           activityLevel: 'moderately_active',
-          goals: ['gain_muscle'],
+          goals: 'gain_muscle',
         },
       };
 

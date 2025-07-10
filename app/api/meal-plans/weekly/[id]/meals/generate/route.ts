@@ -1,4 +1,4 @@
-import { recipeGenerator } from '@/lib/ai/recipe-generator';
+import { PromptBuilderService } from '@/lib/ai/prompt-builder';
 import { db } from '@/lib/db/drizzle';
 import { getUser } from '@/lib/db/queries';
 import {
@@ -8,10 +8,13 @@ import {
   weeklyMealPlans,
 } from '@/lib/db/schema';
 import {
-  checkUsageLimit,
-  incrementUsage,
-} from '@/lib/subscriptions/usage-limits';
-import { and, desc, eq } from 'drizzle-orm';
+  WeeklyMealPlanAISchema,
+  type GeneratedRecipe,
+  type MealPlanItem,
+} from '@/types/recipe';
+import { openai } from '@ai-sdk/openai';
+import { generateObject } from 'ai';
+import { and, eq } from 'drizzle-orm';
 import { NextRequest } from 'next/server';
 import { z } from 'zod';
 
@@ -51,7 +54,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     if (!validatedRequest.success) {
       return Response.json({ error: 'Invalid request data' }, { status: 400 });
     }
-    const { mealIds, customPreferences } = validatedRequest.data;
+    const { mealIds } = validatedRequest.data;
 
     // Await params before accessing properties
     const { id } = await params;
@@ -89,219 +92,129 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       );
     }
 
+    // Count meals by type
+    const mealCounts = {
+      breakfasts: items.filter(i => i.category === 'breakfast').length,
+      lunches: items.filter(i => i.category === 'lunch').length,
+      dinners: items.filter(i => i.category === 'dinner').length,
+      snacks: items.filter(i => i.category === 'snack').length,
+    };
+
     // Get user's nutrition profile for enhanced generation
     const nutritionProfile = await db.query.nutritionProfiles.findFirst({
       where: eq(nutritionProfiles.userId, user.id),
     });
 
-    // Get user's recent recipes for variety
-    const userRecipes = await db
-      .select()
-      .from(recipes)
-      .where(eq(recipes.userId, user.id))
-      .orderBy(desc(recipes.createdAt))
-      .limit(20);
-    const transformedRecipes = userRecipes
-      .filter(recipe => recipe.description)
-      .map(recipe => ({
-        id: recipe.id,
-        userId: recipe.userId,
-        name: recipe.name,
-        description: recipe.description!,
-        ingredients: recipe.ingredients as Array<{
-          name: string;
-          quantity: number;
-          unit: string;
-        }>,
-        instructions: recipe.instructions,
-        nutrition: recipe.nutrition as {
-          calories: number;
-          protein: number;
-          carbs: number;
-          fat: number;
+    // Merge preferences: global > custom > profile
+    const globalPrefs = mealPlan.globalPreferences as Preferences | null;
+    // For batch, just use globalPrefs + nutritionProfile (custom per-meal prefs not supported in batch)
+    const userContext = {
+      nutritionProfile: nutritionProfile || undefined,
+      preferredIngredients: [], // Add logic if you support this
+      avoidedIngredients: [], // Add logic if you support this
+      recentFeedback: [], // Add logic if you support this
+    };
+    // Add global preferences to nutritionProfile if present
+    if (nutritionProfile) {
+      if (globalPrefs?.allergies)
+        nutritionProfile.allergies = globalPrefs.allergies;
+      if (globalPrefs?.dietaryRestrictions)
+        nutritionProfile.dietaryRestrictions = globalPrefs.dietaryRestrictions;
+      if (globalPrefs?.cuisinePreferences)
+        nutritionProfile.cuisinePreferences = globalPrefs.cuisinePreferences;
+      // Optionally add maxPrepTime, maxCookTime, difficultyLevel to nutritionProfile if used in prompt
+    }
+    // Build the batch prompt
+    const promptBuilder = new PromptBuilderService();
+    const prompt = promptBuilder.buildWeeklyMealPlanPrompt(
+      mealCounts,
+      userContext,
+    );
+
+    // === Batch OpenAI call ===
+    let aiResponse;
+    try {
+      aiResponse = await generateObject({
+        model: openai('gpt-4o'),
+        schema: WeeklyMealPlanAISchema,
+        schemaName: 'WeeklyMealPlanAIResponse',
+        schemaDescription:
+          'A full week meal plan with arrays of recipes for each meal type',
+        system: prompt.system,
+        prompt: prompt.user,
+      });
+    } catch (err) {
+      return Response.json(
+        {
+          error: 'Failed to generate weekly meal plan from AI',
+          details: String(err),
         },
-        prepTime: recipe.prepTime || 0,
-        cookTime: recipe.cookTime || 0,
-        servings: recipe.servings || 1,
-        difficulty: recipe.difficulty as 'easy' | 'medium' | 'hard',
-        cuisineType: recipe.cuisineType || undefined,
-        mealType: recipe.mealType as 'breakfast' | 'lunch' | 'dinner' | 'snack',
-        tags: recipe.tags || [],
-        isSaved: recipe.isSaved,
-        rating: recipe.rating || undefined,
-        createdAt: recipe.createdAt,
-      }));
+        { status: 500 },
+      );
+    }
 
-    // For each meal, generate a recipe, enforcing usage limits per meal
-    const results = [];
-    for (const mealItem of items) {
-      // Check usage limit before each generation
-      const withinLimit = await checkUsageLimit(user.id, 'recipe_generation');
-      if (!withinLimit) {
-        // If over limit, stop further generations and return partial results
-        return Response.json(
-          {
-            error:
-              'You have reached your daily recipe generation limit. Please try again tomorrow or upgrade your plan for unlimited access.',
-            partialResults: results,
-          },
-          { status: 429 },
-        );
-      }
+    if (!aiResponse || typeof aiResponse !== 'object' || !aiResponse.object) {
+      return Response.json({ error: 'Invalid AI response' }, { status: 500 });
+    }
+    const batch = aiResponse.object;
 
-      // Update meal item status to generating
-      await db
-        .update(mealPlanItems)
-        .set({
-          status: 'generating',
-          updatedAt: new Date(),
-        })
-        .where(eq(mealPlanItems.id, mealItem.id));
+    // Map mealPlanItems by type and day for assignment
+    const itemsByType: Record<string, MealPlanItem[]> = {
+      breakfast: [],
+      lunch: [],
+      dinner: [],
+      snack: [],
+    };
+    for (const item of items) {
+      itemsByType[item.category]?.push(item as MealPlanItem);
+    }
 
-      // Merge preferences: request > stored custom > global
-      const globalPrefs = mealPlan.globalPreferences as Preferences | null;
-      const storedCustomPrefs =
-        mealItem.customPreferences as Preferences | null;
-      const requestCustomPrefs = customPreferences?.[mealItem.id];
-      const mergedPreferences = {
-        allergies:
-          requestCustomPrefs?.allergies ||
-          storedCustomPrefs?.allergies ||
-          globalPrefs?.allergies ||
-          [],
-        dietaryRestrictions:
-          requestCustomPrefs?.dietaryRestrictions ||
-          storedCustomPrefs?.dietaryRestrictions ||
-          globalPrefs?.dietaryRestrictions ||
-          [],
-        cuisinePreferences:
-          requestCustomPrefs?.cuisinePreferences ||
-          storedCustomPrefs?.cuisinePreferences ||
-          globalPrefs?.cuisinePreferences ||
-          [],
-        ...(nutritionProfile && {
-          userProfile: {
-            age: nutritionProfile.age || undefined,
-            weight: nutritionProfile.weight || undefined,
-            height: nutritionProfile.height || undefined,
-            activityLevel: nutritionProfile.activityLevel || undefined,
-            goals: Array.isArray(nutritionProfile.goals)
-              ? nutritionProfile.goals[0] || undefined
-              : nutritionProfile.goals || undefined,
-          },
-          calories: nutritionProfile.dailyCalories
-            ? Math.round(nutritionProfile.dailyCalories / 3)
-            : undefined,
-          protein: nutritionProfile.macroProtein
-            ? Math.round(nutritionProfile.macroProtein / 3)
-            : undefined,
-          carbs: nutritionProfile.macroCarbs
-            ? Math.round(nutritionProfile.macroCarbs / 3)
-            : undefined,
-          fat: nutritionProfile.macroFat
-            ? Math.round(nutritionProfile.macroFat / 3)
-            : undefined,
-        }),
-      };
-
-      // Generate recipe using the existing AI service
-      try {
-        const generationResult = await recipeGenerator.generateRecipe(
-          {
-            mealType: mealItem.category as
-              | 'breakfast'
-              | 'lunch'
-              | 'dinner'
-              | 'snack',
-            ...mergedPreferences,
-            learningEnabled: true,
-            varietyBoost: true,
-            avoidSimilarRecipes: true,
-            sessionId: `meal-plan-${planId}`,
-          },
-          transformedRecipes,
-          undefined,
-          nutritionProfile || undefined,
-        );
-
-        // Increment usage after successful generation
-        await incrementUsage(user.id, 'recipe_generation');
-
-        const generatedRecipe = generationResult.recipe;
-        if (
-          !generatedRecipe ||
-          !generatedRecipe.name ||
-          !generatedRecipe.description ||
-          !generatedRecipe.ingredients ||
-          !generatedRecipe.instructions ||
-          !Array.isArray(generatedRecipe.ingredients) ||
-          !Array.isArray(generatedRecipe.instructions) ||
-          generatedRecipe.ingredients.length === 0 ||
-          generatedRecipe.instructions.length === 0 ||
-          !generatedRecipe.nutrition
-        ) {
-          // Reset meal item status on failure
-          await db
-            .update(mealPlanItems)
-            .set({
-              status: 'pending',
-              updatedAt: new Date(),
-            })
-            .where(eq(mealPlanItems.id, mealItem.id));
-          results.push({
-            mealId: mealItem.id,
-            error: 'Generated recipe is incomplete.',
-          });
-          continue;
-        }
-        // Save the generated recipe
+    // Helper to assign recipes to items
+    async function assignRecipesToItems(
+      type: string,
+      recipesArr: GeneratedRecipe[],
+    ) {
+      const planItems = itemsByType[type] || [];
+      for (let i = 0; i < Math.min(planItems.length, recipesArr.length); i++) {
+        const recipeData = recipesArr[i];
+        // Save recipe
         const [savedRecipe] = await db
           .insert(recipes)
           .values({
-            userId: user.id,
-            name: generatedRecipe.name,
-            description: generatedRecipe.description,
-            ingredients: generatedRecipe.ingredients,
-            instructions: generatedRecipe.instructions,
-            nutrition: generatedRecipe.nutrition,
-            prepTime: generatedRecipe.prepTime,
-            cookTime: generatedRecipe.cookTime,
-            servings: generatedRecipe.servings,
-            difficulty: generatedRecipe.difficulty,
-            cuisineType: generatedRecipe.cuisineType || null,
-            mealType: generatedRecipe.mealType,
-            tags: generatedRecipe.tags || [],
+            userId: user!.id,
+            name: recipeData.name,
+            description: recipeData.description,
+            ingredients: recipeData.ingredients,
+            instructions: recipeData.instructions,
+            nutrition: recipeData.nutrition,
+            prepTime: recipeData.prepTime,
+            cookTime: recipeData.cookTime,
+            servings: recipeData.servings,
+            difficulty: recipeData.difficulty,
+            cuisineType: recipeData.cuisineType || null,
+            mealType: recipeData.mealType,
+            tags: recipeData.tags || [],
             isSaved: false,
             rating: null,
           })
           .returning();
-        // Update meal plan item
+        // Link to mealPlanItem
         await db
           .update(mealPlanItems)
           .set({
             recipeId: savedRecipe.id,
             status: 'generated',
-            customPreferences: requestCustomPrefs || null,
             updatedAt: new Date(),
           })
-          .where(eq(mealPlanItems.id, mealItem.id));
-        results.push({ mealId: mealItem.id, recipe: generationResult.recipe });
-      } catch (generationError) {
-        console.error('Error:', generationError);
-        // Reset meal item status on error
-        await db
-          .update(mealPlanItems)
-          .set({
-            status: 'pending',
-            updatedAt: new Date(),
-          })
-          .where(eq(mealPlanItems.id, mealItem.id));
-        results.push({
-          mealId: mealItem.id,
-          error: 'Failed to generate recipe.',
-        });
+          .where(eq(mealPlanItems.id, planItems[i].id ?? 0));
       }
     }
+
+    // Assign recipes for each meal type
+    await assignRecipesToItems('breakfast', batch.breakfasts || []);
+    await assignRecipesToItems('lunch', batch.lunches || []);
+    await assignRecipesToItems('dinner', batch.dinners || []);
+    await assignRecipesToItems('snack', batch.snacks || []);
 
     // Fetch the updated meal plan with items and recipes
     const updatedPlan = await db.query.weeklyMealPlans.findFirst({
@@ -315,7 +228,6 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 
     return Response.json({
       success: true,
-      results,
       mealPlan: updatedPlan,
     });
   } catch (error) {

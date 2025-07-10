@@ -1,4 +1,4 @@
-import { generateText } from 'ai';
+import { generateObject, generateText } from 'ai';
 import {
   Ingredient,
   Nutrition,
@@ -9,10 +9,14 @@ import {
 // Mock the AI SDK
 jest.mock('ai', () => ({
   generateText: jest.fn(),
+  generateObject: jest.fn(),
 }));
 
 export const mockedGenerateText = generateText as jest.MockedFunction<
   typeof generateText
+>;
+export const mockedGenerateObject = generateObject as jest.MockedFunction<
+  typeof generateObject
 >;
 
 /**

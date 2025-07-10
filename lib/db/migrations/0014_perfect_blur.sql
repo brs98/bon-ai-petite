@@ -1,0 +1,1 @@
+ALTER TABLE "nutrition_profiles" ADD COLUMN "meal_complexity" varchar(10) DEFAULT 'simple' NOT NULL;

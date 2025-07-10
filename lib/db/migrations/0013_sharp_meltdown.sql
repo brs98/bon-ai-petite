@@ -1,0 +1,1 @@
+ALTER TABLE "nutrition_profiles" ADD COLUMN "goal_weight_lbs" integer;

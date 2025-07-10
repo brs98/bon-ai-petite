@@ -88,8 +88,8 @@ describe('PromptBuilderService', () => {
       const result = service.buildRecipePrompt(request);
 
       expect(result.user).toContain('User Context:');
-      expect(result.user).toContain('Goal: gain_muscle');
-      expect(result.user).toContain('Activity Level: very_active');
+      expect(result.user).toContain('Goal: gain muscle');
+      expect(result.user).toContain('Activity Level: very active');
     });
 
     it('should include the correct meal type in JSON structure', () => {
@@ -338,7 +338,7 @@ describe('PromptBuilderService', () => {
       expect(result.user).toContain('nuts');
       expect(result.user).toContain('gluten-free');
       expect(result.user).toContain('Mediterranean');
-      expect(result.user).toContain('gain_muscle');
+      expect(result.user).toContain('gain muscle');
     });
   });
 });

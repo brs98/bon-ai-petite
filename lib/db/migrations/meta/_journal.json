@@ -85,6 +85,27 @@
       "when": 1751954237206,
       "tag": "0011_smooth_black_queen",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1751992048057,
+      "tag": "0012_mean_warbound",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1751996928714,
+      "tag": "0013_sharp_meltdown",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1752039842769,
+      "tag": "0014_perfect_blur",
+      "breakpoints": true
     }
   ]
 }

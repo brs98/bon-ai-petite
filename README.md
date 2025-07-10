@@ -23,6 +23,13 @@ an AI-powered nutrition and meal planning service.
 - User profile page (`/profile`) for account and subscription management
 - **AI-powered recipe generation** with OpenAI integration
 - **Nutrition profile management** with personalized meal planning
+  - **Goal Weight Support**: When setting up your nutrition profile, you can
+    specify a goal weight if your goal is to lose or gain weight. The app will
+    use your goal weight (instead of your current weight) to calculate your
+    daily calorie and macronutrient targets, providing a more personalized plan.
+    The goal weight field appears in the Profile Setup UI when you select a
+    weight loss or gain goal, and is clearly explained in the review and macro
+    breakdown screens.
 - **Subscription-based AI features** (Essential/Premium tiers)
 
 ## Payment Flow

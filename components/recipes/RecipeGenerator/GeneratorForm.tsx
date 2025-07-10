@@ -11,6 +11,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
   Select,
@@ -19,7 +20,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
 import {
   COMMON_ALLERGIES,
   CUISINE_TYPES,
@@ -27,13 +27,23 @@ import {
   type RecipeGenerationRequest,
 } from '@/types/recipe';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ChefHat, Clock, Target, Utensils } from 'lucide-react';
+import {
+  ChefHat,
+  ChevronDown,
+  ChevronUp,
+  Clock,
+  Target,
+  Utensils,
+} from 'lucide-react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 const GeneratorFormSchema = z.object({
   mealType: z.enum(['breakfast', 'lunch', 'dinner', 'snack']),
+  servings: z.string().min(1, 'Servings required'),
+  timeToMake: z.string().min(1, 'Time required'),
+  difficulty: z.enum(['easy', 'medium', 'hard']),
   cuisinePreferences: z.array(z.string()).optional(),
   dietaryRestrictions: z.array(z.string()).optional(),
   allergies: z.array(z.string()).optional(),
@@ -61,11 +71,15 @@ export function GeneratorForm({
     [],
   );
   const [selectedAllergies, setSelectedAllergies] = useState<string[]>([]);
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const form = useForm<GeneratorFormData>({
     resolver: zodResolver(GeneratorFormSchema),
     defaultValues: {
       mealType: 'dinner',
+      servings: '1',
+      timeToMake: '30',
+      difficulty: 'easy',
       cuisinePreferences: [],
       dietaryRestrictions: [],
       allergies: [],
@@ -75,6 +89,9 @@ export function GeneratorForm({
   const onSubmit = (data: GeneratorFormData) => {
     const request: RecipeGenerationRequest = {
       mealType: data.mealType,
+      servings: data.servings ? parseInt(data.servings) : undefined,
+      timeToMake: data.timeToMake ? parseInt(data.timeToMake) : undefined,
+      difficulty: data.difficulty,
       cuisinePreferences:
         selectedCuisines.length > 0 ? selectedCuisines : undefined,
       dietaryRestrictions:
@@ -135,249 +152,347 @@ export function GeneratorForm({
             e.preventDefault();
             void form.handleSubmit(onSubmit)(e);
           }}
-          className='space-y-6'
+          className=''
         >
-          {/* Meal Type Selection */}
           <Card>
             <CardHeader>
               <CardTitle className='flex items-center gap-2'>
                 <Utensils className='h-5 w-5' />
-                Meal Type
+                Generate Your Recipe
               </CardTitle>
+              <div className='text-muted-foreground mt-1'>
+                Quickly create a recipe tailored to your needs.
+              </div>
             </CardHeader>
             <CardContent>
-              <FormField
-                control={form.control}
-                name='mealType'
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <RadioGroup
-                        onValueChange={field.onChange}
-                        value={field.value}
-                        className='grid grid-cols-2 md:grid-cols-4 gap-4'
-                      >
-                        {(
-                          ['breakfast', 'lunch', 'dinner', 'snack'] as const
-                        ).map(meal => (
-                          <FormItem key={meal}>
-                            <FormControl>
-                              <div className='flex items-center space-x-2'>
-                                <RadioGroupItem value={meal} id={meal} />
-                                <FormLabel
-                                  htmlFor={meal}
-                                  className='cursor-pointer capitalize font-medium'
-                                >
-                                  {meal}
-                                </FormLabel>
-                              </div>
-                            </FormControl>
-                          </FormItem>
+              {/* Main Options Grid */}
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-4 mb-2'>
+                {/* Meal Type */}
+                <FormField
+                  control={form.control}
+                  name='mealType'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Meal Type</FormLabel>
+                      <FormControl>
+                        <RadioGroup
+                          onValueChange={field.onChange}
+                          value={field.value}
+                          className='grid grid-cols-2 gap-2'
+                        >
+                          {(
+                            ['breakfast', 'lunch', 'dinner', 'snack'] as const
+                          ).map(meal => (
+                            <FormItem key={meal}>
+                              <FormControl>
+                                <div className='flex items-center space-x-2'>
+                                  <RadioGroupItem value={meal} id={meal} />
+                                  <FormLabel
+                                    htmlFor={meal}
+                                    className='cursor-pointer capitalize font-medium'
+                                  >
+                                    {meal}
+                                  </FormLabel>
+                                </div>
+                              </FormControl>
+                            </FormItem>
+                          ))}
+                        </RadioGroup>
+                      </FormControl>
+                      <div className='text-xs text-muted-foreground mt-1'>
+                        What type of meal do you want?
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                {/* Servings */}
+                <FormField
+                  control={form.control}
+                  name='servings'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Servings</FormLabel>
+                      <FormControl>
+                        <Input
+                          type='number'
+                          min={1}
+                          max={20}
+                          placeholder='e.g. 2'
+                          {...field}
+                        />
+                      </FormControl>
+                      <div className='text-xs text-muted-foreground mt-1'>
+                        How many people is this for?
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                {/* Time to Make */}
+                <FormField
+                  control={form.control}
+                  name='timeToMake'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Time to Make</FormLabel>
+                      <FormControl>
+                        <Input
+                          type='number'
+                          min={1}
+                          max={240}
+                          placeholder='e.g. 30'
+                          {...field}
+                        />
+                      </FormControl>
+                      <div className='text-xs text-muted-foreground mt-1'>
+                        How many minutes do you have?
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                {/* Cooking Difficulty */}
+                <FormField
+                  control={form.control}
+                  name='difficulty'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Difficulty</FormLabel>
+                      <FormControl>
+                        <RadioGroup
+                          onValueChange={field.onChange}
+                          value={field.value}
+                          className='flex flex-row gap-4'
+                        >
+                          {['easy', 'medium', 'hard'].map(level => (
+                            <FormItem key={level}>
+                              <FormControl>
+                                <div className='flex items-center space-x-2'>
+                                  <RadioGroupItem value={level} id={level} />
+                                  <FormLabel
+                                    htmlFor={level}
+                                    className='cursor-pointer capitalize font-medium'
+                                  >
+                                    {level}
+                                  </FormLabel>
+                                </div>
+                              </FormControl>
+                            </FormItem>
+                          ))}
+                        </RadioGroup>
+                      </FormControl>
+                      <div className='text-xs text-muted-foreground mt-1'>
+                        How challenging should it be?
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              {/* Advanced Options Toggle */}
+              <div className='mb-2'>
+                <Button
+                  type='button'
+                  variant='secondary'
+                  size='sm'
+                  onClick={() => setShowAdvanced(!showAdvanced)}
+                  className='flex items-center gap-1'
+                  aria-expanded={showAdvanced}
+                  aria-controls='advanced-options-section'
+                >
+                  {showAdvanced ? (
+                    <ChevronUp className='h-4 w-4' />
+                  ) : (
+                    <ChevronDown className='h-4 w-4' />
+                  )}
+                  Advanced Options
+                </Button>
+              </div>
+              {/* Advanced Options Collapsible */}
+              <div
+                id='advanced-options-section'
+                className={`transition-all duration-300 overflow-hidden ${showAdvanced ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0 pointer-events-none'}`}
+                style={{
+                  background: 'rgba(0,0,0,0.03)',
+                  borderRadius: '0.5rem',
+                  padding: showAdvanced ? '1rem' : '0',
+                }}
+              >
+                {showAdvanced && (
+                  <div className='space-y-6'>
+                    {/* Cuisine Preferences */}
+                    <div>
+                      <div className='font-semibold mb-2'>
+                        Cuisine Preferences
+                      </div>
+                      <div className='flex flex-wrap gap-2'>
+                        {CUISINE_TYPES.map(cuisine => (
+                          <Badge
+                            key={cuisine}
+                            variant={
+                              selectedCuisines.includes(cuisine)
+                                ? 'default'
+                                : 'outline'
+                            }
+                            className='cursor-pointer hover:bg-accent'
+                            onClick={() =>
+                              toggleSelection(
+                                cuisine,
+                                selectedCuisines,
+                                setSelectedCuisines,
+                              )
+                            }
+                          >
+                            {cuisine}
+                          </Badge>
                         ))}
-                      </RadioGroup>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
+                      </div>
+                    </div>
+                    {/* Dietary Restrictions */}
+                    <div>
+                      <div className='font-semibold mb-2'>
+                        Dietary Restrictions
+                      </div>
+                      <div className='flex flex-wrap gap-2'>
+                        {DIETARY_RESTRICTIONS.map(restriction => (
+                          <Badge
+                            key={restriction}
+                            variant={
+                              selectedRestrictions.includes(restriction)
+                                ? 'default'
+                                : 'outline'
+                            }
+                            className='cursor-pointer hover:bg-accent'
+                            onClick={() =>
+                              toggleSelection(
+                                restriction,
+                                selectedRestrictions,
+                                setSelectedRestrictions,
+                              )
+                            }
+                          >
+                            {restriction}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                    {/* Allergies */}
+                    <div>
+                      <div className='font-semibold mb-2'>
+                        Allergies & Intolerances
+                      </div>
+                      <div className='flex flex-wrap gap-2'>
+                        {COMMON_ALLERGIES.map(allergy => (
+                          <Badge
+                            key={allergy}
+                            variant={
+                              selectedAllergies.includes(allergy)
+                                ? 'destructive'
+                                : 'outline'
+                            }
+                            className='cursor-pointer hover:bg-accent'
+                            onClick={() =>
+                              toggleSelection(
+                                allergy,
+                                selectedAllergies,
+                                setSelectedAllergies,
+                              )
+                            }
+                          >
+                            {allergy}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                    {/* Optional Nutrition Targets */}
+                    <div>
+                      <div className='font-semibold mb-2'>
+                        Custom Nutrition Targets
+                      </div>
+                      <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                        <FormField
+                          control={form.control}
+                          name='targetCalories'
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Target Calories</FormLabel>
+                              <Select
+                                onValueChange={field.onChange}
+                                value={field.value}
+                              >
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder='Use profile default' />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value='300'>300 kcal</SelectItem>
+                                  <SelectItem value='500'>500 kcal</SelectItem>
+                                  <SelectItem value='700'>700 kcal</SelectItem>
+                                  <SelectItem value='900'>900 kcal</SelectItem>
+                                  <SelectItem value='1200'>
+                                    1200 kcal
+                                  </SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name='targetProtein'
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Target Protein (g)</FormLabel>
+                              <Select
+                                onValueChange={field.onChange}
+                                value={field.value}
+                              >
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder='Use profile default' />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value='20'>20g</SelectItem>
+                                  <SelectItem value='30'>30g</SelectItem>
+                                  <SelectItem value='40'>40g</SelectItem>
+                                  <SelectItem value='50'>50g</SelectItem>
+                                  <SelectItem value='60'>60g</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
+                  </div>
                 )}
-              />
-            </CardContent>
-          </Card>
-
-          {/* Cuisine Preferences */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Cuisine Preferences</CardTitle>
-              <p className='text-sm text-muted-foreground'>
-                Select the cuisines you'd like to explore (optional)
-              </p>
-            </CardHeader>
-            <CardContent>
-              <div className='flex flex-wrap gap-2'>
-                {CUISINE_TYPES.map(cuisine => (
-                  <Badge
-                    key={cuisine}
-                    variant={
-                      selectedCuisines.includes(cuisine) ? 'default' : 'outline'
-                    }
-                    className='cursor-pointer hover:bg-accent'
-                    onClick={() =>
-                      toggleSelection(
-                        cuisine,
-                        selectedCuisines,
-                        setSelectedCuisines,
-                      )
-                    }
-                  >
-                    {cuisine}
-                  </Badge>
-                ))}
               </div>
+              {/* Generate Button */}
+              <Button
+                type='submit'
+                size='lg'
+                disabled={isGenerating}
+                className='w-full mt-6'
+              >
+                {isGenerating ? (
+                  <>
+                    <Clock className='h-4 w-4 mr-2 animate-spin' />
+                    Generating Recipe...
+                  </>
+                ) : (
+                  <>
+                    <ChefHat className='h-4 w-4 mr-2' />
+                    Generate Recipe
+                  </>
+                )}
+              </Button>
             </CardContent>
           </Card>
-
-          {/* Dietary Restrictions */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Dietary Restrictions</CardTitle>
-              <p className='text-sm text-muted-foreground'>
-                Select any dietary restrictions to follow (optional)
-              </p>
-            </CardHeader>
-            <CardContent>
-              <div className='flex flex-wrap gap-2'>
-                {DIETARY_RESTRICTIONS.map(restriction => (
-                  <Badge
-                    key={restriction}
-                    variant={
-                      selectedRestrictions.includes(restriction)
-                        ? 'default'
-                        : 'outline'
-                    }
-                    className='cursor-pointer hover:bg-accent'
-                    onClick={() =>
-                      toggleSelection(
-                        restriction,
-                        selectedRestrictions,
-                        setSelectedRestrictions,
-                      )
-                    }
-                  >
-                    {restriction}
-                  </Badge>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Allergies */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Allergies & Intolerances</CardTitle>
-              <p className='text-sm text-muted-foreground'>
-                Select any ingredients to avoid (optional)
-              </p>
-            </CardHeader>
-            <CardContent>
-              <div className='flex flex-wrap gap-2'>
-                {COMMON_ALLERGIES.map(allergy => (
-                  <Badge
-                    key={allergy}
-                    variant={
-                      selectedAllergies.includes(allergy)
-                        ? 'destructive'
-                        : 'outline'
-                    }
-                    className='cursor-pointer hover:bg-accent'
-                    onClick={() =>
-                      toggleSelection(
-                        allergy,
-                        selectedAllergies,
-                        setSelectedAllergies,
-                      )
-                    }
-                  >
-                    {allergy}
-                  </Badge>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Optional Nutrition Targets */}
-          <Card>
-            <CardHeader>
-              <CardTitle className='flex items-center gap-2'>
-                <Target className='h-5 w-5' />
-                Custom Nutrition Targets
-              </CardTitle>
-              <p className='text-sm text-muted-foreground'>
-                Override your profile defaults for this recipe (optional)
-              </p>
-            </CardHeader>
-            <CardContent>
-              <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-                <FormField
-                  control={form.control}
-                  name='targetCalories'
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Target Calories</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder='Use profile default' />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value='300'>300 kcal</SelectItem>
-                          <SelectItem value='500'>500 kcal</SelectItem>
-                          <SelectItem value='700'>700 kcal</SelectItem>
-                          <SelectItem value='900'>900 kcal</SelectItem>
-                          <SelectItem value='1200'>1200 kcal</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name='targetProtein'
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Target Protein (g)</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder='Use profile default' />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value='20'>20g</SelectItem>
-                          <SelectItem value='30'>30g</SelectItem>
-                          <SelectItem value='40'>40g</SelectItem>
-                          <SelectItem value='50'>50g</SelectItem>
-                          <SelectItem value='60'>60g</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Separator />
-
-          {/* Generate Button */}
-          <div className='text-center'>
-            <Button
-              type='submit'
-              size='lg'
-              disabled={isGenerating}
-              className='min-w-[200px]'
-            >
-              {isGenerating ? (
-                <>
-                  <Clock className='h-4 w-4 mr-2 animate-spin' />
-                  Generating Recipe...
-                </>
-              ) : (
-                <>
-                  <ChefHat className='h-4 w-4 mr-2' />
-                  Generate Recipe
-                </>
-              )}
-            </Button>
-          </div>
         </form>
       </Form>
     </div>

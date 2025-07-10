@@ -1,0 +1,1 @@
+ALTER TABLE "nutrition_profiles" ADD COLUMN "gender" varchar(10);

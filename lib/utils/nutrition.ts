@@ -88,58 +88,75 @@ export function calculateDailyCalories({
   return Math.round(dailyCalories);
 }
 
-/**
- * Calculate macro distribution based on goals and total calories
- */
+// Dietary preference to macro split mapping
+const DIETARY_MACRO_SPLITS: Record<
+  string,
+  { protein: number; carbs: number; fat: number }
+> = {
+  standard: { protein: 0.25, carbs: 0.45, fat: 0.3 }, // fallback
+  'low-carb': { protein: 0.3, carbs: 0.2, fat: 0.5 },
+  keto: { protein: 0.2, carbs: 0.05, fat: 0.75 },
+  'high-protein': { protein: 0.4, carbs: 0.3, fat: 0.3 },
+  vegan: { protein: 0.25, carbs: 0.55, fat: 0.2 }, // example, can be tuned
+  vegetarian: { protein: 0.25, carbs: 0.5, fat: 0.25 },
+};
+
+// Helper to select macro split based on dietary preferences
+function getMacroSplitForPreferences(dietaryPreferences?: string[]): {
+  protein: number;
+  carbs: number;
+  fat: number;
+} {
+  if (!dietaryPreferences || dietaryPreferences.length === 0) {
+    return DIETARY_MACRO_SPLITS.standard;
+  }
+  // Priority: keto > low-carb > high-protein > vegan > vegetarian > standard
+  if (dietaryPreferences.includes('keto')) return DIETARY_MACRO_SPLITS.keto;
+  if (dietaryPreferences.includes('low-carb'))
+    return DIETARY_MACRO_SPLITS['low-carb'];
+  if (dietaryPreferences.includes('high-protein'))
+    return DIETARY_MACRO_SPLITS['high-protein'];
+  if (dietaryPreferences.includes('vegan')) return DIETARY_MACRO_SPLITS.vegan;
+  if (dietaryPreferences.includes('vegetarian'))
+    return DIETARY_MACRO_SPLITS.vegetarian;
+  return DIETARY_MACRO_SPLITS.standard;
+}
+
+// Updated macro calculation to accept dietary preferences
 export function calculateMacros(
   totalCalories: number,
   goals: string | string[],
+  dietaryPreferences?: string[],
 ): MacroResult {
-  let proteinRatio: number;
-  let carbRatio: number;
-  let fatRatio: number;
-  const primaryGoal = Array.isArray(goals)
-    ? goals[0] || 'maintain_weight'
-    : goals;
-  switch (primaryGoal) {
-    case 'gain_muscle':
-      // High protein for muscle building
-      proteinRatio = 0.3; // 30% protein
-      carbRatio = 0.4; // 40% carbs
-      fatRatio = 0.3; // 30% fat
-      break;
-    case 'lose_weight':
-      // Higher protein to preserve muscle, moderate carbs
-      proteinRatio = 0.35; // 35% protein
-      carbRatio = 0.3; // 30% carbs
-      fatRatio = 0.35; // 35% fat
-      break;
-    case 'gain_weight':
-      // Balanced with slightly higher carbs
-      proteinRatio = 0.25; // 25% protein
-      carbRatio = 0.45; // 45% carbs
-      fatRatio = 0.3; // 30% fat
-      break;
-    case 'maintain_weight':
-    case 'improve_health':
-    default:
-      // Balanced macro distribution
-      proteinRatio = 0.25; // 25% protein
-      carbRatio = 0.45; // 45% carbs
-      fatRatio = 0.3; // 30% fat
-      break;
+  // Use dietary preferences if present, otherwise fall back to goal-based split
+  let split = getMacroSplitForPreferences(dietaryPreferences);
+  // If no relevant dietary preference, use goal-based split as before
+  if (split === DIETARY_MACRO_SPLITS.standard) {
+    const primaryGoal = Array.isArray(goals)
+      ? goals[0] || 'maintain_weight'
+      : goals;
+    switch (primaryGoal) {
+      case 'gain_muscle':
+        split = { protein: 0.3, carbs: 0.4, fat: 0.3 };
+        break;
+      case 'lose_weight':
+        split = { protein: 0.35, carbs: 0.3, fat: 0.35 };
+        break;
+      case 'gain_weight':
+        split = { protein: 0.25, carbs: 0.45, fat: 0.3 };
+        break;
+      case 'maintain_weight':
+      case 'improve_health':
+      default:
+        split = { protein: 0.25, carbs: 0.45, fat: 0.3 };
+        break;
+    }
   }
-
   // Calculate grams (protein: 4 cal/g, carbs: 4 cal/g, fat: 9 cal/g)
-  const protein = Math.round((totalCalories * proteinRatio) / 4);
-  const carbs = Math.round((totalCalories * carbRatio) / 4);
-  const fat = Math.round((totalCalories * fatRatio) / 9);
-
-  return {
-    protein,
-    carbs,
-    fat,
-  };
+  const protein = Math.round((totalCalories * split.protein) / 4);
+  const carbs = Math.round((totalCalories * split.carbs) / 4);
+  const fat = Math.round((totalCalories * split.fat) / 9);
+  return { protein, carbs, fat };
 }
 
 /**
@@ -204,4 +221,48 @@ export function getBMICategory(bmi: number): string {
   if (bmi >= 18.5 && bmi < 25) return 'Normal weight';
   if (bmi >= 25 && bmi < 30) return 'Overweight';
   return 'Obese';
+}
+
+/**
+ * Calculate macro profile (calories, protein, carbs, fat) based on user profile
+ * Uses Mifflin-St Jeor for BMR, activity multiplier for TDEE, and goal adjustment
+ * Macro split: 30/40/30 (protein/carbs/fat) for balanced by default
+ */
+export function calculateMacroProfile({
+  age,
+  gender,
+  height,
+  weight,
+  activityLevel,
+  goal,
+  dietaryPreferences,
+  goalWeight,
+}: {
+  age: number;
+  gender: 'male' | 'female';
+  height: number; // cm
+  weight: number; // kg
+  activityLevel: string;
+  goal: string;
+  dietaryPreferences?: string[];
+  goalWeight?: number; // lbs
+}): { calories: number; protein: number; carbs: number; fat: number } {
+  // Use goalWeight (lbs) if present and goal is lose_weight or gain_weight, otherwise use current weight
+  let effectiveWeightKg = weight;
+  if (goalWeight && (goal === 'lose_weight' || goal === 'gain_weight')) {
+    effectiveWeightKg = goalWeight * 0.453592; // convert lbs to kg
+  }
+  // Convert weight to lbs, height to inches for calorie calculation
+  const weightLbs = effectiveWeightKg / 0.453592;
+  const heightIn = height / 2.54;
+  const calories = calculateDailyCalories({
+    age,
+    weight: weightLbs,
+    height: heightIn,
+    activityLevel,
+    goals: goal,
+    gender,
+  });
+  const macros = calculateMacros(calories, goal, dietaryPreferences);
+  return { calories, ...macros };
 }

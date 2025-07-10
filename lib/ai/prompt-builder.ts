@@ -1,5 +1,12 @@
 import { type RecipeGenerationRequest } from '../../types/recipe';
 import { type NutritionProfile } from '../db/schema';
+import { COOKING_METHODS } from './cookingMethods'; // <-- Added import
+import { DEFAULT_NUTRITION_PROFILE } from './defaultNutritionProfile'; // <-- Added import
+import { normalizeUserContext } from './normalize-user-context';
+import {
+  getRecipeSchemaString,
+  getWeeklyMealPlanPromptTemplate,
+} from './promptTemplates'; // <-- Updated import
 
 export interface PromptTemplate {
   system: string;
@@ -19,14 +26,9 @@ export interface UserContext {
 
 // Variety configuration interface to avoid circular imports
 interface VarietyConfig {
-  temperature: number;
-  creativitySeed: string;
   avoidanceTerms: string[];
   cuisineRotation: string[];
-  ingredientFocus: string[];
-  cookingTechniqueSuggestion: string;
   complexityTarget: 'simple' | 'moderate' | 'complex';
-  culturalFusion: boolean;
 }
 
 // Simple recipe interface to avoid circular imports
@@ -37,223 +39,425 @@ interface SimpleRecipe {
   instructions?: string[];
 }
 
+/**
+ * PromptBuilderService
+ *
+ * This class builds prompts for recipe generation, following the requirements in:
+ *   - recipe_prompt.md (see /Users/brandon/Downloads/recipe_prompt.md)
+ *
+ * Each section of the prompt is modularized and maps directly to a section in the markdown.
+ */
 export class PromptBuilderService {
   /**
+   * Build the system prompt section (from recipe_prompt.md: System Prompt)
+   */
+  private buildSystemPrompt(): string {
+    // See: recipe_prompt.md > System Prompt
+    return [
+      'You are an expert chef and nutritionist.',
+      'Generate a healthy, simple dinner recipe for the user based on the following criteria. Return the result as a JSON object matching the provided schema exactly.',
+    ].join(' ');
+  }
+
+  /**
+   * Build the user preferences section (from recipe_prompt.md: User Preferences)
+   * Uses DEFAULT_NUTRITION_PROFILE for fallback values
+   */
+  private buildUserPreferencesSection(
+    request: RecipeGenerationRequest,
+    userContext?: UserContext,
+  ): string[] {
+    // See: recipe_prompt.md > User Preferences
+    const prefs: string[] = [];
+    // Nutrition targets
+    if (request.calories) {
+      prefs.push(`- Calories: ~${request.calories} kcal`);
+    } else {
+      prefs.push(`- Calories: ~${DEFAULT_NUTRITION_PROFILE.calories} kcal`); // default
+    }
+    if (request.protein) {
+      prefs.push(`- Protein: ${request.protein}g or more`);
+    } else {
+      prefs.push(`- Protein: ${DEFAULT_NUTRITION_PROFILE.protein}g or more`); // default
+    }
+    if (request.carbs) {
+      prefs.push(`- Carbohydrates: ~${request.carbs}g`);
+    } else {
+      prefs.push(`- Carbohydrates: ~${DEFAULT_NUTRITION_PROFILE.carbs}g`); // default
+    }
+    if (request.fat) {
+      prefs.push(`- Fat: ~${request.fat}g`);
+    } else {
+      prefs.push(`- Fat: ~${DEFAULT_NUTRITION_PROFILE.fat}g`); // default
+    }
+    if (request.servings) {
+      prefs.push(`- Servings: ${request.servings}`);
+    } else {
+      prefs.push(`- Servings: ${DEFAULT_NUTRITION_PROFILE.servings}`); // default
+    }
+    if (typeof request.timeToMake === 'number') {
+      prefs.push(`- Total Time: ≤ ${request.timeToMake} minutes`);
+    } else {
+      prefs.push(
+        `- Total Time: ≤ ${DEFAULT_NUTRITION_PROFILE.timeToMake} minutes`,
+      ); // default
+    }
+    if (request.difficulty) {
+      prefs.push(
+        `- Difficulty: ${request.difficulty.charAt(0).toUpperCase() + request.difficulty.slice(1)}`,
+      );
+    } else {
+      prefs.push(
+        `- Difficulty: ${DEFAULT_NUTRITION_PROFILE.difficulty.charAt(0).toUpperCase() + DEFAULT_NUTRITION_PROFILE.difficulty.slice(1)}`,
+      ); // default
+    }
+    if (request.mealType) {
+      prefs.push(
+        `- Meal Type: ${request.mealType.charAt(0).toUpperCase() + request.mealType.slice(1)}`,
+      );
+    } else {
+      prefs.push(
+        `- Meal Type: ${DEFAULT_NUTRITION_PROFILE.mealType.charAt(0).toUpperCase() + DEFAULT_NUTRITION_PROFILE.mealType.slice(1)}`,
+      ); // default
+    }
+    if (request.mealComplexity) {
+      prefs.push(
+        `- Desired Complexity: ${request.mealComplexity.charAt(0).toUpperCase() + request.mealComplexity.slice(1)}`,
+      );
+    } else {
+      prefs.push(
+        `- Desired Complexity: ${DEFAULT_NUTRITION_PROFILE.mealComplexity.charAt(0).toUpperCase() + DEFAULT_NUTRITION_PROFILE.mealComplexity.slice(1)}`,
+      ); // default
+    }
+    if (request.cuisinePreferences && request.cuisinePreferences.length > 0) {
+      prefs.push(
+        `- Cuisine Preferences: ${request.cuisinePreferences.join(', ')}`,
+      );
+    }
+    if (request.allergies && request.allergies.length > 0) {
+      prefs.push(`- Allergies: ${request.allergies.join(', ')}`);
+    }
+    if (request.dietaryRestrictions && request.dietaryRestrictions.length > 0) {
+      prefs.push(
+        `- Dietary Restrictions: ${request.dietaryRestrictions.join(', ')}`,
+      );
+    }
+    // Add preferred/avoided ingredients from userContext if present
+    if (
+      userContext?.preferredIngredients &&
+      userContext.preferredIngredients.length > 0
+    ) {
+      prefs.push(
+        `- Preferred Ingredients: ${userContext.preferredIngredients.join(', ')}`,
+      );
+    }
+    if (
+      userContext?.avoidedIngredients &&
+      userContext.avoidedIngredients.length > 0
+    ) {
+      prefs.push(
+        `- Avoided Ingredients: ${userContext.avoidedIngredients.join(', ')}`,
+      );
+    }
+    // Add userProfile fields if present
+    const profile = request.userProfile;
+    if (profile) {
+      if (profile.age) prefs.push(`- Age: ${profile.age}`);
+      if (profile.weight) prefs.push(`- Weight: ${profile.weight} lbs`);
+      if (profile.height) prefs.push(`- Height: ${profile.height} in`);
+      if (profile.activityLevel)
+        prefs.push(`- Activity Level: ${profile.activityLevel}`);
+      if (profile.goals)
+        prefs.push(
+          `- Goals: ${Array.isArray(profile.goals) ? profile.goals.join(', ') : profile.goals}`,
+        );
+    }
+    return prefs;
+  }
+
+  /**
+   * Build the schema section (from recipe_prompt.md: Schema (Return Format))
+   */
+  private buildSchemaSection(): string {
+    // See: recipe_prompt.md > Schema (Return Format)
+    // Uses getRecipeSchemaString() for auto-generated schema string
+    return [
+      'Return the result as a JSON object matching this TypeScript type:',
+      getRecipeSchemaString(),
+    ].join('\n');
+  }
+
+  /**
+   * Build the required recipe components section (from recipe_prompt.md: Required Recipe Components)
+   */
+  private buildRequiredComponentsSection(): string {
+    // See: recipe_prompt.md > Required Recipe Components
+    return [
+      'Required Recipe Components:',
+      '- Must match one of the user’s cuisine preferences',
+      '- Must include:',
+      '  - A base of fiber-rich carbohydrates',
+      '  - At least one non-starchy vegetable',
+      '  - A clear lean protein source',
+      '  - A source of healthy fat',
+      '- Must strictly avoid all allergens and dietary restrictions',
+    ].join('\n');
+  }
+
+  /**
+   * Build the avoid repetition section (from recipe_prompt.md: Avoid Repetition)
+   * Dynamically includes recent ingredients, cuisines, and methods for the LLM to avoid.
+   * Only includes avoided ingredients/cuisines if provided in VarietyConfig; omits if empty/undefined.
+   */
+  private buildAvoidRepetitionSection(
+    recentRecipes?: SimpleRecipe[],
+    varietyConfig?: { avoidanceTerms?: string[]; cuisineRotation?: string[] },
+  ): string {
+    // See: recipe_prompt.md > Avoid Repetition
+    const avoidRepetition = ['Avoid Repetition:'];
+    // Only include avoided ingredients if provided and non-empty
+    if (
+      varietyConfig?.avoidanceTerms &&
+      varietyConfig.avoidanceTerms.length > 0
+    ) {
+      avoidRepetition.push(
+        `Do not use: ${varietyConfig.avoidanceTerms.join(', ')}`,
+      );
+    }
+    // Only include avoided cuisines if provided and non-empty
+    if (
+      varietyConfig?.cuisineRotation &&
+      varietyConfig.cuisineRotation.length > 0
+    ) {
+      avoidRepetition.push(
+        `Avoid these cuisine themes: ${varietyConfig.cuisineRotation.join(', ')}`,
+      );
+    }
+    avoidRepetition.push(
+      'Ensure the recipe:',
+      '- Is distinctly different from recent ones',
+      '- Uses different cooking methods, ingredients, and flavor profiles',
+      '- Has a unique name and concept',
+    );
+    // Dynamically add recent context for LLM to avoid
+    if (recentRecipes && recentRecipes.length > 0) {
+      // Recent recipe names
+      avoidRepetition.push(
+        `Recent recipes: ${recentRecipes.map(r => r.name).join(', ')}`,
+      );
+      // Recent ingredients
+      const recentIngredients = Array.from(
+        new Set(
+          recentRecipes.flatMap(r => (r.ingredients || []).map(i => i.name)),
+        ),
+      );
+      if (recentIngredients.length > 0) {
+        avoidRepetition.push(
+          `Avoid these recently used ingredients: ${recentIngredients.join(', ')}`,
+        );
+      }
+      // Recent cuisines
+      const recentCuisines = Array.from(
+        new Set(recentRecipes.map(r => r.cuisineType).filter(Boolean)),
+      );
+      if (recentCuisines.length > 0) {
+        avoidRepetition.push(
+          `Avoid these recently used cuisines: ${recentCuisines.join(', ')}`,
+        );
+      }
+      // Recent cooking methods (if instructions available)
+      // Use COOKING_METHODS from cookingMethods.ts
+      const recentMethods = Array.from(
+        new Set(
+          recentRecipes.flatMap(r =>
+            (r.instructions || []).flatMap(instr =>
+              COOKING_METHODS.filter(
+                m => instr && instr.toLowerCase().includes(m),
+              ),
+            ),
+          ),
+        ),
+      );
+      if (recentMethods.length > 0) {
+        avoidRepetition.push(
+          `Avoid these recently used cooking methods: ${recentMethods.join(', ')}`,
+        );
+      }
+    }
+    return avoidRepetition.join('\n');
+  }
+
+  /**
+   * Build the final quality check section (from recipe_prompt.md: Final Quality Check)
+   * Now uses dynamic thresholds from the RecipeGenerationRequest and UserContext.
+   */
+  private buildFinalQualityCheckSection(
+    request: RecipeGenerationRequest,
+  ): string {
+    // See: recipe_prompt.md > Final Quality Check
+    // Use dynamic thresholds from request/userContext
+    const timeLimit =
+      typeof request.timeToMake === 'number'
+        ? request.timeToMake
+        : DEFAULT_NUTRITION_PROFILE.timeToMake;
+    const servings = request.servings ?? DEFAULT_NUTRITION_PROFILE.servings;
+    return [
+      'Final Quality Check:',
+      '- Meets all nutritional targets (calories, macros, serving size)',
+      '- Fulfills all dietary restrictions and preferences',
+      '- Matches the user’s preferred cuisine',
+      `- Can be prepared in ${timeLimit} minutes or less`,
+      `- Makes exactly ${servings} serving${servings === 1 ? '' : 's'}`,
+      '- Has clear and simple instructions for an easy cooking experience',
+      '- Includes all required food components (fiber-rich carb, non-starchy vegetable, lean protein, healthy fat)',
+    ].join('\n');
+  }
+
+  /**
+   * Build a prompt for recipe generation that matches the structure and language of recipe_prompt.md
+   * This is the preferred method for single recipe generation.
+   *
+   * Sections:
+   *   - System Prompt (from markdown)
+   *   - User Preferences (from request/userContext)
+   *   - Required Recipe Components (from markdown)
+   *   - Avoid Repetition (from markdown and recent recipes)
+   *   - Final Quality Check (from markdown)
+   *
+   * See: /Users/brandon/Downloads/recipe_prompt.md
+   */
+  buildMarkdownAlignedPrompt(
+    request: RecipeGenerationRequest,
+    userContext?: UserContext,
+    recentRecipes?: SimpleRecipe[],
+  ): PromptTemplate {
+    // --- 🧠 System Prompt ---
+    const system = this.buildSystemPrompt();
+
+    // --- 👤 User Preferences ---
+    const prefs = this.buildUserPreferencesSection(request, userContext);
+
+    // --- ⚙️ Schema (Return Format) ---
+    const schemaBlock = this.buildSchemaSection();
+
+    // --- 🥗 Required Recipe Components ---
+    const requiredComponents = this.buildRequiredComponentsSection();
+
+    // --- 🔁 Avoid Repetition ---
+    const avoidRepetitionBlock =
+      this.buildAvoidRepetitionSection(recentRecipes);
+
+    // --- ✅ Final Quality Check ---
+    const finalCheck = this.buildFinalQualityCheckSection(request);
+
+    // --- Compose user prompt ---
+    const user = [
+      'User Preferences:',
+      ...prefs,
+      '',
+      schemaBlock,
+      '',
+      requiredComponents,
+      '',
+      avoidRepetitionBlock,
+      '',
+      finalCheck,
+    ].join('\n');
+
+    return { system, user };
+  }
+
+  /**
    * Build a contextualized prompt for recipe generation with user history and preferences
+   * @deprecated - now uses buildMarkdownAlignedPrompt
    */
   buildRecipePrompt(
     request: RecipeGenerationRequest,
     userContext?: UserContext,
   ): PromptTemplate {
-    const systemPrompt = this.buildSystemPrompt(userContext);
-    const userPrompt = this.buildUserPrompt(request, userContext);
-
-    return {
-      system: systemPrompt,
-      user: userPrompt,
-    };
+    // DEBUG: Log normalized user context
+    const normalized = normalizeUserContext(userContext || {});
+    console.debug('[PromptBuilder] Normalized User Context:', normalized);
+    // DEPRECATED: Use modular builder
+    return this.buildMarkdownAlignedPrompt(request, userContext);
   }
 
-  private buildSystemPrompt(userContext?: UserContext): string {
-    let systemPrompt = `You are a professional chef and nutritionist with expertise in creating healthy, delicious recipes. Your role is to:
-
-1. Create recipes that precisely match nutritional requirements
-2. Respect all dietary restrictions and allergies (this is critical for safety)
-3. Use accessible, common ingredients when possible
-4. Provide clear, easy-to-follow cooking instructions
-5. Ensure nutritional calculations are accurate
-6. Return recipes in the exact JSON format requested
-
-Key principles:
-- NEVER include ingredients that conflict with stated allergies or dietary restrictions
-- Prioritize nutritional accuracy while maintaining great taste
-- Consider cooking skill level and time constraints
-- Use seasonal and readily available ingredients when possible
-- Provide helpful cooking tips within the instructions
-- Only use ingredients that are commonly found in typical grocery stores (e.g., Walmart, Kroger, Safeway, Publix, etc.)
-- Do not use specialty or international ingredients that are hard to find
-- All output, including ingredient names, instructions, and descriptions, must be written in clear, natural English
-- Recipes should be easy to shop for and prepare, using straightforward steps and minimal specialty equipment.`;
-
-    // Add user-specific context if available
-    if (userContext?.recentFeedback && userContext.recentFeedback.length > 0) {
-      const dislikes = userContext.recentFeedback.filter(f => !f.liked);
-      if (dislikes.length > 0) {
-        systemPrompt += `\n\n## User Preference Context:
-Based on recent feedback, the user has expressed concerns about:`;
-
-        dislikes.forEach(feedback => {
-          if (feedback.feedback) {
-            systemPrompt += `\n- ${feedback.feedback}`;
-          }
-          if (feedback.reportedIssues) {
-            systemPrompt += `\n- Issues: ${feedback.reportedIssues.join(', ')}`;
-          }
-        });
-
-        systemPrompt += `\nPlease take these preferences into account when creating recipes.`;
-      }
-    }
-
-    if (
-      userContext?.preferredIngredients &&
-      userContext.preferredIngredients.length > 0
-    ) {
-      systemPrompt += `\n\n## Preferred Ingredients:
-The user tends to enjoy recipes containing: ${userContext.preferredIngredients.join(', ')}`;
-    }
-
-    if (
-      userContext?.avoidedIngredients &&
-      userContext.avoidedIngredients.length > 0
-    ) {
-      systemPrompt += `\n\n## Ingredients to Minimize:
-The user prefers to avoid (when possible): ${userContext.avoidedIngredients.join(', ')}`;
-    }
-
-    systemPrompt += `\n\nAlways respond with valid JSON that matches the requested schema exactly.`;
-
-    return systemPrompt;
-  }
-
-  private buildUserPrompt(
-    request: RecipeGenerationRequest,
-    userContext?: UserContext,
-  ): string {
+  /**
+   * Build a prompt for batch weekly meal plan generation (all meals in one call)
+   */
+  buildWeeklyMealPlanPrompt(
+    mealCounts: {
+      breakfasts: number;
+      lunches: number;
+      dinners: number;
+      snacks: number;
+    },
+    userPreferences: UserContext,
+  ): PromptTemplate {
+    // DEBUG: Log normalized user context
+    const normalized = normalizeUserContext(userPreferences || {});
+    console.debug(
+      '[PromptBuilder] Normalized User Context (Weekly):',
+      normalized,
+    );
     const {
-      mealType,
+      allergies,
+      dietaryRestrictions,
+      cuisinePreferences,
       calories,
       protein,
       carbs,
       fat,
-      allergies = [],
-      dietaryRestrictions = [],
-      cuisinePreferences = [],
+      preferredIngredients,
+      avoidedIngredients,
       userProfile,
-    } = request;
+      mealComplexity,
+    } = normalized;
 
-    let prompt = `Create a ${mealType} recipe with the following specifications:\n\n`;
+    const { breakfasts, lunches, dinners, snacks } = mealCounts;
 
-    // Enhanced nutritional requirements with user profile context
-    prompt += '## Nutritional Targets:\n';
-    if (calories) prompt += `- Calories: ~${calories} kcal\n`;
-    if (protein) prompt += `- Protein: ${protein}g or more\n`;
-    if (carbs) prompt += `- Carbohydrates: ~${carbs}g\n`;
-    if (fat) prompt += `- Fat: ~${fat}g\n`;
+    const system = `You are an expert meal planner and chef. Generate a weekly meal plan for a user with the following preferences and nutrition targets. Each meal must be unique, match the user's dietary and cuisine preferences, and provide a healthy balance (fiber-rich carbs, non-starchy vegetables, lean protein, healthy fat). Ensure cuisines are varied across the week.\n\nReturn a JSON object with four arrays: breakfasts, lunches, dinners, snacks. Each array should contain exactly the requested number of recipes (one per day), and each recipe must follow this schema: [Recipe schema].`;
 
-    // Add macro ratio context if user has a nutrition profile
-    if (userContext?.nutritionProfile) {
-      const profile = userContext.nutritionProfile;
-      if (profile.dailyCalories) {
-        const _mealCalories = calories || Math.round(profile.dailyCalories / 4); // Rough quarter of daily
-        prompt += `- Context: User's daily target is ${profile.dailyCalories} kcal\n`;
-      }
-      const userGoal = Array.isArray(profile.goals)
-        ? (profile.goals[0] || '').replace('_', ' ')
-        : (profile.goals || '').replace('_', ' ');
-      prompt += `- User goal: ${userGoal}\n`;
-      if (profile.weight) {
-        prompt += `- User weight: ${profile.weight} lbs\n`;
-      }
-      if (profile.height) {
-        const feet = Math.floor(profile.height / 12);
-        const inches = profile.height % 12;
-        prompt += `- User height: ${feet}ft ${inches}in\n`;
-      }
+    // Build user preferences string
+    let userPrefs = '';
+    if (allergies.length > 0)
+      userPrefs += `- Allergies: ${allergies.join(', ')}\n`;
+    if (dietaryRestrictions.length > 0)
+      userPrefs += `- Dietary restrictions: ${dietaryRestrictions.join(', ')}\n`;
+    if (cuisinePreferences.length > 0)
+      userPrefs += `- Cuisine preferences: ${cuisinePreferences.join(', ')}\n`;
+    if (calories) userPrefs += `- Calories per meal: ~${calories} kcal\n`;
+    if (protein) userPrefs += `- Protein: ${protein}g or more\n`;
+    if (carbs) userPrefs += `- Carbohydrates: ~${carbs}g\n`;
+    if (fat) userPrefs += `- Fat: ~${fat}g\n`;
+    if (preferredIngredients.length > 0)
+      userPrefs += `- Preferred ingredients: ${preferredIngredients.join(', ')}\n`;
+    if (avoidedIngredients.length > 0)
+      userPrefs += `- Avoided ingredients: ${avoidedIngredients.join(', ')}\n`;
+    if (userProfile) {
+      if (userProfile.age) userPrefs += `- Age: ${userProfile.age}\n`;
+      if (userProfile.weight)
+        userPrefs += `- Weight: ${userProfile.weight} lbs\n`;
+      if (userProfile.height)
+        userPrefs += `- Height: ${userProfile.height} in\n`;
+      if (userProfile.activityLevel)
+        userPrefs += `- Activity level: ${userProfile.activityLevel}\n`;
+      if (userProfile.goals)
+        userPrefs += `- Goals: ${Array.isArray(userProfile.goals) ? userProfile.goals.join(', ') : userProfile.goals}\n`;
     }
+    userPrefs += `- Desired meal complexity: ${mealComplexity}\n`;
 
-    // Safety requirements (allergies)
-    if (allergies.length > 0) {
-      prompt += '\n## ⚠️ CRITICAL - ALLERGIES TO AVOID:\n';
-      prompt += `- ${allergies.join('\n- ')}\n`;
-      prompt += 'ABSOLUTELY NO ingredients containing these allergens!\n';
-    }
+    // Use the template utility for the user prompt
+    const user = getWeeklyMealPlanPromptTemplate()
+      .replace('{{userPreferences}}', userPrefs.trim())
+      .replace('{{breakfasts}}', String(breakfasts))
+      .replace('{{lunches}}', String(lunches))
+      .replace('{{dinners}}', String(dinners))
+      .replace('{{snacks}}', String(snacks))
+      .replace('{{mealComplexity}}', String(mealComplexity))
+      .replace('{{schema}}', getRecipeSchemaString());
 
-    // Dietary preferences
-    if (dietaryRestrictions.length > 0) {
-      prompt += '\n## Dietary Restrictions:\n';
-      prompt += `- ${dietaryRestrictions.join('\n- ')}\n`;
-    }
-
-    // Cuisine preferences
-    if (cuisinePreferences.length > 0) {
-      prompt += '\n## Preferred Cuisines:\n';
-      prompt += `- ${cuisinePreferences.join('\n- ')}\n`;
-    }
-
-    // Enhanced user context with activity level consideration
-    if (userProfile || userContext?.nutritionProfile) {
-      prompt += '\n## User Context:\n';
-
-      const profile = userProfile || userContext?.nutritionProfile;
-      if (profile) {
-        const goal = Array.isArray(profile.goals)
-          ? (profile.goals[0] || '').replace('_', ' ')
-          : (profile.goals || '').replace('_', ' ');
-        prompt += `- Goal: ${goal}\n`;
-        if (profile.activityLevel) {
-          prompt += `- Activity Level: ${profile.activityLevel.replace('_', ' ')}\n`;
-
-          // Add cooking complexity based on activity level
-          if (
-            profile.activityLevel === 'very_active' ||
-            profile.activityLevel === 'extremely_active'
-          ) {
-            prompt += `- Prefer quick, energy-dense recipes for active lifestyle\n`;
-          }
-        }
-      }
-
-      if (userContext?.nutritionProfile?.age) {
-        const age = userContext.nutritionProfile.age;
-        if (age >= 65) {
-          prompt += `- Consider recipes that are easy to digest and nutrient-dense\n`;
-        } else if (age <= 25) {
-          prompt += `- Consider recipes that are filling and budget-friendly\n`;
-        }
-      }
-    }
-
-    // Output format requirements
-    prompt += `\n## Required Output Format:
-Return ONLY a valid JSON object with this exact structure:
-
-{
-  "name": "Recipe Name",
-  "description": "Brief appetizing description (1-2 sentences)",
-  "ingredients": [
-    {"name": "ingredient name", "quantity": number, "unit": "unit (e.g., cups, tbsp, oz)"}
-  ],
-  "instructions": [
-    "Step 1: Clear instruction",
-    "Step 2: Next instruction", 
-    "Step 3: Continue..."
-  ],
-  "nutrition": {
-    "calories": exact_number,
-    "protein": exact_number_in_grams,
-    "carbs": exact_number_in_grams,
-    "fat": exact_number_in_grams
-  },
-  "prepTime": minutes_as_number,
-  "cookTime": minutes_as_number,
-  "servings": number_of_servings,
-  "difficulty": "easy", "medium", or "hard",
-  "mealType": "${mealType}"
-}
-
-## Additional Requirements:
-- Ensure nutrition values are realistic and add up correctly
-- Include specific quantities and units for all ingredients
-- Make instructions clear and sequential
-- Consider prep and cooking time accuracy
-- Choose appropriate difficulty level based on techniques required
-- All ingredients must be available in typical grocery stores (e.g., Walmart, Kroger, Safeway, Publix, etc.)
-- Do not use ingredients that are difficult to find
-- Write all output in clear, natural English
-- Make the recipe easy to shop for and prepare, with simple, direct instructions and minimal specialty equipment.`;
-
-    return prompt;
+    return { system, user };
   }
 
   /**
@@ -402,6 +606,13 @@ Return ONLY a valid JSON object with this exact structure:
     varietyConfig?: VarietyConfig,
     recentRecipes?: SimpleRecipe[],
   ): PromptTemplate {
+    // DEBUG: Log normalized user context and variety config
+    const normalized = normalizeUserContext(userContext || {});
+    console.debug(
+      '[PromptBuilder] Normalized User Context (Variety):',
+      normalized,
+    );
+    console.debug('[PromptBuilder] Variety Config:', varietyConfig);
     // Start with base prompt template
     const baseTemplate = this.buildRecipePrompt(request, userContext);
 
@@ -436,11 +647,6 @@ Return ONLY a valid JSON object with this exact structure:
 
     if (varietyConfig) {
       prompt += `- Complexity Target: Aim for ${varietyConfig.complexityTarget} difficulty level\n`;
-      prompt += `- Cooking Technique Focus: Emphasize ${varietyConfig.cookingTechniqueSuggestion} technique\n`;
-
-      if (varietyConfig.cuisineRotation?.length > 0) {
-        prompt += `- Cuisine Preferences: Draw inspiration from: ${varietyConfig.cuisineRotation.join(' or ')}\n`;
-      }
     }
 
     if (recentRecipes && recentRecipes.length > 0) {
@@ -481,14 +687,6 @@ Return ONLY a valid JSON object with this exact structure:
         '- Ensure your recipe takes a different approach from these recent elements\n';
     }
 
-    if (varietyConfig?.creativitySeed) {
-      prompt += `\n### CREATIVE DIRECTION:\n`;
-      const seedInstructions = this.getCreativeSeedInstructions(
-        varietyConfig.creativitySeed,
-      );
-      prompt += `- ${seedInstructions}\n`;
-    }
-
     if (recentRecipes && recentRecipes.length > 3) {
       prompt += `\n### VARIETY REQUIREMENT:\n`;
       prompt +=
@@ -511,54 +709,6 @@ Return ONLY a valid JSON object with this exact structure:
   }
 
   /**
-   * Get specific instructions for creativity seeds
-   */
-  private getCreativeSeedInstructions(creativitySeed: string): string {
-    const seedMap: Record<string, string> = {
-      'fusion-experiment':
-        'Blend culinary traditions from different cultures in innovative ways',
-      'comfort-food-twist':
-        'Take a classic comfort food and give it a modern, healthy, or international twist',
-      'health-conscious-makeover':
-        'Transform a traditional recipe into a nutrient-dense, wellness-focused version',
-      'seasonal-ingredients':
-        'Feature ingredients that are currently in peak season with fresh, vibrant flavors',
-      'one-pot-wonder':
-        'Create a complete, satisfying meal using minimal cookware and simple techniques',
-      'color-theme':
-        'Design the recipe around a specific color palette for visual appeal',
-      'texture-focus':
-        'Emphasize contrasting textures (creamy, crunchy, tender, etc.) for sensory interest',
-      'spice-adventure':
-        'Explore bold, aromatic spices and seasonings from global cuisines',
-      'ancestral-modern':
-        'Combine traditional cooking wisdom with contemporary ingredients and techniques',
-      'street-food-elevated':
-        'Take inspiration from street food but elevate it to home cooking standards',
-      'breakfast-dinner':
-        'Create breakfast foods suitable for dinner or vice versa',
-      'dessert-savory':
-        'Incorporate dessert-like elements into a savory dish or vice versa',
-      'fermented-flavors':
-        'Feature fermented ingredients for complex, umami-rich taste profiles',
-      'umami-bomb':
-        'Create intensely savory, satisfying flavors through umami-rich ingredients',
-      'fresh-herb-garden': 'Showcase fresh herbs as primary flavor components',
-      'smoky-charred':
-        'Develop deep, smoky flavors through various cooking techniques',
-      'citrus-bright':
-        'Feature bright, acidic elements that enhance and balance other flavors',
-      'nutty-richness':
-        'Incorporate nuts, seeds, or nut-based elements for richness and texture',
-    };
-
-    return (
-      seedMap[creativitySeed] ||
-      'Create an innovative and memorable culinary experience'
-    );
-  }
-
-  /**
    * Build prompts for specific dietary goals with enhanced context
    */
   buildGoalSpecificPrompt(
@@ -575,30 +725,6 @@ Return ONLY a valid JSON object with this exact structure:
     };
 
     return goalPrompts[goal as keyof typeof goalPrompts] || '';
-  }
-
-  /**
-   * Generate cooking complexity guidance based on user profile
-   */
-  private getCookingComplexityGuidance(userContext?: UserContext): string {
-    if (!userContext?.nutritionProfile) return '';
-
-    const profile = userContext.nutritionProfile;
-
-    // Very active people might need quick recipes
-    if (
-      profile.activityLevel === 'very_active' ||
-      profile.activityLevel === 'extremely_active'
-    ) {
-      return 'Prefer recipes that can be prepared quickly (under 30 minutes total) with minimal cleanup.';
-    }
-
-    // Sedentary lifestyle might allow for more complex cooking
-    if (profile.activityLevel === 'sedentary') {
-      return 'User may have time for more involved cooking techniques and longer preparation times.';
-    }
-
-    return '';
   }
 }
 

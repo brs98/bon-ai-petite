@@ -2,28 +2,28 @@
 
 import { Button } from '@/components/ui/button';
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
 } from '@/components/ui/card';
 import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+    Form,
+    FormControl,
+    FormDescription,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { calculateDailyCalories, calculateMacros } from '@/lib/utils/nutrition';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { calculateMacroProfile } from '@/lib/utils/nutrition';
 import {
-  ACTIVITY_LEVELS,
-  FITNESS_GOALS,
-  NutritionProfileSchema,
-  type NutritionProfile,
+    ACTIVITY_LEVELS,
+    NutritionProfileSchema,
+    type NutritionProfile,
 } from '@/types/recipe';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Apple, ChefHat, Dumbbell, Ruler, User, Weight } from 'lucide-react';
@@ -43,6 +43,12 @@ interface ProfileSetupProps {
   ) => Promise<void>;
   isLoading?: boolean;
 }
+
+const WEIGHT_GOALS: ('lose_weight' | 'maintain_weight' | 'gain_weight')[] = [
+  'lose_weight',
+  'maintain_weight',
+  'gain_weight',
+];
 
 function formatHeight(heightIn?: number) {
   if (!heightIn) return '';
@@ -87,12 +93,17 @@ export function ProfileSetup({
       allergies: initialData?.allergies || [],
       dietaryRestrictions: initialData?.dietaryRestrictions || [],
       cuisinePreferences: initialData?.cuisinePreferences || [],
+      gender: initialData?.gender || 'male', // Default to male
     },
   });
 
   const steps = [
     { title: 'Physical Stats', description: 'Basic information about you' },
-    { title: 'Activity & Goals', description: 'Your lifestyle and objectives' },
+    {
+      title: 'Activity Level',
+      description: 'Your lifestyle and daily activity',
+    },
+    { title: 'Weight Goal', description: 'Your weight goal and target' },
     {
       title: 'Allergies & Intolerances',
       description: 'Select any food allergies or intolerances you have.',
@@ -110,40 +121,47 @@ export function ProfileSetup({
   ];
 
   // Auto-calculate calories when physical stats, activity level, or goals change
-  const watchedValues = form.watch([
-    'age',
-    'weight',
-    'height',
-    'activityLevel',
-    'goals',
-  ]);
-
   useEffect(() => {
-    const [age, weight, height, activityLevel, goals] = watchedValues;
+    const [
+      age,
+      weight,
+      height,
+      activityLevel,
+      goals,
+      gender,
+      dietaryRestrictions,
+    ] = form.watch([
+      'age',
+      'weight',
+      'height',
+      'activityLevel',
+      'goals',
+      'gender',
+      'dietaryRestrictions',
+    ]);
 
-    if (age && weight && height && activityLevel) {
-      // Assuming male for now - in a real app, you'd ask for gender
-      const primaryGoal =
-        Array.isArray(goals) && goals.length > 0 ? goals[0] : 'maintain_weight';
-      const calories = calculateDailyCalories({
+    // Convert height (in) to cm, weight (lbs) to kg
+    const heightCm = height ? Math.round(height * 2.54) : undefined;
+    const weightKg = weight ? Math.round(weight * 0.453592) : undefined;
+    const primaryGoal =
+      Array.isArray(goals) && goals.length > 0 ? goals[0] : 'maintain_weight';
+
+    if (age && weightKg && heightCm && activityLevel && gender) {
+      const macroProfile = calculateMacroProfile({
         age,
-        weight,
-        height,
+        gender,
+        height: heightCm,
+        weight: weightKg,
         activityLevel,
-        goals: primaryGoal,
-        gender: 'male', // Default assumption
+        goal: primaryGoal,
+        dietaryPreferences: dietaryRestrictions,
       });
-
-      setCalculatedCalories(calories);
-      form.setValue('dailyCalories', calories);
-
-      // Auto-calculate macros
-      const macros = calculateMacros(calories, primaryGoal);
-      form.setValue('macroProtein', macros.protein);
-      form.setValue('macroCarbs', macros.carbs);
-      form.setValue('macroFat', macros.fat);
+      setCalculatedCalories(macroProfile.calories);
+      form.setValue('dailyCalories', macroProfile.calories);
+      form.setValue('macroProtein', macroProfile.protein);
+      form.setValue('macroCarbs', macroProfile.carbs);
+      form.setValue('macroFat', macroProfile.fat);
     }
-
     // Sync form height/weight with local ft/in/lbs state
     if (typeof heightFeet === 'number' && typeof heightInches === 'number') {
       form.setValue('height', heightFeet * 12 + heightInches);
@@ -151,7 +169,7 @@ export function ProfileSetup({
     if (typeof weightLbs === 'number') {
       form.setValue('weight', weightLbs);
     }
-  }, watchedValues);
+  }, [form, heightFeet, heightInches, weightLbs]);
 
   const onSubmit = async (data: Partial<NutritionProfile>) => {
     // Ensure height and weight are set from local state
@@ -160,6 +178,10 @@ export function ProfileSetup({
         ? heightFeet * 12 + heightInches
         : undefined;
     data.weight = typeof weightLbs === 'number' ? weightLbs : undefined;
+    // Only include goals if non-empty
+    data.goals = Array.isArray(data.goals) && data.goals.length > 0 ? data.goals : undefined;
+    // Debug log
+    console.log('[ProfileSetup] onSubmit data:', data);
     // Simulate save, but do not call parent onSave yet
     setProfileSaved(true);
     // Final save
@@ -178,7 +200,10 @@ export function ProfileSetup({
           ? heightFeet * 12 + heightInches
           : undefined,
       weight: typeof weightLbs === 'number' ? weightLbs : undefined,
+      goals: Array.isArray(values.goals) && values.goals.length > 0 ? values.goals : undefined,
     };
+    // Debug log
+    console.log('[ProfileSetup] handleStepChange data:', profileData);
     try {
       await onSave(profileData, false); // background save
     } catch {
@@ -317,6 +342,44 @@ export function ProfileSetup({
                             )}
                           />
                         </div>
+                        {/* Gender selection */}
+                        <FormField
+                          control={form.control}
+                          name='gender'
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Gender</FormLabel>
+                              {/* FormControl should wrap only the RadioGroup, not each item */}
+                              <FormControl>
+                                <RadioGroup
+                                  onValueChange={field.onChange}
+                                  value={field.value}
+                                  className='flex flex-row gap-4'
+                                >
+                                  <div className='flex items-center gap-2'>
+                                    <RadioGroupItem
+                                      value='male'
+                                      id='gender-male'
+                                    />
+                                    <FormLabel htmlFor='gender-male'>
+                                      Male
+                                    </FormLabel>
+                                  </div>
+                                  <div className='flex items-center gap-2'>
+                                    <RadioGroupItem
+                                      value='female'
+                                      id='gender-female'
+                                    />
+                                    <FormLabel htmlFor='gender-female'>
+                                      Female
+                                    </FormLabel>
+                                  </div>
+                                </RadioGroup>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
                         {/* Height */}
                         <div className='flex-1 flex flex-col items-center'>
                           <FormItem className='w-full'>
@@ -394,9 +457,9 @@ export function ProfileSetup({
                     <div className='space-y-8 text-center'>
                       <div className='space-y-2'>
                         <Dumbbell className='h-12 w-12 mx-auto text-primary' />
-                        <h2 className='text-2xl font-bold'>Activity & Goals</h2>
+                        <h2 className='text-2xl font-bold'>Activity Level</h2>
                         <p className='text-muted-foreground'>
-                          Tell us about your lifestyle and fitness goals so we
+                          Tell us about your lifestyle and daily activity so we
                           can personalize your nutrition plan.
                         </p>
                       </div>
@@ -434,43 +497,46 @@ export function ProfileSetup({
                             </FormItem>
                           )}
                         />
-                        {/* Goals Badge Group */}
+                      </div>
+                    </div>
+                  )}
+
+                  {Number(currentStep) === 2 && (
+                    <div className='space-y-8 text-center'>
+                      <div className='space-y-2'>
+                        <Weight className='h-12 w-12 mx-auto text-primary' />
+                        <h2 className='text-2xl font-bold'>Weight Goal</h2>
+                        <p className='text-muted-foreground'>
+                          What is your current weight goal?
+                        </p>
+                      </div>
+                      <div className='flex flex-col gap-8 max-w-2xl mx-auto'>
+                        {/* Weight Goal Selection */}
                         <FormField
                           control={form.control}
                           name='goals'
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel className='flex items-center gap-2 justify-center'>
-                                Fitness Goals (select one or more)
+                                Weight Goal
                               </FormLabel>
                               <div className='flex flex-wrap gap-3 justify-center'>
-                                {FITNESS_GOALS.map(goal => {
+                                {WEIGHT_GOALS.map(goal => {
                                   const selected = Array.isArray(field.value)
-                                    ? field.value.includes(goal.value)
+                                    ? field.value.includes(goal)
                                     : false;
                                   return (
                                     <Button
-                                      key={goal.value}
+                                      key={goal}
                                       type='button'
                                       variant={selected ? 'default' : 'outline'}
                                       className='py-2 px-4 text-sm'
-                                      onClick={() => {
-                                        let newGoals = Array.isArray(
-                                          field.value,
-                                        )
-                                          ? [...field.value]
-                                          : [];
-                                        if (selected) {
-                                          newGoals = newGoals.filter(
-                                            g => g !== goal.value,
-                                          );
-                                        } else {
-                                          newGoals.push(goal.value);
-                                        }
-                                        field.onChange(newGoals);
-                                      }}
+                                      onClick={() => field.onChange([goal])}
                                     >
-                                      {goal.label}
+                                      {goal === 'lose_weight' && 'Lose Weight'}
+                                      {goal === 'maintain_weight' &&
+                                        'Maintain Weight'}
+                                      {goal === 'gain_weight' && 'Gain Weight'}
                                     </Button>
                                   );
                                 })}
@@ -479,11 +545,52 @@ export function ProfileSetup({
                             </FormItem>
                           )}
                         />
+                        {/* Goal Weight Input (if lose/gain) */}
+                        {['lose_weight', 'gain_weight'].includes(
+                          (form.watch('goals') ?? [])[0],
+                        ) && (
+                          <FormField
+                            control={form.control}
+                            name='goalWeight'
+                            render={({ field }) => (
+                              <FormItem className='w-full'>
+                                <FormLabel className='flex items-center gap-2 justify-center'>
+                                  Goal Weight (lbs)
+                                </FormLabel>
+                                <FormControl>
+                                  <Input
+                                    type='number'
+                                    min={0}
+                                    placeholder='Enter your goal weight'
+                                    className='w-full text-lg py-4 text-center'
+                                    {...field}
+                                    value={
+                                      field.value === undefined
+                                        ? ''
+                                        : field.value
+                                    }
+                                    onChange={e => {
+                                      const val = e.target.value;
+                                      field.onChange(
+                                        val === '' ? undefined : parseInt(val),
+                                      );
+                                    }}
+                                  />
+                                </FormControl>
+                                <FormDescription>
+                                  Setting a goal weight helps us personalize
+                                  your calorie and macro targets.
+                                </FormDescription>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        )}
                       </div>
                     </div>
                   )}
 
-                  {Number(currentStep) === 2 && (
+                  {Number(currentStep) === 3 && (
                     <FormField
                       control={form.control}
                       name='allergies'
@@ -496,7 +603,7 @@ export function ProfileSetup({
                     />
                   )}
 
-                  {Number(currentStep) === 3 && (
+                  {Number(currentStep) === 4 && (
                     <FormField
                       control={form.control}
                       name='dietaryRestrictions'
@@ -509,7 +616,7 @@ export function ProfileSetup({
                     />
                   )}
 
-                  {Number(currentStep) === 4 && (
+                  {Number(currentStep) === 5 && (
                     <FormField
                       control={form.control}
                       name='cuisinePreferences'
@@ -522,7 +629,7 @@ export function ProfileSetup({
                     />
                   )}
 
-                  {Number(currentStep) === 5 && (
+                  {Number(currentStep) === 6 && (
                     <div className='space-y-8 text-center'>
                       <div className='space-y-2'>
                         <Apple className='h-12 w-12 mx-auto text-primary' />
@@ -656,7 +763,7 @@ export function ProfileSetup({
                     </div>
                   )}
 
-                  {Number(currentStep) === 6 && (
+                  {Number(currentStep) === 7 && (
                     <div className='space-y-8 text-center'>
                       <div className='space-y-2'>
                         <h2 className='text-2xl font-bold'>
@@ -688,6 +795,29 @@ export function ProfileSetup({
                             {formatHeight(formValues.height)},{' '}
                             {formValues.weight} lbs
                           </div>
+                          {/* Show goal weight and explanation if applicable */}
+                          {((formValues.goals ?? []).includes('lose_weight') ||
+                            (formValues.goals ?? []).includes('gain_weight')) &&
+                            formValues.goalWeight &&
+                            formValues.goalWeight !== formValues.weight && (
+                              <div className='text-xs text-primary mt-2'>
+                                <span>
+                                  Goal weight:{' '}
+                                  <b>{formValues.goalWeight} lbs</b>
+                                </span>
+                                <br />
+                                <span>
+                                  Your calorie and macro targets are based on
+                                  your goal weight to help you{' '}
+                                  {(formValues.goals ?? []).includes(
+                                    'lose_weight',
+                                  )
+                                    ? 'lose'
+                                    : 'gain'}{' '}
+                                  weight safely.
+                                </span>
+                              </div>
+                            )}
                         </div>
                         {/* Activity & Goals */}
                         <div className='rounded-lg border p-4 space-y-2 bg-muted/50'>
@@ -732,7 +862,7 @@ export function ProfileSetup({
                               type='button'
                               size='sm'
                               variant='outline'
-                              onClick={() => setCurrentStep(2)}
+                              onClick={() => setCurrentStep(3)}
                             >
                               Edit
                             </Button>
@@ -758,7 +888,7 @@ export function ProfileSetup({
                               type='button'
                               size='sm'
                               variant='outline'
-                              onClick={() => setCurrentStep(3)}
+                              onClick={() => setCurrentStep(4)}
                             >
                               Edit
                             </Button>
@@ -784,7 +914,7 @@ export function ProfileSetup({
                               type='button'
                               size='sm'
                               variant='outline'
-                              onClick={() => setCurrentStep(4)}
+                              onClick={() => setCurrentStep(5)}
                             >
                               Edit
                             </Button>
@@ -810,7 +940,7 @@ export function ProfileSetup({
                               type='button'
                               size='sm'
                               variant='outline'
-                              onClick={() => setCurrentStep(5)}
+                              onClick={() => setCurrentStep(6)}
                             >
                               Edit
                             </Button>

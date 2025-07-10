@@ -47,6 +47,11 @@ export const nutritionProfiles = pgTable(
     allergies: text('allergies').array(),
     dietaryRestrictions: text('dietary_restrictions').array(),
     cuisinePreferences: text('cuisine_preferences').array(),
+    mealComplexity: varchar('meal_complexity', { length: 10 })
+      .notNull()
+      .default('simple'), // 'simple', 'medium', 'hard'
+    gender: varchar('gender', { length: 10 }), // 'male' or 'female'
+    goalWeight: integer('goal_weight_lbs'), // user's target weight in lbs (optional)
     createdAt: timestamp('created_at').notNull().defaultNow(),
     updatedAt: timestamp('updated_at').notNull().defaultNow(),
   },

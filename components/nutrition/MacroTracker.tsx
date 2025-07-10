@@ -10,6 +10,10 @@ interface MacroTrackerProps extends React.HTMLAttributes<HTMLDivElement> {
   macroCarbs?: number; // in grams
   macroFat?: number; // in grams;
   showDetailed?: boolean;
+  // Add props for weight, goalWeight, and goal
+  weight?: number;
+  goalWeight?: number;
+  goal?: string;
 }
 
 export function MacroTracker({
@@ -18,6 +22,9 @@ export function MacroTracker({
   macroCarbs,
   macroFat,
   showDetailed = true,
+  weight,
+  goalWeight,
+  goal,
   ...props
 }: MacroTrackerProps) {
   // Calculate calories from macros
@@ -33,6 +40,12 @@ export function MacroTracker({
     totalMacroCalories > 0 ? (carbCalories / totalMacroCalories) * 100 : 0;
   const fatPercentage =
     totalMacroCalories > 0 ? (fatCalories / totalMacroCalories) * 100 : 0;
+
+  const usesGoalWeight =
+    (goal === 'lose_weight' || goal === 'gain_weight') &&
+    goalWeight &&
+    weight &&
+    goalWeight !== weight;
 
   if (!dailyCalories && !macroProtein && !macroCarbs && !macroFat) {
     return (
@@ -55,8 +68,29 @@ export function MacroTracker({
             Daily calorie target: {dailyCalories} kcal
           </p>
         )}
+        {/* Show current and goal weight if using goal weight */}
+        {usesGoalWeight && (
+          <div className='text-xs text-primary mt-2'>
+            <span>
+              Current weight: <b>{weight} lbs</b>
+            </span>{' '}
+            &rarr;{' '}
+            <span>
+              Goal weight: <b>{goalWeight} lbs</b>
+            </span>
+            <br />
+            <span>
+              Your calorie and macro targets are based on your goal weight to
+              help you {goal === 'lose_weight' ? 'lose' : 'gain'} weight safely.
+            </span>
+          </div>
+        )}
       </CardHeader>
       <CardContent className='space-y-6'>
+        {/* Display current and goal weight if applicable */}
+        {/* In MacroTracker, extract goalWeight, weight, and goal from the profile/props */}
+        {/* Determine if goal weight is used */}
+        {/* ... existing code ... */}
         {/* Macro breakdown */}
         <div className='space-y-4'>
           {macroProtein !== undefined && (

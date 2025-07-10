@@ -1,6 +1,7 @@
 import { db } from '@/lib/db/drizzle';
 import { getUser } from '@/lib/db/queries';
 import { nutritionProfiles } from '@/lib/db/schema';
+import { calculateMacroProfile } from '@/lib/utils/nutrition';
 import { NutritionProfileSchema } from '@/types/recipe';
 import { eq } from 'drizzle-orm';
 import { NextRequest } from 'next/server';
@@ -20,6 +21,8 @@ type NutritionProfileInsert = {
   allergies?: string[];
   dietaryRestrictions?: string[];
   cuisinePreferences?: string[];
+  gender?: 'male' | 'female';
+  goalWeight?: number;
 };
 
 type NutritionProfileUpdate = Partial<NutritionProfileInsert> & {
@@ -85,8 +88,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Validate the cleaned data with partial schema for preferences-only updates
-    const validationResult =
-      NutritionProfileSchema.partial().safeParse(cleanedData);
+    const validationResult = NutritionProfileSchema.partial().safeParse(cleanedData);
 
     if (!validationResult.success) {
       console.error('Validation failed:', validationResult.error.issues);
@@ -115,29 +117,40 @@ export async function POST(request: NextRequest) {
 
     // Only include fields that were provided
     const validatedData = validationResult.data;
-    if (validatedData.age !== undefined) insertData.age = validatedData.age;
-    if (validatedData.height !== undefined)
-      insertData.height = validatedData.height;
-    if (validatedData.weight !== undefined)
-      insertData.weight = validatedData.weight;
-    if (validatedData.activityLevel !== undefined)
-      insertData.activityLevel = validatedData.activityLevel;
-    if (validatedData.goals !== undefined)
-      insertData.goals = validatedData.goals;
-    if (validatedData.dailyCalories !== undefined)
-      insertData.dailyCalories = validatedData.dailyCalories;
-    if (validatedData.macroProtein !== undefined)
-      insertData.macroProtein = validatedData.macroProtein;
-    if (validatedData.macroCarbs !== undefined)
-      insertData.macroCarbs = validatedData.macroCarbs;
-    if (validatedData.macroFat !== undefined)
-      insertData.macroFat = validatedData.macroFat;
+    if (
+      validatedData.age !== undefined &&
+      validatedData.gender !== undefined &&
+      validatedData.height !== undefined &&
+      validatedData.weight !== undefined &&
+      validatedData.activityLevel !== undefined &&
+      validatedData.goals !== undefined &&
+      Array.isArray(validatedData.goals) &&
+      validatedData.goals.length > 0
+    ) {
+      const macroProfile = calculateMacroProfile({
+        age: validatedData.age,
+        gender: validatedData.gender,
+        height: validatedData.height,
+        weight: validatedData.weight,
+        activityLevel: validatedData.activityLevel,
+        goal: validatedData.goals[0],
+        dietaryPreferences: validatedData.dietaryRestrictions,
+      });
+      insertData.dailyCalories = macroProfile.calories;
+      insertData.macroProtein = macroProfile.protein;
+      insertData.macroCarbs = macroProfile.carbs;
+      insertData.macroFat = macroProfile.fat;
+    }
     if (validatedData.allergies !== undefined)
       insertData.allergies = validatedData.allergies;
     if (validatedData.dietaryRestrictions !== undefined)
       insertData.dietaryRestrictions = validatedData.dietaryRestrictions;
     if (validatedData.cuisinePreferences !== undefined)
       insertData.cuisinePreferences = validatedData.cuisinePreferences;
+    if (validatedData.gender !== undefined)
+      insertData.gender = validatedData.gender;
+    if (validatedData.goalWeight !== undefined)
+      insertData.goalWeight = validatedData.goalWeight;
 
     const newProfile = await db
       .insert(nutritionProfiles)
@@ -173,8 +186,7 @@ export async function PUT(request: NextRequest) {
     });
 
     // Validate the cleaned data with partial schema for preferences-only updates
-    const validationResult =
-      NutritionProfileSchema.partial().safeParse(cleanedData);
+    const validationResult = NutritionProfileSchema.partial().safeParse(cleanedData);
 
     if (!validationResult.success) {
       console.error('Validation failed:', validationResult.error.issues);
@@ -203,29 +215,55 @@ export async function PUT(request: NextRequest) {
 
     // Only include fields that were provided
     const validatedData = validationResult.data;
-    if (validatedData.age !== undefined) updateData.age = validatedData.age;
-    if (validatedData.height !== undefined)
-      updateData.height = validatedData.height;
-    if (validatedData.weight !== undefined)
-      updateData.weight = validatedData.weight;
-    if (validatedData.activityLevel !== undefined)
-      updateData.activityLevel = validatedData.activityLevel;
-    if (validatedData.goals !== undefined)
-      updateData.goals = validatedData.goals;
-    if (validatedData.dailyCalories !== undefined)
-      updateData.dailyCalories = validatedData.dailyCalories;
-    if (validatedData.macroProtein !== undefined)
-      updateData.macroProtein = validatedData.macroProtein;
-    if (validatedData.macroCarbs !== undefined)
-      updateData.macroCarbs = validatedData.macroCarbs;
-    if (validatedData.macroFat !== undefined)
-      updateData.macroFat = validatedData.macroFat;
+
+    // Merge new data with existing profile for macro calculation
+    const mergedProfile = { ...existingProfile, ...validatedData };
+    const age = mergedProfile.age ?? undefined;
+    const gender = mergedProfile.gender ?? undefined;
+    const height = mergedProfile.height ?? undefined;
+    const weight = mergedProfile.weight ?? undefined;
+    const activityLevel = mergedProfile.activityLevel ?? undefined;
+    const goals = mergedProfile.goals ?? undefined;
+    const dietaryRestrictions = mergedProfile.dietaryRestrictions ?? undefined;
+    if (
+      age !== undefined &&
+      gender !== undefined &&
+      height !== undefined &&
+      weight !== undefined &&
+      activityLevel !== undefined &&
+      goals !== undefined &&
+      Array.isArray(goals) &&
+      goals.length > 0
+    ) {
+      const macroProfile = calculateMacroProfile({
+        age,
+        gender: gender as 'male' | 'female',
+        height,
+        weight,
+        activityLevel,
+        goal: goals[0],
+        dietaryPreferences: dietaryRestrictions,
+      });
+      updateData.dailyCalories = macroProfile.calories;
+      updateData.macroProtein = macroProfile.protein;
+      updateData.macroCarbs = macroProfile.carbs;
+      updateData.macroFat = macroProfile.fat;
+    }
     if (validatedData.allergies !== undefined)
       updateData.allergies = validatedData.allergies;
     if (validatedData.dietaryRestrictions !== undefined)
       updateData.dietaryRestrictions = validatedData.dietaryRestrictions;
     if (validatedData.cuisinePreferences !== undefined)
       updateData.cuisinePreferences = validatedData.cuisinePreferences;
+    if (validatedData.gender !== undefined)
+      updateData.gender = validatedData.gender;
+    if (validatedData.goalWeight !== undefined)
+      updateData.goalWeight = validatedData.goalWeight;
+    if (validatedData.age !== undefined) updateData.age = validatedData.age;
+    if (validatedData.height !== undefined) updateData.height = validatedData.height;
+    if (validatedData.weight !== undefined) updateData.weight = validatedData.weight;
+    if (validatedData.activityLevel !== undefined) updateData.activityLevel = validatedData.activityLevel;
+    if (validatedData.goals !== undefined) updateData.goals = validatedData.goals;
 
     const updatedProfile = await db
       .update(nutritionProfiles)

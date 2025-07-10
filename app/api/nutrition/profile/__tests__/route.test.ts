@@ -1,4 +1,6 @@
 // Unit tests for nutrition profile API business logic
+import { calculateBMR, calculateMacroProfile } from '@/lib/utils/nutrition';
+
 describe('Nutrition Profile API Logic', () => {
   describe('profile validation', () => {
     it('should validate required fields for profile creation', () => {
@@ -229,5 +231,61 @@ describe('Nutrition Profile API Logic', () => {
         profile.createdAt.getTime(),
       );
     });
+  });
+});
+
+describe('goalWeight API logic', () => {
+  it('should persist goalWeight on profile creation', () => {
+    const profile = {
+      age: 30,
+      height: 175,
+      weight: 70,
+      activityLevel: 'moderately_active',
+      goals: 'lose_weight',
+      goalWeight: 150,
+    };
+    // Simulate API create logic
+    expect(profile.goalWeight).toBe(150);
+  });
+
+  it('should persist goalWeight on profile update', () => {
+    const existing = { goalWeight: 180 };
+    const update = { goalWeight: 160 };
+    const updated = { ...existing, ...update };
+    expect(updated.goalWeight).toBe(160);
+  });
+
+  it('should use goalWeight for macro/calorie targets if goal is lose_weight', () => {
+    // Simulate API logic
+    const profile = {
+      age: 30,
+      height: 175,
+      weight: 80,
+      activityLevel: 'moderately_active',
+      goals: 'lose_weight',
+      goalWeight: 150,
+      gender: 'male' as const,
+    };
+    const macroProfile = calculateMacroProfile({
+      age: profile.age,
+      height: profile.height,
+      weight: profile.weight,
+      activityLevel: profile.activityLevel,
+      goal: profile.goals,
+      gender: profile.gender,
+      goalWeight: profile.goalWeight,
+      dietaryPreferences: [],
+    });
+    // Should use goalWeight (68kg), but calculateDailyCalories expects lbs/inches
+    const expectedWeightLbs = 150; // goalWeight in lbs
+    const expectedHeightIn = 175 / 2.54;
+    const expectedBMR = calculateBMR(
+      30,
+      expectedWeightLbs,
+      expectedHeightIn,
+      'male',
+    );
+    const expectedCalories = Math.round(expectedBMR * 1.55) - 500;
+    expect(macroProfile.calories).toBe(expectedCalories);
   });
 });

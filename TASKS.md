@@ -1,88 +1,23 @@
 # 📋 Recipe Generation Service: Implementation Tasks
 
-> **Checklist updated as of June 2024 after deep codebase review. Most core
-> infrastructure, API, and main UI components are complete. Remaining items are
-> polish, analytics, and advanced features.**
+## 📝 Brandon Feedback (July 2024)
 
-# 🔎 User Testing Feedback & Action Items (May 2024)
-
-- [x] Error page is shown after creating weekly meal plan (refresh seems to fix
-      it) <!-- TODO: Needs further testing -->
-- [x] Sometimes, the shopping list isn't created along with the meals (might be
-      related to above) <!-- TODO: Needs further testing -->
-- [x] Update landing page so it doesn't look like 12 items in cart (confusing)
-      <!-- TODO: UI polish -->
-- [ ] Update landing page to give better idea of what somebody is buying (show
-      process: profile creation → meal planning generation → shopping list
-      creation) <!-- TODO: UI polish -->
-- [x] Add 'None' option for nutrition profile setup <!-- TODO: UI polish -->
-- [ ] Macro targets might not be desired (indicate it's to help the AI model do
-      healthy meals for your body) <!-- TODO: UI copy -->
-- [ ] Add button on nutrition profile summary to link to generate weekly meal
-      plan or generate a single recipe <!-- TODO: UI polish -->
-- [x] Recipe page should look different if there are no meals to display
-      <!-- TODO: UI polish -->
-- [ ] Custom nutrition targets feels weird (make it a little more hidden via a
-      drop down or something) <!-- TODO: UI polish -->
-- [ ] Make nutrition targets be daily not weekly <!-- TODO: UI logic -->
-- [x] Make save recipe button on recipe page stand out more
-      <!-- TODO: UI polish -->
-- [x] Add 'generate another recipe' button on recipe page
-      <!-- TODO: UI polish -->
-- [ ] Make recipe prompt include a healthy balance (base - rice, pasta, quinoa,
-      etc, vegetables, protein) <!-- TODO: Prompt tweak -->
-- [x] Recently generated recipes don't display <!-- TODO: Bug -->
-- [ ] More in-depth quiz at profile setup to generate meals closer to user taste
-      (like Hello Fresh, specify foods you do/don't like) <!-- TODO: Feature -->
-- [ ] Only generate meals that match user preferences (e.g., Moroccan and Thai
-      generated even if not listed) <!-- TODO: Prompt/logic -->
-- [ ] Optimize weekly meal plan query so meals are aware of each other (avoid
-      all meals being the same cuisine) <!-- TODO: Logic -->
-- [ ] Regenerate one-by-one with loading state instead of selecting all to
-      regenerate <!-- TODO: UI/logic -->
-- [ ] In recipe, when disliked, allow feedback like (select ingredients you
-      didn't like, or other reasons) <!-- TODO: UI/logic -->
-- [ ] Allow ability to iterate on a recipe (e.g., add a sauce, substitutions)
-      <!-- TODO: Feature -->
-- [ ] Weekly meal plan: ability to set and organize by day
-      <!-- TODO: UI/logic -->
-- [x] Shopping list: can't check off items
-      <!-- DONE: UI polish, check-off enabled in ShoppingList component and shopping list page June 2024 -->
-- [ ] Some items are not put in the correct bucket (produce, canned, etc)
-      <!-- TODO: Logic -->
-- [ ] Items get duplicated in shopping list <!-- TODO: Logic -->
-- [ ] Items should prefer cups, tbsp, etc instead of grams <!-- TODO: Logic -->
-- [ ] Maybe lower temperature of AI? <!-- TODO: Prompt/config -->
-- [ ] Add ability to create meal plans based off previous meals that you saved
-      or liked (mix generated with saved) <!-- TODO: Feature -->
-- [x] Dashboard: This week's meal plan is not displaying <!-- TODO: Bug -->
-- [x] What is 00 on "your preferences" <!-- TODO: UI bug -->
-- [x] Remove "your activity" section and "quick actions"
-      <!-- DONE: UI polish, removed from dashboard page June 2024 -->
-- [ ] Weekly meal plan can still be used after switching to base account
-      <!-- TODO: Subscription logic -->
-- [P1] Allow users to select multiple physical goals in nutrition profile setup
-  <!-- TODO: Feature -->
-- [P1] Add gender and other relevant variables to macro calculation in nutrition
-  profile <!-- TODO: Feature -->
-- [P1] Ensure nutrition targets and recipe generation respect dietary
-  preferences (e.g., low-carb) <!-- TODO: Logic/UI -->
-- [P1] Add goal weight field and logic to nutrition profile and macro
-  calculation <!-- TODO: Feature -->
-- [P0] Fix bug: editing height in nutrition profile does not update/save
-  <!-- TODO: Bug -->
-- [P2] Allow users to customize recipe generation by available time and
-  ingredients at home <!-- TODO: Feature -->
-- [P2] Add filters for servings, cooking difficulty, and ensure recipes meet
-  user needs <!-- TODO: Feature -->
-- [P3] Remove default meal type selection (e.g., Dinner) in recipe generation
+- [P0] Weekly meal generation not working <!-- TODO: Bug -->
+- [P0] Update dashboard to actually work <!-- TODO: Feature/bug -->
+- [P1][COMPLETED] Add separate step for weight goal (lose, maintain, gain) in
+  profile setup <!-- TODO: UX improvement -->
+- [P1][COMPLETED] Error saving profile: "Profile already exists. Use PUT to
+  update." <!-- TODO: Fix POST/PUT logic in nutrition profile API -->
+- [P1][COMPLETED] Nutrition targets don’t populate in profile setup
+  <!-- TODO: Bug/UI logic -->
+- [P1] Nutrition targets step: Allow setting macro ratio presets or manual entry
+  <!-- TODO: Feature/UI -->
+- [P2] Review profile step: Format activity/goals as "Lightly Active" (not
+  "lightly_active"), and use comma separation <!-- TODO: UI polish -->
+- [P2] Recipe cards on dashboard/recipes page are not responsive at certain
+  screen widths <!-- TODO: Responsive UI -->
+- [P3] Nutrition profile setup: Button hover colors look weird
   <!-- TODO: UI polish -->
-- [P2] Make time, servings, and cooking difficulty configurable in recipe
-  generation UI; hide less-used options <!-- TODO: UI polish -->
-- [P3] Remove or update ‘tossing salad’ text in loading state for recipe
-  generation <!-- TODO: UI polish -->
-- [P1] Default to easy and fast meals in recipe generation; allow users to
-  opt-in for more difficult recipes <!-- TODO: Logic/UI -->
 
 ## 🚀 Phase 1: Core Infrastructure (Week 1-2)
 
@@ -772,6 +707,47 @@
 
 ---
 
-## 🚀 Phase 2: User Experience (Week 3-4)
+## Macro Calculation
 
-// ... existing code ...
+- [ ] Add `gender` field to nutrition profile schema and types
+      (lib/db/schema.ts, types/recipe.ts)
+- [ ] Generate and apply migration for gender (lib/db/migrations/)
+  - Depends on: Add `gender` field to schema/types
+- [ ] Update nutrition profile API to handle gender
+      (app/api/nutrition/profile/route.ts)
+  - Depends on: Add `gender` field to schema/types
+- [ ] Refactor macro calculation logic to use BMR, TDEE, goal adjustment, macro
+      split (lib/utils/nutrition.ts, lib/utils/**tests**/nutrition.test.ts)
+  - Depends on: Add `gender` field to schema/types
+- [ ] Add support for dietary presets (keto, high-protein, etc.)
+      (lib/utils/nutrition.ts, types/recipe.ts if needed)
+  - Depends on: Refactor macro calculation logic
+- [ ] Add gender selection to profile setup UI
+      (components/nutrition/ProfileSetup.tsx,
+      app/(dashboard)/dashboard/settings/nutrition/page.tsx)
+  - Depends on: Add `gender` field to schema/types
+- [ ] Update macro breakdown display to show new calculation
+      (components/nutrition/MacroTracker.tsx,
+      components/nutrition/ProfileSetup.tsx)
+  - Depends on: Refactor macro calculation logic
+- [ ] Add visual macro breakdown (pie chart/bar)
+      (components/nutrition/MacroTracker.tsx)
+  - Depends on: Update macro breakdown display
+- [ ] Allow user to select/customize macro split (optional)
+      (components/nutrition/ProfileSetup.tsx, types/recipe.ts if storing)
+  - Depends on: Add gender selection to UI, Add support for dietary presets
+- [ ] Add/update unit tests for macro calculation
+      (lib/utils/**tests**/nutrition.test.ts)
+  - Depends on: Refactor macro calculation logic
+- [ ] Update integration tests for nutrition profile API
+      (app/api/nutrition/profile/**tests**/route.test.ts)
+  - Depends on: Update nutrition profile API
+- [ ] Add UI tests for profile setup and macro display
+      (components/nutrition/**tests**/ProfileSetup.test.tsx or similar)
+  - Depends on: Add gender selection to UI, Update macro breakdown display
+- [ ] Update user-facing documentation (README.md,
+      MACRO_CALCULATOR_TECHNICAL_PLAN.md)
+  - Depends on: Update macro breakdown display
+- [ ] Update developer docs (MACRO_CALCULATOR_TECHNICAL_PLAN.md)
+  - Depends on: Add `gender` field, Refactor macro calculation logic, Update
+    macro breakdown display

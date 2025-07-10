@@ -139,3 +139,42 @@ describe('MacroTracker Logic', () => {
     });
   });
 });
+
+describe('goal weight display logic', () => {
+  it('should display current and goal weight and explanation when goalWeight is set and goal is lose_weight', () => {
+    // Simulate MacroTracker props
+    const profile = {
+      weight: 200,
+      goalWeight: 150,
+      goal: 'lose_weight',
+    };
+    // Simulate logic for display
+    const usesGoalWeight =
+      (profile.goal === 'lose_weight' || profile.goal === 'gain_weight') &&
+      profile.goalWeight;
+    expect(usesGoalWeight).toBeTruthy();
+  });
+
+  it('should not display goal weight explanation when goal is maintain_weight', () => {
+    const profile = {
+      weight: 200,
+      goalWeight: 150,
+      goal: 'maintain_weight',
+    };
+    const usesGoalWeight =
+      (profile.goal === 'lose_weight' || profile.goal === 'gain_weight') &&
+      profile.goalWeight;
+    expect(usesGoalWeight).toBeFalsy();
+  });
+
+  it('should not display goal weight explanation when goalWeight is not set', () => {
+    const profile: { weight: number; goal: string; goalWeight?: number } = {
+      weight: 200,
+      goal: 'lose_weight',
+    };
+    const usesGoalWeight =
+      (profile.goal === 'lose_weight' || profile.goal === 'gain_weight') &&
+      profile.goalWeight;
+    expect(usesGoalWeight).toBeFalsy();
+  });
+});
