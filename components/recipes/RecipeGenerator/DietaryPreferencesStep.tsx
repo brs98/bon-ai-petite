@@ -1,4 +1,5 @@
 import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 import { DIETARY_RESTRICTIONS } from '@/types/recipe';
 import { Check, Heart } from 'lucide-react';
 import React from 'react';
@@ -49,7 +50,10 @@ export const DietaryPreferencesStep: React.FC<DietaryPreferencesStepProps> = ({
           <Badge
             key={restriction}
             variant={value.includes(restriction) ? 'default' : 'outline'}
-            className='cursor-pointer hover:bg-accent text-sm py-2 px-4 transition-all'
+            className={cn(
+              'cursor-pointer hover:bg-accent text-sm py-2 px-4 transition-all',
+              value.includes(restriction) && 'hover:text-foreground'
+            )}
             onClick={() => toggleSelection(restriction)}
           >
             {value.includes(restriction) && <Check className='h-3 w-3 mr-1' />}

@@ -1,4 +1,5 @@
 import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 import { CUISINE_TYPES } from '@/types/recipe';
 import { Check, UtensilsCrossed } from 'lucide-react';
 import React from 'react';
@@ -37,7 +38,10 @@ export const CuisinePreferencesStep: React.FC<CuisinePreferencesStepProps> = ({
           <Badge
             key={cuisine}
             variant={value.includes(cuisine) ? 'default' : 'outline'}
-            className='cursor-pointer hover:bg-accent text-sm py-2 px-4 transition-all'
+            className={cn(
+              'cursor-pointer hover:bg-accent text-sm py-2 px-4 transition-all',
+              value.includes(cuisine) && 'hover:text-foreground'
+            )}
             onClick={() => toggleSelection(cuisine)}
           >
             {value.includes(cuisine) && <Check className='h-3 w-3 mr-1' />}

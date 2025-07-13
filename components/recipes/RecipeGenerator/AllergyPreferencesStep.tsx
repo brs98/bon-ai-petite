@@ -1,4 +1,5 @@
 import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 import { COMMON_ALLERGIES } from '@/types/recipe';
 import { Check, Shield } from 'lucide-react';
 import React from 'react';
@@ -49,7 +50,10 @@ export const AllergyPreferencesStep: React.FC<AllergyPreferencesStepProps> = ({
           <Badge
             key={allergy}
             variant={value.includes(allergy) ? 'default' : 'outline'}
-            className='cursor-pointer hover:bg-accent text-sm py-2 px-4 transition-all'
+            className={cn(
+              'cursor-pointer hover:bg-accent text-sm py-2 px-4 transition-all',
+              value.includes(allergy) && 'hover:text-foreground'
+            )}
             onClick={() => toggleSelection(allergy)}
           >
             {value.includes(allergy) && <Check className='h-3 w-3 mr-1' />}
