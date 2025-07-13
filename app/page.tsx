@@ -92,7 +92,7 @@ export default function HomePage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.4, duration: 0.6 }}
                 >
-                  AI Petite
+                  Bon AI Petite
                 </motion.span>
               </motion.h1>
               <Logo width={64} height={84} className='ml-4' />
@@ -309,7 +309,7 @@ export default function HomePage() {
               How It Works
             </h2>
             <p className='text-xl text-muted-foreground max-w-2xl mx-auto'>
-              Save time, eat healthier, and enjoy more variety—AI Petite makes
+              Save time, eat healthier, and enjoy more variety—Bon AI Petite makes
               meal planning effortless in just three simple steps.
             </p>
           </motion.div>
@@ -495,7 +495,7 @@ export default function HomePage() {
             transition={{ duration: 0.6 }}
           >
             <h2 className='text-4xl font-bold text-primary mb-4'>
-              Why Choose AI Petite?
+              Why Choose Bon AI Petite?
             </h2>
             <p className='text-xl text-muted-foreground max-w-3xl mx-auto'>
               Experience the future of meal planning with our AI-powered
@@ -582,7 +582,7 @@ export default function HomePage() {
               </h2>
               <p className='text-xl text-muted-foreground mb-8'>
                 Join thousands of users who have discovered the joy of
-                effortless, healthy eating with AI Petite.
+                effortless, healthy eating with Bon AI Petite.
               </p>
 
               <motion.div
@@ -664,7 +664,7 @@ export default function HomePage() {
                     gradient: 'from-primary/5 to-primary/10',
                     border: 'border-primary/20',
                     quote:
-                      "AI Petite has completely transformed how my family eats. We're healthier, happier, and I save 5 hours every week!",
+                      "Bon AI Petite has completely transformed how my family eats. We're healthier, happier, and I save 5 hours every week!",
                     name: 'Sarah M.',
                     role: 'Busy Mom of 3',
                     avatar: 'SM',

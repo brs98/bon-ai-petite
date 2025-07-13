@@ -24,7 +24,7 @@ import { SWRConfig } from 'swr';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'AI Petite - Your Personal AI Nutritionist',
+  title: 'Bon AI Petite - Your Personal AI Nutritionist',
   description:
     'Transform your eating habits with AI-powered meal planning. Get personalized nutrition plans, automated grocery shopping, and seamless delivery integration with Instacart and Amazon Fresh.',
 };
@@ -80,7 +80,7 @@ export default function RootLayout({
             <Link href='/' className='flex items-center gap-2'>
               <Logo width={40} height={40} className='rounded-xl' />
               <span className='ml-2 font-cursive text-2xl text-primary'>
-                AI Petite
+                Bon AI Petite
               </span>
             </Link>
             <nav className='flex items-center gap-4'>

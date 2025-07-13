@@ -77,7 +77,7 @@ export default async function PricingPage() {
           </div>
           <h1 className='text-5xl font-bold text-foreground mb-6'>
             Choose Your{' '}
-            <span className='text-primary font-cursive'>AI Petite</span> Plan
+            <span className='text-primary font-cursive'>Bon AI Petite</span> Plan
           </h1>
           <p className='text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed'>
             Start your journey to healthier eating with personalized meal plans

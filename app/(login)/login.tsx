@@ -186,7 +186,7 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
               <div className='relative flex justify-center text-sm'>
                 <span className='px-4 bg-card text-muted-foreground'>
                   {mode === 'signin'
-                    ? 'New to AI Petite?'
+                    ? 'New to Bon AI Petite?'
                     : 'Already have an account?'}
                 </span>
               </div>

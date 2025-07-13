@@ -59,27 +59,13 @@ export default function NutritionSettingsPage() {
     setIsSaving(true);
     try {
       const method = profile ? 'PUT' : 'POST';
-      let response = await fetch('/api/nutrition/profile', {
+      const response = await fetch('/api/nutrition/profile', {
         method,
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(data),
       });
-
-      // If POST fails with 409, refetch and retry as PUT
-      if (!response.ok && method === 'POST' && response.status === 409) {
-        // Refetch profile
-        await fetchProfile();
-        // Retry as PUT
-        response = await fetch('/api/nutrition/profile', {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(data),
-        });
-      }
 
       if (response.ok) {
         const savedProfile = await response.json();
@@ -267,33 +253,47 @@ export default function NutritionSettingsPage() {
                 </div>
               }
 
-              {profile.dietaryRestrictions?.length && (
+              {profile.dietaryRestrictions && (
                 <div>
                   <p className='text-sm font-medium mb-2'>
                     Dietary Restrictions
                   </p>
                   <div className='flex flex-wrap gap-2'>
-                    {profile.dietaryRestrictions.map(restriction => (
-                      <Badge key={restriction} variant='secondary'>
-                        {restriction}
+                    {!profile.dietaryRestrictions || profile.dietaryRestrictions.length === 0 ? (
+                      <Badge key={'None'} variant='default'>
+                        None
                       </Badge>
-                    ))}
+                    ) : (
+                      <>
+                        {profile.dietaryRestrictions.map(restriction => (
+                          <Badge key={restriction} variant='secondary'>
+                            {restriction}
+                          </Badge>
+                        ))}
+                      </>
+                    )}
                   </div>
                 </div>
               )}
 
-              {profile.cuisinePreferences?.length && (
-                <div>
-                  <p className='text-sm font-medium mb-2'>Preferred Cuisines</p>
-                  <div className='flex flex-wrap gap-2'>
-                    {profile.cuisinePreferences.map(cuisine => (
-                      <Badge key={cuisine} variant='outline'>
-                        {cuisine}
-                      </Badge>
-                    ))}
-                  </div>
+              <div>
+                <p className='text-sm font-medium mb-2'>Preferred Cuisines</p>
+                <div className='flex flex-wrap gap-2'>
+                  {!profile.cuisinePreferences || profile.cuisinePreferences.length === 0 ? (
+                    <Badge key={'None'} variant='default'>
+                      None
+                    </Badge>
+                  ) : (
+                    <>
+                      {profile.cuisinePreferences.map(cuisine => (
+                        <Badge key={cuisine} variant='outline'>
+                          {cuisine}
+                        </Badge>
+                      ))}
+                    </>
+                  )}
                 </div>
-              )}
+              </div>
             </CardContent>
           </Card>
         )}
