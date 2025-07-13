@@ -103,63 +103,118 @@ export async function POST(request: NextRequest) {
       where: eq(nutritionProfiles.userId, user.id),
     });
 
-    if (existingProfile) {
-      return Response.json(
-        { error: 'Profile already exists. Use PUT to update.' },
-        { status: 409 },
-      );
-    }
-
-    // Create new profile with only the provided fields
-    const insertData: NutritionProfileInsert = {
-      userId: user.id,
-    };
-
-    // Only include fields that were provided
     const validatedData = validationResult.data;
-    if (
-      validatedData.age !== undefined &&
-      validatedData.gender !== undefined &&
-      validatedData.height !== undefined &&
-      validatedData.weight !== undefined &&
-      validatedData.activityLevel !== undefined &&
-      validatedData.goals !== undefined &&
-      Array.isArray(validatedData.goals) &&
-      validatedData.goals.length > 0
-    ) {
-      const macroProfile = calculateMacroProfile({
-        age: validatedData.age,
-        gender: validatedData.gender,
-        height: validatedData.height,
-        weight: validatedData.weight,
-        activityLevel: validatedData.activityLevel,
-        goal: validatedData.goals[0],
-        dietaryPreferences: validatedData.dietaryRestrictions,
-      });
-      insertData.dailyCalories = macroProfile.calories;
-      insertData.macroProtein = macroProfile.protein;
-      insertData.macroCarbs = macroProfile.carbs;
-      insertData.macroFat = macroProfile.fat;
+
+    if (existingProfile) {
+      // --- UPSERT: Update existing profile ---
+      const updateData: NutritionProfileUpdate = {
+        updatedAt: new Date(),
+      };
+      // Merge new data with existing profile for macro calculation
+      const mergedProfile = { ...existingProfile, ...validatedData };
+      const age = mergedProfile.age ?? undefined;
+      const gender = mergedProfile.gender ?? undefined;
+      const height = mergedProfile.height ?? undefined;
+      const weight = mergedProfile.weight ?? undefined;
+      const activityLevel = mergedProfile.activityLevel ?? undefined;
+      const goals = mergedProfile.goals ?? undefined;
+      const dietaryRestrictions = mergedProfile.dietaryRestrictions ?? undefined;
+      if (
+        age !== undefined &&
+        gender !== undefined &&
+        height !== undefined &&
+        weight !== undefined &&
+        activityLevel !== undefined &&
+        goals !== undefined &&
+        Array.isArray(goals) &&
+        goals.length > 0
+      ) {
+        const macroProfile = calculateMacroProfile({
+          age,
+          gender: gender as 'male' | 'female',
+          height,
+          weight,
+          activityLevel,
+          goal: goals[0],
+          dietaryPreferences: dietaryRestrictions,
+        });
+        updateData.dailyCalories = macroProfile.calories;
+        updateData.macroProtein = macroProfile.protein;
+        updateData.macroCarbs = macroProfile.carbs;
+        updateData.macroFat = macroProfile.fat;
+      }
+      if (validatedData.allergies !== undefined)
+        updateData.allergies = validatedData.allergies;
+      if (validatedData.dietaryRestrictions !== undefined)
+        updateData.dietaryRestrictions = validatedData.dietaryRestrictions;
+      if (validatedData.cuisinePreferences !== undefined)
+        updateData.cuisinePreferences = validatedData.cuisinePreferences;
+      if (validatedData.gender !== undefined)
+        updateData.gender = validatedData.gender;
+      if (validatedData.goalWeight !== undefined)
+        updateData.goalWeight = validatedData.goalWeight;
+      if (validatedData.age !== undefined) updateData.age = validatedData.age;
+      if (validatedData.height !== undefined) updateData.height = validatedData.height;
+      if (validatedData.weight !== undefined) updateData.weight = validatedData.weight;
+      if (validatedData.activityLevel !== undefined) updateData.activityLevel = validatedData.activityLevel;
+      if (validatedData.goals !== undefined) updateData.goals = validatedData.goals;
+
+      const updatedProfile = await db
+        .update(nutritionProfiles)
+        .set(updateData)
+        .where(eq(nutritionProfiles.userId, user.id))
+        .returning();
+
+      return Response.json(updatedProfile[0], { status: 200 });
+    } else {
+      // --- UPSERT: Create new profile ---
+      const insertData: NutritionProfileInsert = {
+        userId: user.id,
+      };
+      if (
+        validatedData.age !== undefined &&
+        validatedData.gender !== undefined &&
+        validatedData.height !== undefined &&
+        validatedData.weight !== undefined &&
+        validatedData.activityLevel !== undefined &&
+        validatedData.goals !== undefined &&
+        Array.isArray(validatedData.goals) &&
+        validatedData.goals.length > 0
+      ) {
+        const macroProfile = calculateMacroProfile({
+          age: validatedData.age,
+          gender: validatedData.gender,
+          height: validatedData.height,
+          weight: validatedData.weight,
+          activityLevel: validatedData.activityLevel,
+          goal: validatedData.goals[0],
+          dietaryPreferences: validatedData.dietaryRestrictions,
+        });
+        insertData.dailyCalories = macroProfile.calories;
+        insertData.macroProtein = macroProfile.protein;
+        insertData.macroCarbs = macroProfile.carbs;
+        insertData.macroFat = macroProfile.fat;
+      }
+      if (validatedData.allergies !== undefined)
+        insertData.allergies = validatedData.allergies;
+      if (validatedData.dietaryRestrictions !== undefined)
+        insertData.dietaryRestrictions = validatedData.dietaryRestrictions;
+      if (validatedData.cuisinePreferences !== undefined)
+        insertData.cuisinePreferences = validatedData.cuisinePreferences;
+      if (validatedData.gender !== undefined)
+        insertData.gender = validatedData.gender;
+      if (validatedData.goalWeight !== undefined)
+        insertData.goalWeight = validatedData.goalWeight;
+
+      const newProfile = await db
+        .insert(nutritionProfiles)
+        .values(insertData)
+        .returning();
+
+      return Response.json(newProfile[0], { status: 201 });
     }
-    if (validatedData.allergies !== undefined)
-      insertData.allergies = validatedData.allergies;
-    if (validatedData.dietaryRestrictions !== undefined)
-      insertData.dietaryRestrictions = validatedData.dietaryRestrictions;
-    if (validatedData.cuisinePreferences !== undefined)
-      insertData.cuisinePreferences = validatedData.cuisinePreferences;
-    if (validatedData.gender !== undefined)
-      insertData.gender = validatedData.gender;
-    if (validatedData.goalWeight !== undefined)
-      insertData.goalWeight = validatedData.goalWeight;
-
-    const newProfile = await db
-      .insert(nutritionProfiles)
-      .values(insertData)
-      .returning();
-
-    return Response.json(newProfile[0], { status: 201 });
   } catch (error) {
-    console.error('Error creating nutrition profile:', error);
+    console.error('Error upserting nutrition profile:', error);
     return Response.json(
       {
         error: 'Internal Server Error',
