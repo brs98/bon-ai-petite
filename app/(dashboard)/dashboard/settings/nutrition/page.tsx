@@ -23,6 +23,11 @@ function formatHeight(heightIn?: number) {
   return `${feet}ft ${inches}in`;
 }
 
+function capitalizeFirst(str?: string) {
+  if (!str) return '';
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
 export default function NutritionSettingsPage() {
   const [profile, setProfile] = useState<NutritionProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -163,7 +168,7 @@ export default function NutritionSettingsPage() {
             <div className='space-y-2'>
               <p className='text-sm font-medium'>Activity Level</p>
               <Badge variant='outline'>
-                {profile.activityLevel?.replace('_', ' ')}
+                {capitalizeFirst(profile.activityLevel?.replace('_', ' '))}
               </Badge>
             </div>
 
@@ -171,7 +176,9 @@ export default function NutritionSettingsPage() {
               <p className='text-sm font-medium'>Primary Goal</p>
               <Badge variant='default'>
                 {Array.isArray(profile.goals)
-                  ? profile.goals.map(g => g.replace('_', ' ')).join(', ')
+                  ? profile.goals
+                      .map(g => capitalizeFirst(g.replace('_', ' ')))
+                      .join(', ')
                   : ''}
               </Badge>
             </div>
@@ -259,7 +266,8 @@ export default function NutritionSettingsPage() {
                     Dietary Restrictions
                   </p>
                   <div className='flex flex-wrap gap-2'>
-                    {!profile.dietaryRestrictions || profile.dietaryRestrictions.length === 0 ? (
+                    {!profile.dietaryRestrictions ||
+                    profile.dietaryRestrictions.length === 0 ? (
                       <Badge key={'None'} variant='default'>
                         None
                       </Badge>
@@ -279,7 +287,8 @@ export default function NutritionSettingsPage() {
               <div>
                 <p className='text-sm font-medium mb-2'>Preferred Cuisines</p>
                 <div className='flex flex-wrap gap-2'>
-                  {!profile.cuisinePreferences || profile.cuisinePreferences.length === 0 ? (
+                  {!profile.cuisinePreferences ||
+                  profile.cuisinePreferences.length === 0 ? (
                     <Badge key={'None'} variant='default'>
                       None
                     </Badge>

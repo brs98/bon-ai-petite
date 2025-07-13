@@ -84,6 +84,7 @@ export function ProfileSetup({
       age: initialData?.age || undefined,
       height: initialData?.height || undefined,
       weight: initialData?.weight || undefined,
+      goalWeight: initialData?.goalWeight || undefined,
       activityLevel: initialData?.activityLevel || undefined,
       goals: initialData?.goals || [],
       dailyCalories: initialData?.dailyCalories || undefined,
