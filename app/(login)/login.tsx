@@ -8,7 +8,7 @@ import { ActionState } from '@/lib/auth/middleware';
 import { Loader2, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useActionState, useEffect } from 'react';
+import { useActionState } from 'react';
 import { signIn, signUp } from './actions';
 
 export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
@@ -22,13 +22,6 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
     mode === 'signin' ? signIn : signUp,
     { error: '' },
   );
-
-  // Redirect to pricing if signing up and no plan is selected
-  useEffect(() => {
-    if (mode === 'signup' && !plan) {
-      router.replace('/pricing');
-    }
-  }, [mode, plan, router]);
 
   // Plan display information
   const planInfo = {

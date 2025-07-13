@@ -4,22 +4,13 @@
 
 - [P0] Weekly meal generation not working <!-- TODO: Bug -->
 - [P0] Update dashboard to actually work <!-- TODO: Feature/bug -->
-- [P1][] Error saving profile: "Profile already exists. Use PUT to update."
-  <!-- TODO: Fix POST/PUT logic in nutrition profile API -->
 - [P1][] Nutrition targets don’t populate in profile setup
   <!-- TODO: Bug/UI logic -->
 - [P1] Nutrition targets step: Allow setting macro ratio presets or manual entry
   <!-- TODO: Feature/UI -->
-- [P2] Review profile step: Format activity/goals as "Lightly Active" (not
-  "lightly_active"), and use comma separation <!-- TODO: UI polish -->
 - [P2] Display all goals on dashboard, not just one<!-- TODO: UI polish -->
 - [P2] Recipe cards on dashboard/recipes page are not responsive at certain
   screen widths <!-- TODO: Responsive UI -->
-- [P3] Nutrition profile setup: Button hover colors look weird
-- [P3] Redirect on sign-up page to choose a product should be handled in
-  middleware
-- [P3] Goal weight is not displaying on form after save and after going back to
-  that page
   <!-- TODO: UI polish -->
 
 ## 🚀 Phase 1: Core Infrastructure (Week 1-2)

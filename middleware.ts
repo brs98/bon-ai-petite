@@ -1,5 +1,5 @@
-import { NextResponse, type NextRequest } from 'next/server';
 import { signToken, verifyToken } from '@/lib/auth/session';
+import { NextResponse, type NextRequest } from 'next/server';
 
 const protectedRoutes = '/dashboard';
 
@@ -7,6 +7,14 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const sessionCookie = request.cookies.get('session');
   const isProtectedRoute = pathname.startsWith(protectedRoutes);
+
+  // Redirect to /pricing if accessing /sign-up without a plan
+  if (pathname === '/sign-up' && request.method === 'GET') {
+    const plan = request.nextUrl.searchParams.get('plan');
+    if (!plan) {
+      return NextResponse.redirect(new URL('/pricing', request.url));
+    }
+  }
 
   if (isProtectedRoute && !sessionCookie) {
     return NextResponse.redirect(new URL('/sign-in', request.url));
