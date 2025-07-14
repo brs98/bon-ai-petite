@@ -52,7 +52,7 @@ export const AllergyPreferencesStep: React.FC<AllergyPreferencesStepProps> = ({
             variant={value.includes(allergy) ? 'default' : 'outline'}
             className={cn(
               'cursor-pointer hover:bg-accent text-sm py-2 px-4 transition-all',
-              value.includes(allergy) && 'hover:text-foreground'
+              value.includes(allergy) && 'hover:text-foreground',
             )}
             onClick={() => toggleSelection(allergy)}
           >

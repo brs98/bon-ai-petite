@@ -108,23 +108,34 @@ export const NutritionProfileSchema = z.object({
   id: z.number().optional(),
   userId: z.number(),
   age: z.number().positive({ message: 'Age is required and must be positive' }),
-  height: z.number().positive({ message: 'Height is required and must be positive' }), // in inches
-  weight: z.number().positive({ message: 'Weight is required and must be positive' }), // in lbs
+  height: z
+    .number()
+    .positive({ message: 'Height is required and must be positive' }), // in inches
+  weight: z
+    .number()
+    .positive({ message: 'Weight is required and must be positive' }), // in lbs
   goalWeight: z.number().positive().optional(), // user's target weight in lbs (optional)
-  activityLevel: z.enum([
-    'sedentary',
-    'lightly_active',
-    'moderately_active',
-    'very_active',
-    'extremely_active',
-  ], { message: 'Activity level is required' }),
-  goals: z.array(z.enum([
-    'lose_weight',
-    'gain_weight',
-    'maintain_weight',
-    'gain_muscle',
-    'improve_health',
-  ])).min(1, { message: 'At least one goal is required' }), // now supports multiple goals
+  activityLevel: z.enum(
+    [
+      'sedentary',
+      'lightly_active',
+      'moderately_active',
+      'very_active',
+      'extremely_active',
+    ],
+    { message: 'Activity level is required' },
+  ),
+  goals: z
+    .array(
+      z.enum([
+        'lose_weight',
+        'gain_weight',
+        'maintain_weight',
+        'gain_muscle',
+        'improve_health',
+      ]),
+    )
+    .min(1, { message: 'At least one goal is required' }), // now supports multiple goals
   dailyCalories: z.number().positive().optional(),
   macroProtein: z.number().nonnegative().optional(), // in grams
   macroCarbs: z.number().nonnegative().optional(), // in grams

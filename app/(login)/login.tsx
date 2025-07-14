@@ -7,13 +7,12 @@ import Logo from '@/components/ui/Logo';
 import { ActionState } from '@/lib/auth/middleware';
 import { Loader2, Sparkles } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { useActionState } from 'react';
 import { signIn, signUp } from './actions';
 
 export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const redirect = searchParams.get('redirect');
   const priceId = searchParams.get('priceId');
   const inviteId = searchParams.get('inviteId');

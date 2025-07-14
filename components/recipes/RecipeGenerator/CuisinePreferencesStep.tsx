@@ -40,7 +40,7 @@ export const CuisinePreferencesStep: React.FC<CuisinePreferencesStepProps> = ({
             variant={value.includes(cuisine) ? 'default' : 'outline'}
             className={cn(
               'cursor-pointer hover:bg-accent text-sm py-2 px-4 transition-all',
-              value.includes(cuisine) && 'hover:text-foreground'
+              value.includes(cuisine) && 'hover:text-foreground',
             )}
             onClick={() => toggleSelection(cuisine)}
           >

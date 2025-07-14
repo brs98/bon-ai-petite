@@ -1,29 +1,31 @@
 'use client';
 
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
 } from '@/components/ui/card';
 import {
-    Form,
-    FormControl,
-    FormDescription,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { calculateMacroProfile } from '@/lib/utils/nutrition';
 import {
-    ACTIVITY_LEVELS,
-    NutritionProfileSchema,
-    type NutritionProfile,
+  ACTIVITY_LEVELS,
+  FITNESS_GOALS,
+  NutritionProfileSchema,
+  type NutritionProfile,
 } from '@/types/recipe';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Apple, ChefHat, Dumbbell, Ruler, User, Weight } from 'lucide-react';
@@ -42,6 +44,11 @@ interface ProfileSetupProps {
     isFinalSave: boolean,
   ) => Promise<void>;
   isLoading?: boolean;
+  currentStep: number;
+  onStepChange: (step: number) => void;
+  showConfirmation: boolean;
+  onShowConfirmation: () => void;
+  onComplete: () => void;
 }
 
 const WEIGHT_GOALS: ('lose_weight' | 'maintain_weight' | 'gain_weight')[] = [
@@ -57,12 +64,40 @@ function formatHeight(heightIn?: number) {
   return `${feet}ft ${inches}in`;
 }
 
+// Utility to get user-friendly label for activity level
+function getActivityLevelLabel(value?: string) {
+  const found = ACTIVITY_LEVELS.find(l => l.value === value);
+  return found
+    ? found.label
+    : value
+      ? capitalizeFirst(value.replace('_', ' '))
+      : '';
+}
+// Utility to get user-friendly label for goal
+function getGoalLabel(value?: string) {
+  const found = FITNESS_GOALS.find(g => g.value === value);
+  return found
+    ? found.label
+    : value
+      ? capitalizeFirst(value.replace('_', ' '))
+      : '';
+}
+// Fallback capitalizeFirst utility
+function capitalizeFirst(str?: string) {
+  if (!str) return '';
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
 export function ProfileSetup({
   initialData,
   isLoading = false,
   onSave,
+  currentStep,
+  onStepChange,
+  showConfirmation,
+  onShowConfirmation,
+  onComplete,
 }: ProfileSetupProps) {
-  const [currentStep, setCurrentStep] = useState(0);
   const [calculatedCalories, setCalculatedCalories] = useState<
     number | undefined
   >(initialData?.dailyCalories || undefined);
@@ -75,7 +110,6 @@ export function ProfileSetup({
   const [weightLbs, setWeightLbs] = useState<number | undefined>(
     initialData?.weight || undefined,
   );
-  const [profileSaved, setProfileSaved] = useState(false);
   const router = useRouter();
 
   const form = useForm<Partial<NutritionProfile>>({
@@ -180,17 +214,19 @@ export function ProfileSetup({
         : undefined;
     data.weight = typeof weightLbs === 'number' ? weightLbs : undefined;
     // Only include goals if non-empty
-    data.goals = Array.isArray(data.goals) && data.goals.length > 0 ? data.goals : undefined;
+    data.goals =
+      Array.isArray(data.goals) && data.goals.length > 0
+        ? data.goals
+        : undefined;
     // Debug log
     console.log('[ProfileSetup] onSubmit data:', data);
-    // Simulate save, but do not call parent onSave yet
-    setProfileSaved(true);
     // Final save
     await onSave(data, true);
+    onShowConfirmation();
   };
 
   // Add this function to handle silent save after every step
-  const handleStepChange = async () => {
+  const handleStepChange = async (nextStep: number) => {
     // Get the latest form values
     const values = form.getValues();
     // Ensure height and weight are set from local state
@@ -201,7 +237,10 @@ export function ProfileSetup({
           ? heightFeet * 12 + heightInches
           : undefined,
       weight: typeof weightLbs === 'number' ? weightLbs : undefined,
-      goals: Array.isArray(values.goals) && values.goals.length > 0 ? values.goals : undefined,
+      goals:
+        Array.isArray(values.goals) && values.goals.length > 0
+          ? values.goals
+          : undefined,
     };
     // Debug log
     console.log('[ProfileSetup] handleStepChange data:', profileData);
@@ -210,19 +249,18 @@ export function ProfileSetup({
     } catch {
       // Silently ignore errors
     }
+    onStepChange(nextStep);
   };
 
   const nextStep = async () => {
-    await handleStepChange();
     if (currentStep < steps.length - 1) {
-      setCurrentStep(currentStep + 1);
+      await handleStepChange(currentStep + 1);
     }
   };
 
   const prevStep = async () => {
-    await handleStepChange();
     if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
+      await handleStepChange(currentStep - 1);
     }
   };
 
@@ -231,7 +269,7 @@ export function ProfileSetup({
   return (
     <div className='max-w-4xl mx-auto space-y-8'>
       {/* Show confirmation after save */}
-      {profileSaved ? (
+      {showConfirmation ? (
         <div className='flex flex-col items-center justify-center min-h-[300px] space-y-6'>
           <div className='text-center'>
             <h2 className='text-2xl font-bold mb-2'>Profile Saved!</h2>
@@ -243,7 +281,10 @@ export function ProfileSetup({
             <Button
               size='lg'
               variant='default'
-              onClick={() => router.push('/dashboard/recipes/generate')}
+              onClick={() => {
+                onComplete();
+                router.push('/dashboard/recipes/generate');
+              }}
             >
               Generate a Recipe
             </Button>
@@ -251,7 +292,10 @@ export function ProfileSetup({
               size='lg'
               variant='outline'
               className='flex items-center gap-2 border-primary text-primary'
-              onClick={() => router.push('/dashboard/meal-planning/weekly')}
+              onClick={() => {
+                onComplete();
+                router.push('/dashboard/meal-planning/weekly');
+              }}
             >
               <ChefHat className='h-5 w-5' />
               Create Weekly Meal Plan
@@ -786,7 +830,7 @@ export function ProfileSetup({
                               type='button'
                               size='sm'
                               variant='outline'
-                              onClick={() => setCurrentStep(0)}
+                              onClick={() => onStepChange(0)}
                             >
                               Edit
                             </Button>
@@ -820,32 +864,52 @@ export function ProfileSetup({
                               </div>
                             )}
                         </div>
-                        {/* Activity & Goals */}
+                        {/* Activity Level */}
                         <div className='rounded-lg border p-4 space-y-2 bg-muted/50'>
                           <div className='flex justify-between items-center'>
                             <h3 className='font-semibold text-lg'>
-                              Activity & Goals
+                              Activity Level
                             </h3>
                             <Button
                               type='button'
                               size='sm'
                               variant='outline'
-                              onClick={() => setCurrentStep(1)}
+                              onClick={() => onStepChange(1)}
                             >
                               Edit
                             </Button>
                           </div>
                           <div className='flex flex-wrap gap-2'>
-                            {formValues.activityLevel && (
+                            {formValues.activityLevel ? (
                               <span className='badge'>
-                                {formValues.activityLevel}
+                                {getActivityLevelLabel(
+                                  formValues.activityLevel,
+                                )}
                               </span>
+                            ) : (
+                              <span className='badge'>None</span>
                             )}
+                          </div>
+                        </div>
+                        {/* Goals */}
+                        <div className='rounded-lg border p-4 space-y-2 bg-muted/50'>
+                          <div className='flex justify-between items-center'>
+                            <h3 className='font-semibold text-lg'>Goals</h3>
+                            <Button
+                              type='button'
+                              size='sm'
+                              variant='outline'
+                              onClick={() => onStepChange(2)}
+                            >
+                              Edit
+                            </Button>
+                          </div>
+                          <div className='flex flex-wrap gap-2'>
                             {Array.isArray(formValues.goals) &&
                             formValues.goals.length > 0 ? (
                               formValues.goals.map(goal => (
                                 <span className='badge' key={goal}>
-                                  {goal}
+                                  {getGoalLabel(goal)}
                                 </span>
                               ))
                             ) : (
@@ -863,20 +927,24 @@ export function ProfileSetup({
                               type='button'
                               size='sm'
                               variant='outline'
-                              onClick={() => setCurrentStep(3)}
+                              onClick={() => onStepChange(3)}
                             >
                               Edit
                             </Button>
                           </div>
                           <div className='flex flex-wrap gap-2'>
-                            {(formValues.allergies?.length
-                              ? formValues.allergies
-                              : ['None']
-                            ).map(a => (
-                              <span className='badge' key={a}>
-                                {a}
-                              </span>
-                            ))}
+                            {formValues.allergies &&
+                            formValues.allergies.length > 0 ? (
+                              formValues.allergies.map(a => (
+                                <Badge key={a} variant='destructive'>
+                                  {a}
+                                </Badge>
+                              ))
+                            ) : (
+                              <Badge key='None' variant='default'>
+                                None
+                              </Badge>
+                            )}
                           </div>
                         </div>
                         {/* Dietary Preferences */}
@@ -889,20 +957,26 @@ export function ProfileSetup({
                               type='button'
                               size='sm'
                               variant='outline'
-                              onClick={() => setCurrentStep(4)}
+                              onClick={() => onStepChange(4)}
                             >
                               Edit
                             </Button>
                           </div>
                           <div className='flex flex-wrap gap-2'>
-                            {(formValues.dietaryRestrictions?.length
-                              ? formValues.dietaryRestrictions
-                              : ['None']
-                            ).map(d => (
-                              <span className='badge' key={d}>
-                                {d}
-                              </span>
-                            ))}
+                            {Array.isArray(formValues.dietaryRestrictions) &&
+                            formValues.dietaryRestrictions.length > 0 ? (
+                              (formValues.dietaryRestrictions as string[]).map(
+                                (d: string) => (
+                                  <Badge key={d} variant='secondary'>
+                                    {d}
+                                  </Badge>
+                                ),
+                              )
+                            ) : (
+                              <Badge key='None' variant='default'>
+                                None
+                              </Badge>
+                            )}
                           </div>
                         </div>
                         {/* Preferred Cuisines */}
@@ -915,20 +989,24 @@ export function ProfileSetup({
                               type='button'
                               size='sm'
                               variant='outline'
-                              onClick={() => setCurrentStep(5)}
+                              onClick={() => onStepChange(5)}
                             >
                               Edit
                             </Button>
                           </div>
                           <div className='flex flex-wrap gap-2'>
-                            {(formValues.cuisinePreferences?.length
-                              ? formValues.cuisinePreferences
-                              : ['None']
-                            ).map(c => (
-                              <span className='badge' key={c}>
-                                {c}
-                              </span>
-                            ))}
+                            {formValues.cuisinePreferences &&
+                            formValues.cuisinePreferences.length > 0 ? (
+                              formValues.cuisinePreferences.map(c => (
+                                <Badge key={c} variant='outline'>
+                                  {c}
+                                </Badge>
+                              ))
+                            ) : (
+                              <Badge key='None' variant='default'>
+                                None
+                              </Badge>
+                            )}
                           </div>
                         </div>
                         {/* Nutrition Targets */}
@@ -941,7 +1019,7 @@ export function ProfileSetup({
                               type='button'
                               size='sm'
                               variant='outline'
-                              onClick={() => setCurrentStep(6)}
+                              onClick={() => onStepChange(6)}
                             >
                               Edit
                             </Button>

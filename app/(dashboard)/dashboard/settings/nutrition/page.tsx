@@ -13,7 +13,7 @@ import {
 import { PaymentSuccessBanner } from '@/components/ui/PaymentSuccessBanner';
 import { type NutritionProfile } from '@/types/recipe';
 import { Loader2, Settings, User } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 function formatHeight(heightIn?: number) {
@@ -34,6 +34,34 @@ export default function NutritionSettingsPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [showSetup, setShowSetup] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Query param state
+  const stepParam = searchParams.get('step');
+  const confirmationParam = searchParams.get('confirmation');
+  // Use 1-based step in URL, 0-based internally
+  const currentStep = stepParam ? Math.max(0, parseInt(stepParam, 10) - 1) : 0;
+  const showConfirmation = confirmationParam === '1';
+  const hasStepParam = !!stepParam;
+
+  // Helpers to update query params
+  function setStep(step: number) {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('step', String(step + 1)); // 1-based in URL
+    params.delete('confirmation');
+    router.replace(`?${params.toString()}`, { scroll: false });
+  }
+  function showConfirmationScreen() {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('confirmation', '1');
+    router.replace(`?${params.toString()}`, { scroll: false });
+  }
+  function clearWizardState() {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete('step');
+    params.delete('confirmation');
+    router.replace(`?${params.toString()}`, { scroll: false });
+  }
 
   // Fetch existing profile on mount
   useEffect(() => {
@@ -103,7 +131,7 @@ export default function NutritionSettingsPage() {
     );
   }
 
-  if (showSetup || !profile) {
+  if (showSetup || !profile || hasStepParam) {
     return (
       <div className='space-y-6'>
         <PaymentSuccessBanner />
@@ -120,6 +148,11 @@ export default function NutritionSettingsPage() {
           initialData={profile || undefined}
           onSave={handleSaveProfile}
           isLoading={isSaving}
+          currentStep={currentStep}
+          onStepChange={setStep}
+          showConfirmation={showConfirmation}
+          onShowConfirmation={showConfirmationScreen}
+          onComplete={clearWizardState}
         />
       </div>
     );
@@ -133,7 +166,10 @@ export default function NutritionSettingsPage() {
           <User className='h-6 w-6' />
           <h1 className='text-2xl font-bold'>Nutrition Profile</h1>
         </div>
-        <Button onClick={() => setShowSetup(true)}>Edit Profile</Button>
+        <Button onClick={() => {
+          setShowSetup(true);
+          setStep(0); // step=1 in URL, 0-based internally
+        }}>Edit Profile</Button>
       </div>
 
       <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>

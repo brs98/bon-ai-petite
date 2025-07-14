@@ -566,6 +566,10 @@ describe('Recipe Schemas', () => {
     it('should correctly infer NutritionProfile type', () => {
       const profile: NutritionProfile = {
         userId: 123,
+        age: 30,
+        weight: 180,
+        height: 70,
+        gender: 'male',
         activityLevel: 'very_active',
         goals: ['gain_muscle'],
       };

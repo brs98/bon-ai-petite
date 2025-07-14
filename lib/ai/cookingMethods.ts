@@ -23,4 +23,4 @@ export const COOKING_METHODS = [
   'sous-vide',
   'air-fry',
   'dehydrate',
-]; 
+];

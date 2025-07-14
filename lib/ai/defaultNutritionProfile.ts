@@ -11,4 +11,4 @@ export const DEFAULT_NUTRITION_PROFILE = {
   difficulty: 'easy',
   mealType: 'dinner',
   mealComplexity: 'simple',
-}; 
+};

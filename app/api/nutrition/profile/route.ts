@@ -88,7 +88,8 @@ export async function POST(request: NextRequest) {
     });
 
     // Validate the cleaned data with partial schema for preferences-only updates
-    const validationResult = NutritionProfileSchema.partial().safeParse(cleanedData);
+    const validationResult =
+      NutritionProfileSchema.partial().safeParse(cleanedData);
 
     if (!validationResult.success) {
       console.error('Validation failed:', validationResult.error.issues);
@@ -118,7 +119,8 @@ export async function POST(request: NextRequest) {
       const weight = mergedProfile.weight ?? undefined;
       const activityLevel = mergedProfile.activityLevel ?? undefined;
       const goals = mergedProfile.goals ?? undefined;
-      const dietaryRestrictions = mergedProfile.dietaryRestrictions ?? undefined;
+      const dietaryRestrictions =
+        mergedProfile.dietaryRestrictions ?? undefined;
       if (
         age !== undefined &&
         gender !== undefined &&
@@ -154,10 +156,14 @@ export async function POST(request: NextRequest) {
       if (validatedData.goalWeight !== undefined)
         updateData.goalWeight = validatedData.goalWeight;
       if (validatedData.age !== undefined) updateData.age = validatedData.age;
-      if (validatedData.height !== undefined) updateData.height = validatedData.height;
-      if (validatedData.weight !== undefined) updateData.weight = validatedData.weight;
-      if (validatedData.activityLevel !== undefined) updateData.activityLevel = validatedData.activityLevel;
-      if (validatedData.goals !== undefined) updateData.goals = validatedData.goals;
+      if (validatedData.height !== undefined)
+        updateData.height = validatedData.height;
+      if (validatedData.weight !== undefined)
+        updateData.weight = validatedData.weight;
+      if (validatedData.activityLevel !== undefined)
+        updateData.activityLevel = validatedData.activityLevel;
+      if (validatedData.goals !== undefined)
+        updateData.goals = validatedData.goals;
 
       const updatedProfile = await db
         .update(nutritionProfiles)
@@ -241,7 +247,8 @@ export async function PUT(request: NextRequest) {
     });
 
     // Validate the cleaned data with partial schema for preferences-only updates
-    const validationResult = NutritionProfileSchema.partial().safeParse(cleanedData);
+    const validationResult =
+      NutritionProfileSchema.partial().safeParse(cleanedData);
 
     if (!validationResult.success) {
       console.error('Validation failed:', validationResult.error.issues);
@@ -315,10 +322,14 @@ export async function PUT(request: NextRequest) {
     if (validatedData.goalWeight !== undefined)
       updateData.goalWeight = validatedData.goalWeight;
     if (validatedData.age !== undefined) updateData.age = validatedData.age;
-    if (validatedData.height !== undefined) updateData.height = validatedData.height;
-    if (validatedData.weight !== undefined) updateData.weight = validatedData.weight;
-    if (validatedData.activityLevel !== undefined) updateData.activityLevel = validatedData.activityLevel;
-    if (validatedData.goals !== undefined) updateData.goals = validatedData.goals;
+    if (validatedData.height !== undefined)
+      updateData.height = validatedData.height;
+    if (validatedData.weight !== undefined)
+      updateData.weight = validatedData.weight;
+    if (validatedData.activityLevel !== undefined)
+      updateData.activityLevel = validatedData.activityLevel;
+    if (validatedData.goals !== undefined)
+      updateData.goals = validatedData.goals;
 
     const updatedProfile = await db
       .update(nutritionProfiles)

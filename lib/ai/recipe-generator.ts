@@ -2,11 +2,11 @@ import { openai } from '@ai-sdk/openai';
 import { generateObject } from 'ai';
 import * as dotenv from 'dotenv';
 import {
-    RecipeGenerationRequestSchema,
-    RecipeGenerationSchema,
-    type Recipe,
-    type RecipeFeedback,
-    type RecipeGenerationRequest,
+  RecipeGenerationRequestSchema,
+  RecipeGenerationSchema,
+  type Recipe,
+  type RecipeFeedback,
+  type RecipeGenerationRequest,
 } from '../../types/recipe';
 import { type NutritionProfile } from '../db/schema';
 import { feedbackProcessor, type FeedbackInsights } from './feedback-processor';
@@ -279,7 +279,9 @@ export class RecipeGeneratorService {
         // Dietary restrictions check (simple string match on ingredient names)
         const dietaryRestrictions = validatedRequest.dietaryRestrictions ?? [];
         if (dietaryRestrictions.length > 0 && enhancedRecipe.ingredients) {
-          const lowerRestrictions = dietaryRestrictions.map(r => r.toLowerCase());
+          const lowerRestrictions = dietaryRestrictions.map(r =>
+            r.toLowerCase(),
+          );
           for (const ingredient of enhancedRecipe.ingredients) {
             for (const restriction of lowerRestrictions) {
               if (ingredient.name.toLowerCase().includes(restriction)) {
@@ -331,7 +333,12 @@ export class RecipeGeneratorService {
             }
           }
         }
-        if (enhancedRecipe.cuisineType && forbiddenCuisines.some(c => (enhancedRecipe.cuisineType || '').toLowerCase().includes(c))) {
+        if (
+          enhancedRecipe.cuisineType &&
+          forbiddenCuisines.some(c =>
+            (enhancedRecipe.cuisineType || '').toLowerCase().includes(c),
+          )
+        ) {
           issues.push(
             `Cuisine type '${enhancedRecipe.cuisineType}' is forbidden by prompt requirements`,
           );
@@ -340,59 +347,118 @@ export class RecipeGeneratorService {
         // See: recipe_prompt.md > User Preferences, Final Quality Check
         const nutrition = enhancedRecipe.nutrition;
         function withinTolerance(val: number, target: number, tolerance = 0.1) {
-          return val >= target * (1 - tolerance) && val <= target * (1 + tolerance);
+          return (
+            val >= target * (1 - tolerance) && val <= target * (1 + tolerance)
+          );
         }
-        if (validatedRequest.calories && nutrition && typeof nutrition.calories === 'number') {
+        if (
+          validatedRequest.calories &&
+          nutrition &&
+          typeof nutrition.calories === 'number'
+        ) {
           if (!withinTolerance(nutrition.calories, validatedRequest.calories)) {
-            issues.push(`Calories (${nutrition.calories}) not within 10% of target (${validatedRequest.calories})`);
+            issues.push(
+              `Calories (${nutrition.calories}) not within 10% of target (${validatedRequest.calories})`,
+            );
           }
         }
-        if (validatedRequest.protein && nutrition && typeof nutrition.protein === 'number') {
+        if (
+          validatedRequest.protein &&
+          nutrition &&
+          typeof nutrition.protein === 'number'
+        ) {
           if (nutrition.protein < validatedRequest.protein) {
-            issues.push(`Protein (${nutrition.protein}) is less than requested minimum (${validatedRequest.protein})`);
+            issues.push(
+              `Protein (${nutrition.protein}) is less than requested minimum (${validatedRequest.protein})`,
+            );
           }
         }
-        if (validatedRequest.carbs && nutrition && typeof nutrition.carbs === 'number') {
+        if (
+          validatedRequest.carbs &&
+          nutrition &&
+          typeof nutrition.carbs === 'number'
+        ) {
           if (!withinTolerance(nutrition.carbs, validatedRequest.carbs)) {
-            issues.push(`Carbohydrates (${nutrition.carbs}) not within 10% of target (${validatedRequest.carbs})`);
+            issues.push(
+              `Carbohydrates (${nutrition.carbs}) not within 10% of target (${validatedRequest.carbs})`,
+            );
           }
         }
-        if (validatedRequest.fat && nutrition && typeof nutrition.fat === 'number') {
+        if (
+          validatedRequest.fat &&
+          nutrition &&
+          typeof nutrition.fat === 'number'
+        ) {
           if (!withinTolerance(nutrition.fat, validatedRequest.fat)) {
-            issues.push(`Fat (${nutrition.fat}) not within 10% of target (${validatedRequest.fat})`);
+            issues.push(
+              `Fat (${nutrition.fat}) not within 10% of target (${validatedRequest.fat})`,
+            );
           }
         }
         // --- Serving size (markdown: meets serving size) ---
         // See: recipe_prompt.md > User Preferences, Final Quality Check
-        if (validatedRequest.servings && enhancedRecipe.servings !== validatedRequest.servings) {
-          issues.push(`Servings (${enhancedRecipe.servings}) does not match requested (${validatedRequest.servings})`);
+        if (
+          validatedRequest.servings &&
+          enhancedRecipe.servings !== validatedRequest.servings
+        ) {
+          issues.push(
+            `Servings (${enhancedRecipe.servings}) does not match requested (${validatedRequest.servings})`,
+          );
         }
         // --- Total time (markdown: can be prepared in 20 minutes or less) ---
         // See: recipe_prompt.md > User Preferences, Final Quality Check
-        const totalTime = (typeof validatedRequest.timeToMake === 'number') ? validatedRequest.timeToMake : 20;
-        if ((enhancedRecipe.prepTime || 0) + (enhancedRecipe.cookTime || 0) > totalTime) {
-          issues.push(`Total time (prep + cook = ${(enhancedRecipe.prepTime || 0) + (enhancedRecipe.cookTime || 0)}) exceeds allowed (${totalTime})`);
+        const totalTime =
+          typeof validatedRequest.timeToMake === 'number'
+            ? validatedRequest.timeToMake
+            : 20;
+        if (
+          (enhancedRecipe.prepTime || 0) + (enhancedRecipe.cookTime || 0) >
+          totalTime
+        ) {
+          issues.push(
+            `Total time (prep + cook = ${(enhancedRecipe.prepTime || 0) + (enhancedRecipe.cookTime || 0)}) exceeds allowed (${totalTime})`,
+          );
         }
         // --- Difficulty, meal type, complexity (markdown: matches user’s request) ---
         // See: recipe_prompt.md > User Preferences, Final Quality Check
-        if (validatedRequest.difficulty && enhancedRecipe.difficulty !== validatedRequest.difficulty) {
-          issues.push(`Difficulty (${enhancedRecipe.difficulty}) does not match requested (${validatedRequest.difficulty})`);
+        if (
+          validatedRequest.difficulty &&
+          enhancedRecipe.difficulty !== validatedRequest.difficulty
+        ) {
+          issues.push(
+            `Difficulty (${enhancedRecipe.difficulty}) does not match requested (${validatedRequest.difficulty})`,
+          );
         }
-        if (validatedRequest.mealType && enhancedRecipe.mealType !== validatedRequest.mealType) {
-          issues.push(`Meal type (${enhancedRecipe.mealType}) does not match requested (${validatedRequest.mealType})`);
+        if (
+          validatedRequest.mealType &&
+          enhancedRecipe.mealType !== validatedRequest.mealType
+        ) {
+          issues.push(
+            `Meal type (${enhancedRecipe.mealType}) does not match requested (${validatedRequest.mealType})`,
+          );
         }
-        if (validatedRequest.mealComplexity && enhancedRecipe.tags && !enhancedRecipe.tags.includes(validatedRequest.mealComplexity)) {
-          issues.push(`Recipe tags do not include requested complexity (${validatedRequest.mealComplexity})`);
+        if (
+          validatedRequest.mealComplexity &&
+          enhancedRecipe.tags &&
+          !enhancedRecipe.tags.includes(validatedRequest.mealComplexity)
+        ) {
+          issues.push(
+            `Recipe tags do not include requested complexity (${validatedRequest.mealComplexity})`,
+          );
         }
         // --- Instructions clarity/simplicity (markdown: clear and simple instructions) ---
         // See: recipe_prompt.md > Final Quality Check
         if (enhancedRecipe.instructions) {
           if (enhancedRecipe.instructions.length > 10) {
-            issues.push('Recipe has more than 10 instruction steps (may not be simple enough)');
+            issues.push(
+              'Recipe has more than 10 instruction steps (may not be simple enough)',
+            );
           }
           for (const step of enhancedRecipe.instructions) {
             if (step.length > 300) {
-              issues.push('One or more instruction steps are too long (over 300 characters)');
+              issues.push(
+                'One or more instruction steps are too long (over 300 characters)',
+              );
             }
           }
         }
@@ -408,23 +474,56 @@ export class RecipeGeneratorService {
         // See: recipe_prompt.md > Avoid Repetition
         // If variety score is low, or if name, main ingredients, or cooking methods are highly similar, flag as issue
         if (varietyScore < 0.5) {
-          issues.push('Recipe is too similar to a recent one (low variety score)');
+          issues.push(
+            'Recipe is too similar to a recent one (low variety score)',
+          );
         }
         // Check for highly similar name
-        if (session.recentRecipes.some(r => this.calculateStringSimilarity(r.name.toLowerCase(), enhancedRecipe.name.toLowerCase()) > 0.8)) {
+        if (
+          session.recentRecipes.some(
+            r =>
+              this.calculateStringSimilarity(
+                r.name.toLowerCase(),
+                enhancedRecipe.name.toLowerCase(),
+              ) > 0.8,
+          )
+        ) {
           issues.push('Recipe name is too similar to a recent one');
         }
         // Check for highly similar main ingredients
-        const mainIngredients = (enhancedRecipe.ingredients || []).map(i => i.name.toLowerCase()).slice(0, 3).sort().join(',');
-        if (session.recentRecipes.some(r => (r.ingredients || []).map(i => i.name.toLowerCase()).slice(0, 3).sort().join(',') === mainIngredients)) {
+        const mainIngredients = (enhancedRecipe.ingredients || [])
+          .map(i => i.name.toLowerCase())
+          .slice(0, 3)
+          .sort()
+          .join(',');
+        if (
+          session.recentRecipes.some(
+            r =>
+              (r.ingredients || [])
+                .map(i => i.name.toLowerCase())
+                .slice(0, 3)
+                .sort()
+                .join(',') === mainIngredients,
+          )
+        ) {
           issues.push('Main ingredients are too similar to a recent recipe');
         }
         // Check for highly similar cooking methods
-        const currentMethods = this.extractCookingMethodsFromInstructions(enhancedRecipe.instructions || []);
-        if (session.recentRecipes.some(r => {
-          const prevMethods = this.extractCookingMethodsFromInstructions(r.instructions || []);
-          return prevMethods.length > 0 && currentMethods.length > 0 && prevMethods.join(',') === currentMethods.join(',');
-        })) {
+        const currentMethods = this.extractCookingMethodsFromInstructions(
+          enhancedRecipe.instructions || [],
+        );
+        if (
+          session.recentRecipes.some(r => {
+            const prevMethods = this.extractCookingMethodsFromInstructions(
+              r.instructions || [],
+            );
+            return (
+              prevMethods.length > 0 &&
+              currentMethods.length > 0 &&
+              prevMethods.join(',') === currentMethods.join(',')
+            );
+          })
+        ) {
           issues.push('Cooking methods are too similar to a recent recipe');
         }
         // --- End Healthy Balanced Meal Component Validation ---

@@ -48,4 +48,4 @@ Meal Plan Requirements:
 `;
 }
 
-// To automate: Use a script to extract the Recipe type and update this function's return value during your build process. 
+// To automate: Use a script to extract the Recipe type and update this function's return value during your build process.

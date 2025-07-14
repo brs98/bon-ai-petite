@@ -52,7 +52,7 @@ export const DietaryPreferencesStep: React.FC<DietaryPreferencesStepProps> = ({
             variant={value.includes(restriction) ? 'default' : 'outline'}
             className={cn(
               'cursor-pointer hover:bg-accent text-sm py-2 px-4 transition-all',
-              value.includes(restriction) && 'hover:text-foreground'
+              value.includes(restriction) && 'hover:text-foreground',
             )}
             onClick={() => toggleSelection(restriction)}
           >

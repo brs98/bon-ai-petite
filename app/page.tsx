@@ -309,8 +309,8 @@ export default function HomePage() {
               How It Works
             </h2>
             <p className='text-xl text-muted-foreground max-w-2xl mx-auto'>
-              Save time, eat healthier, and enjoy more variety—Bon AI Petite makes
-              meal planning effortless in just three simple steps.
+              Save time, eat healthier, and enjoy more variety—Bon AI Petite
+              makes meal planning effortless in just three simple steps.
             </p>
           </motion.div>
           <motion.div
