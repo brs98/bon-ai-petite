@@ -3,29 +3,29 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
 } from '@/components/ui/card';
 import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+    Form,
+    FormControl,
+    FormDescription,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { calculateMacroProfile } from '@/lib/utils/nutrition';
 import {
-  ACTIVITY_LEVELS,
-  FITNESS_GOALS,
-  NutritionProfileSchema,
-  type NutritionProfile,
+    ACTIVITY_LEVELS,
+    FITNESS_GOALS,
+    NutritionProfileSchema,
+    type NutritionProfile,
 } from '@/types/recipe';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Apple, ChefHat, Dumbbell, Ruler, User, Weight } from 'lucide-react';
@@ -222,7 +222,7 @@ export function ProfileSetup({
     console.log('[ProfileSetup] onSubmit data:', data);
     // Final save
     await onSave(data, true);
-    onShowConfirmation();
+    onShowConfirmation(); // Restored to show confirmation screen
   };
 
   // Add this function to handle silent save after every step
@@ -326,7 +326,8 @@ export function ProfileSetup({
 
           <Form {...form}>
             <form
-              onSubmit={() => {
+              onSubmit={e => {
+                e.preventDefault();
                 void form.handleSubmit(onSubmit)();
               }}
               className='space-y-8'

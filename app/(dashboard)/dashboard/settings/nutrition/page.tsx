@@ -91,14 +91,15 @@ export default function NutritionSettingsPage() {
   ) => {
     setIsSaving(true);
     try {
-      const method = profile ? 'PUT' : 'POST';
-      const response = await fetch('/api/nutrition/profile', {
-        method,
+      // Always use POST for upsert
+      const fetchOptions = {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(data),
-      });
+      };
+      const response = await fetch('/api/nutrition/profile', fetchOptions);
 
       if (response.ok) {
         const savedProfile = await response.json();
@@ -107,16 +108,20 @@ export default function NutritionSettingsPage() {
           setShowSetup(false);
         }
       } else {
-        const error = await response.json();
+        let error = null;
+        try {
+          error = await response.json();
+        } catch (e) {
+          error = { error: 'Failed to parse error response', details: e };
+        }
         console.error('Error saving profile:', error);
-        // Optionally show a toast or error message to the user
         alert(
           error?.error ||
             'Failed to save profile. Please refresh and try again.',
         );
       }
     } catch (error) {
-      console.error('Error saving profile:', error);
+      console.error('Network or unexpected error:', error);
       alert('Failed to save profile. Please refresh and try again.');
     } finally {
       setIsSaving(false);
@@ -166,10 +171,14 @@ export default function NutritionSettingsPage() {
           <User className='h-6 w-6' />
           <h1 className='text-2xl font-bold'>Nutrition Profile</h1>
         </div>
-        <Button onClick={() => {
-          setShowSetup(true);
-          setStep(0); // step=1 in URL, 0-based internally
-        }}>Edit Profile</Button>
+        <Button
+          onClick={() => {
+            setShowSetup(true);
+            setStep(0); // step=1 in URL, 0-based internally
+          }}
+        >
+          Edit Profile
+        </Button>
       </div>
 
       <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
