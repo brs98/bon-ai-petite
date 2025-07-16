@@ -121,6 +121,8 @@ export async function POST(request: NextRequest) {
       const goals = mergedProfile.goals ?? undefined;
       const dietaryRestrictions =
         mergedProfile.dietaryRestrictions ?? undefined;
+
+      // Patch: Only calculate macros if not supplied by user
       if (
         age !== undefined &&
         gender !== undefined &&
@@ -131,20 +133,39 @@ export async function POST(request: NextRequest) {
         Array.isArray(goals) &&
         goals.length > 0
       ) {
-        const macroProfile = calculateMacroProfile({
-          age,
-          gender: gender as 'male' | 'female',
-          height,
-          weight,
-          activityLevel,
-          goal: goals[0],
-          dietaryPreferences: dietaryRestrictions,
-        });
-        updateData.dailyCalories = macroProfile.calories;
-        updateData.macroProtein = macroProfile.protein;
-        updateData.macroCarbs = macroProfile.carbs;
-        updateData.macroFat = macroProfile.fat;
+        if (
+          validatedData.macroProtein === undefined ||
+          validatedData.macroCarbs === undefined ||
+          validatedData.macroFat === undefined
+        ) {
+          const macroProfile = calculateMacroProfile({
+            age,
+            gender: gender as 'male' | 'female',
+            height,
+            weight,
+            activityLevel,
+            goal: goals[0],
+            dietaryPreferences: dietaryRestrictions,
+          });
+          if (validatedData.macroProtein === undefined)
+            updateData.macroProtein = macroProfile.protein;
+          if (validatedData.macroCarbs === undefined)
+            updateData.macroCarbs = macroProfile.carbs;
+          if (validatedData.macroFat === undefined)
+            updateData.macroFat = macroProfile.fat;
+          if (validatedData.dailyCalories === undefined)
+            updateData.dailyCalories = macroProfile.calories;
+        }
       }
+      // Always use user-supplied macro values if present
+      if (validatedData.macroProtein !== undefined)
+        updateData.macroProtein = validatedData.macroProtein;
+      if (validatedData.macroCarbs !== undefined)
+        updateData.macroCarbs = validatedData.macroCarbs;
+      if (validatedData.macroFat !== undefined)
+        updateData.macroFat = validatedData.macroFat;
+      if (validatedData.dailyCalories !== undefined)
+        updateData.dailyCalories = validatedData.dailyCalories;
       if (validatedData.allergies !== undefined)
         updateData.allergies = validatedData.allergies;
       if (validatedData.dietaryRestrictions !== undefined)
@@ -187,20 +208,39 @@ export async function POST(request: NextRequest) {
         Array.isArray(validatedData.goals) &&
         validatedData.goals.length > 0
       ) {
-        const macroProfile = calculateMacroProfile({
-          age: validatedData.age,
-          gender: validatedData.gender,
-          height: validatedData.height,
-          weight: validatedData.weight,
-          activityLevel: validatedData.activityLevel,
-          goal: validatedData.goals[0],
-          dietaryPreferences: validatedData.dietaryRestrictions,
-        });
-        insertData.dailyCalories = macroProfile.calories;
-        insertData.macroProtein = macroProfile.protein;
-        insertData.macroCarbs = macroProfile.carbs;
-        insertData.macroFat = macroProfile.fat;
+        if (
+          validatedData.macroProtein === undefined ||
+          validatedData.macroCarbs === undefined ||
+          validatedData.macroFat === undefined
+        ) {
+          const macroProfile = calculateMacroProfile({
+            age: validatedData.age,
+            gender: validatedData.gender,
+            height: validatedData.height,
+            weight: validatedData.weight,
+            activityLevel: validatedData.activityLevel,
+            goal: validatedData.goals[0],
+            dietaryPreferences: validatedData.dietaryRestrictions,
+          });
+          if (validatedData.macroProtein === undefined)
+            insertData.macroProtein = macroProfile.protein;
+          if (validatedData.macroCarbs === undefined)
+            insertData.macroCarbs = macroProfile.carbs;
+          if (validatedData.macroFat === undefined)
+            insertData.macroFat = macroProfile.fat;
+          if (validatedData.dailyCalories === undefined)
+            insertData.dailyCalories = macroProfile.calories;
+        }
       }
+      // Always use user-supplied macro values if present
+      if (validatedData.macroProtein !== undefined)
+        insertData.macroProtein = validatedData.macroProtein;
+      if (validatedData.macroCarbs !== undefined)
+        insertData.macroCarbs = validatedData.macroCarbs;
+      if (validatedData.macroFat !== undefined)
+        insertData.macroFat = validatedData.macroFat;
+      if (validatedData.dailyCalories !== undefined)
+        insertData.dailyCalories = validatedData.dailyCalories;
       if (validatedData.allergies !== undefined)
         insertData.allergies = validatedData.allergies;
       if (validatedData.dietaryRestrictions !== undefined)
