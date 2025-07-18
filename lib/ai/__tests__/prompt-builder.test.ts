@@ -8,134 +8,7 @@ describe('PromptBuilderService', () => {
     service = new PromptBuilderService();
   });
 
-  describe('buildRecipePrompt', () => {
-    it('should return system and user prompts', () => {
-      const request: RecipeGenerationRequest = { mealType: 'lunch' };
-      const result = service.buildRecipePrompt(request);
-
-      expect(result).toHaveProperty('system');
-      expect(result).toHaveProperty('user');
-      expect(typeof result.system).toBe('string');
-      expect(typeof result.user).toBe('string');
-    });
-
-    it('should include safety warnings for allergies', () => {
-      const request: RecipeGenerationRequest = {
-        mealType: 'dinner',
-        allergies: ['shellfish', 'peanuts'],
-      };
-
-      const result = service.buildRecipePrompt(request);
-
-      expect(result.user).toContain('⚠️ CRITICAL - ALLERGIES TO AVOID');
-      expect(result.user).toContain('ABSOLUTELY NO ingredients');
-      expect(result.user).toContain('shellfish');
-      expect(result.user).toContain('peanuts');
-    });
-
-    it('should include nutritional targets when provided', () => {
-      const request: RecipeGenerationRequest = {
-        mealType: 'breakfast',
-        calories: 400,
-        protein: 25,
-        carbs: 45,
-        fat: 20,
-      };
-
-      const result = service.buildRecipePrompt(request);
-
-      expect(result.user).toContain('Calories: ~400 kcal');
-      expect(result.user).toContain('Protein: 25g or more');
-      expect(result.user).toContain('Carbohydrates: ~45g');
-      expect(result.user).toContain('Fat: ~20g');
-    });
-
-    it('should include dietary restrictions', () => {
-      const request: RecipeGenerationRequest = {
-        mealType: 'lunch',
-        dietaryRestrictions: ['vegan', 'gluten-free'],
-      };
-
-      const result = service.buildRecipePrompt(request);
-
-      expect(result.user).toContain('Dietary Restrictions:');
-      expect(result.user).toContain('vegan');
-      expect(result.user).toContain('gluten-free');
-    });
-
-    it('should include cuisine preferences', () => {
-      const request: RecipeGenerationRequest = {
-        mealType: 'dinner',
-        cuisinePreferences: ['Italian', 'Mediterranean'],
-      };
-
-      const result = service.buildRecipePrompt(request);
-
-      expect(result.user).toContain('Preferred Cuisines:');
-      expect(result.user).toContain('Italian');
-      expect(result.user).toContain('Mediterranean');
-    });
-
-    it('should include user profile context', () => {
-      const request: RecipeGenerationRequest = {
-        mealType: 'dinner',
-        userProfile: {
-          goals: 'gain_muscle',
-          activityLevel: 'very_active',
-        },
-      };
-
-      const result = service.buildRecipePrompt(request);
-
-      expect(result.user).toContain('User Context:');
-      expect(result.user).toContain('Goal: gain muscle');
-      expect(result.user).toContain('Activity Level: very active');
-    });
-
-    it('should include the correct meal type in JSON structure', () => {
-      const request: RecipeGenerationRequest = {
-        mealType: 'snack',
-      };
-
-      const result = service.buildRecipePrompt(request);
-
-      expect(result.user).toContain('"mealType": "snack"');
-    });
-
-    it('should handle empty arrays gracefully', () => {
-      const request: RecipeGenerationRequest = {
-        mealType: 'breakfast',
-        allergies: [],
-        dietaryRestrictions: [],
-        cuisinePreferences: [],
-      };
-
-      const result = service.buildRecipePrompt(request);
-
-      // Should not include sections for empty arrays
-      expect(result.user).not.toContain('ALLERGIES TO AVOID');
-      expect(result.user).not.toContain('Dietary Restrictions:');
-      expect(result.user).not.toContain('Preferred Cuisines:');
-    });
-
-    it('should prioritize allergies over other requirements', () => {
-      const request: RecipeGenerationRequest = {
-        mealType: 'lunch',
-        allergies: ['nuts'],
-        dietaryRestrictions: ['vegetarian'],
-      };
-
-      const result = service.buildRecipePrompt(request);
-
-      // Allergies should appear before dietary restrictions in the prompt
-      const allergyIndex = result.user.indexOf('ALLERGIES TO AVOID');
-      const dietaryIndex = result.user.indexOf('Dietary Restrictions');
-
-      expect(allergyIndex).toBeLessThan(dietaryIndex);
-      expect(allergyIndex).toBeGreaterThan(-1);
-      expect(dietaryIndex).toBeGreaterThan(-1);
-    });
-  });
+  // Remove all tests for buildRecipePrompt (deprecated/removed)
 
   describe('getFewShotExamples', () => {
     it('should return valid example prompts and responses', () => {
@@ -252,7 +125,8 @@ describe('PromptBuilderService', () => {
   describe('buildSystemPrompt', () => {
     it('should contain essential instructions for AI', () => {
       const request: RecipeGenerationRequest = { mealType: 'lunch' };
-      const result = service.buildRecipePrompt(request);
+      // Pass [] for recentRecipes in tests
+      const result = service.buildMarkdownAlignedPrompt(request, undefined, []);
 
       // Key instructions should be present
       expect(result.system).toContain('professional chef');
@@ -265,7 +139,8 @@ describe('PromptBuilderService', () => {
 
     it('should emphasize safety for allergies and restrictions', () => {
       const request: RecipeGenerationRequest = { mealType: 'lunch' };
-      const result = service.buildRecipePrompt(request);
+      // Pass [] for recentRecipes in tests
+      const result = service.buildMarkdownAlignedPrompt(request, undefined, []);
 
       expect(result.system).toContain('this is critical for safety');
       expect(result.system).toContain(
@@ -296,7 +171,8 @@ describe('PromptBuilderService', () => {
         allergies: manyAllergies,
       };
 
-      const result = service.buildRecipePrompt(request);
+      // Pass [] for recentRecipes in tests
+      const result = service.buildMarkdownAlignedPrompt(request, undefined, []);
 
       // Prompt should be reasonable length (less than 4000 characters)
       expect(result.user.length).toBeLessThan(4000);
@@ -327,7 +203,12 @@ describe('PromptBuilderService', () => {
         },
       };
 
-      const result = service.buildRecipePrompt(complexRequest);
+      // Pass [] for recentRecipes in tests
+      const result = service.buildMarkdownAlignedPrompt(
+        complexRequest,
+        undefined,
+        [],
+      );
 
       // Should handle complexity without becoming too long
       expect(result.user.length).toBeLessThan(5000);

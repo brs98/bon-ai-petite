@@ -401,7 +401,7 @@ export default function WeeklyMealPlanPage() {
             <ShoppingList
               ingredients={shoppingList.ingredients.map(ingredient => ({
                 ...ingredient,
-                id: ingredient.name,
+                id: ingredient.name + ingredient.unit,
               }))}
               planName={mealPlan ? mealPlan.name : ''}
               onIngredientToggle={(ingredientId, checked) => {

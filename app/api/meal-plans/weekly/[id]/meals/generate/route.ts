@@ -126,9 +126,11 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     }
     // Build the batch prompt
     const promptBuilder = new PromptBuilderService();
+    // For batch, we do not have recent recipe context, so pass an empty array
     const prompt = promptBuilder.buildWeeklyMealPlanPrompt(
       mealCounts,
       userContext,
+      [], // No recent recipes context in batch
     );
 
     // === Batch OpenAI call ===

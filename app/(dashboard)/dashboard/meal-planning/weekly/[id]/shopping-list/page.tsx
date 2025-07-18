@@ -5,20 +5,20 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
-  ShoppingList as ShoppingListType,
-  WeeklyMealPlanWithItems,
+    ShoppingList as ShoppingListType,
+    WeeklyMealPlanWithItems,
 } from '@/types/recipe';
 import {
-  AlertTriangle,
-  ArrowLeft,
-  Calendar,
-  CheckCircle2,
-  ChefHat,
-  Download,
-  Printer,
-  RefreshCw,
-  Share2,
-  ShoppingCart,
+    AlertTriangle,
+    ArrowLeft,
+    Calendar,
+    CheckCircle2,
+    ChefHat,
+    Download,
+    Printer,
+    RefreshCw,
+    Share2,
+    ShoppingCart,
 } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -612,18 +612,20 @@ export default function ShoppingListPage() {
 
           {/* Shopping List Component */}
           <ShoppingList
-            ingredients={shoppingList.ingredients.map(ingredient => ({
+            ingredients={shoppingList.ingredients.map((ingredient, index) => ({
               ...ingredient,
-              id: ingredient.name, // Use name as ID for operations
+              id: `${ingredient.name}-${ingredient.unit}-${index}`, // Create unique ID
             }))}
             planName={mealPlan.name}
             onIngredientToggle={(ingredientId, checked) => {
               void (async () => {
                 if (!shoppingList) return;
+                // Extract the original name from the ID (format: name-unit-index)
+                const originalName = ingredientId.split('-').slice(0, -2).join('-');
                 // Optimistically update UI
                 const updatedIngredients = shoppingList.ingredients.map(
                   ingredient => {
-                    if (ingredient.name === ingredientId) {
+                    if (ingredient.name === originalName) {
                       return { ...ingredient, checked };
                     }
                     return ingredient;
@@ -645,7 +647,7 @@ export default function ShoppingListPage() {
                       method: 'PATCH',
                       headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify({
-                        ingredientName: ingredientId,
+                        ingredientName: originalName,
                         checked,
                       }),
                     },
@@ -658,7 +660,7 @@ export default function ShoppingListPage() {
                   // Roll back UI if failed
                   const rolledBackIngredients = shoppingList.ingredients.map(
                     ingredient => {
-                      if (ingredient.name === ingredientId) {
+                      if (ingredient.name === originalName) {
                         return { ...ingredient, checked: !checked };
                       }
                       return ingredient;
@@ -676,9 +678,11 @@ export default function ShoppingListPage() {
             }}
             onIngredientEdit={(ingredientId, updates) => {
               if (!shoppingList) return;
+              // Extract the original name from the ID (format: name-unit-index)
+              const originalName = ingredientId.split('-').slice(0, -2).join('-');
               const updatedIngredients = shoppingList.ingredients.map(
                 ingredient => {
-                  if (ingredient.name === ingredientId) {
+                  if (ingredient.name === originalName) {
                     return { ...ingredient, ...updates };
                   }
                   return ingredient;
@@ -705,8 +709,10 @@ export default function ShoppingListPage() {
             }}
             onIngredientRemove={ingredientId => {
               if (!shoppingList) return;
+              // Extract the original name from the ID (format: name-unit-index)
+              const originalName = ingredientId.split('-').slice(0, -2).join('-');
               const updatedIngredients = shoppingList.ingredients.filter(
-                ingredient => ingredient.name !== ingredientId,
+                ingredient => ingredient.name !== originalName,
               );
               const updatedShoppingList = {
                 ...shoppingList,

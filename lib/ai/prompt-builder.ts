@@ -1,6 +1,5 @@
 import { type RecipeGenerationRequest } from '../../types/recipe';
 import { type NutritionProfile } from '../db/schema';
-import { COOKING_METHODS } from './cookingMethods'; // <-- Added import
 import { DEFAULT_NUTRITION_PROFILE } from './defaultNutritionProfile'; // <-- Added import
 import { normalizeUserContext } from './normalize-user-context';
 import {
@@ -53,8 +52,11 @@ export class PromptBuilderService {
    */
   private buildSystemPrompt(): string {
     // See: recipe_prompt.md > System Prompt
+    // [Family Friendly Update]: Added explicit instruction for family-friendly recipes
     return [
       'You are an expert chef and nutritionist.',
+      // Family-friendly requirement:
+      'All recipes must be family friendly: suitable for all ages, approachable flavors, not too spicy, easy to prepare, and likely to appeal to both children and adults.',
       'Generate a healthy, simple dinner recipe for the user based on the following criteria. Return the result as a JSON object matching the provided schema exactly.',
     ].join(' ');
   }
@@ -192,6 +194,7 @@ export class PromptBuilderService {
    */
   private buildRequiredComponentsSection(): string {
     // See: recipe_prompt.md > Required Recipe Components
+    // [Family Friendly Update]: Added bullet for family-friendliness
     return [
       'Required Recipe Components:',
       '- Must match one of the user’s cuisine preferences',
@@ -201,36 +204,34 @@ export class PromptBuilderService {
       '  - A clear lean protein source',
       '  - A source of healthy fat',
       '- Must strictly avoid all allergens and dietary restrictions',
+      '- Must be family friendly: suitable for all ages, approachable flavors, not too spicy, easy to prepare, and likely to appeal to both children and adults.',
     ].join('\n');
   }
 
   /**
    * Build the avoid repetition section (from recipe_prompt.md: Avoid Repetition)
-   * Dynamically includes recent ingredients, cuisines, and methods for the LLM to avoid.
-   * Only includes avoided ingredients/cuisines if provided in VarietyConfig; omits if empty/undefined.
+   * Now only includes the names of the last 10 recipes for the LLM to avoid repeating.
+   * recentRecipes is now required.
    */
   private buildAvoidRepetitionSection(
-    recentRecipes?: SimpleRecipe[],
-    varietyConfig?: { avoidanceTerms?: string[]; cuisineRotation?: string[] },
+    recentRecipes: SimpleRecipe[],
+    _varietyConfig?: { avoidanceTerms?: string[]; cuisineRotation?: string[] },
   ): string {
     // See: recipe_prompt.md > Avoid Repetition
     const avoidRepetition = ['Avoid Repetition:'];
-    // Only include avoided ingredients if provided and non-empty
-    if (
-      varietyConfig?.avoidanceTerms &&
-      varietyConfig.avoidanceTerms.length > 0
-    ) {
+    // Only include the names of the last 10 recipes
+    console.log(
+      'RECENT_RECIPES:',
+      recentRecipes?.map(r => r.name),
+    );
+    const last10Names = recentRecipes
+      .slice(-10)
+      .map(r => r.name)
+      .filter(Boolean);
+    console.log('LAST_10_NAMES:', last10Names);
+    if (last10Names.length > 0) {
       avoidRepetition.push(
-        `Do not use: ${varietyConfig.avoidanceTerms.join(', ')}`,
-      );
-    }
-    // Only include avoided cuisines if provided and non-empty
-    if (
-      varietyConfig?.cuisineRotation &&
-      varietyConfig.cuisineRotation.length > 0
-    ) {
-      avoidRepetition.push(
-        `Avoid these cuisine themes: ${varietyConfig.cuisineRotation.join(', ')}`,
+        `Recent recipe names (do NOT repeat or make similar): ${last10Names.join(', ')}`,
       );
     }
     avoidRepetition.push(
@@ -239,51 +240,6 @@ export class PromptBuilderService {
       '- Uses different cooking methods, ingredients, and flavor profiles',
       '- Has a unique name and concept',
     );
-    // Dynamically add recent context for LLM to avoid
-    if (recentRecipes && recentRecipes.length > 0) {
-      // Recent recipe names
-      avoidRepetition.push(
-        `Recent recipes: ${recentRecipes.map(r => r.name).join(', ')}`,
-      );
-      // Recent ingredients
-      const recentIngredients = Array.from(
-        new Set(
-          recentRecipes.flatMap(r => (r.ingredients || []).map(i => i.name)),
-        ),
-      );
-      if (recentIngredients.length > 0) {
-        avoidRepetition.push(
-          `Avoid these recently used ingredients: ${recentIngredients.join(', ')}`,
-        );
-      }
-      // Recent cuisines
-      const recentCuisines = Array.from(
-        new Set(recentRecipes.map(r => r.cuisineType).filter(Boolean)),
-      );
-      if (recentCuisines.length > 0) {
-        avoidRepetition.push(
-          `Avoid these recently used cuisines: ${recentCuisines.join(', ')}`,
-        );
-      }
-      // Recent cooking methods (if instructions available)
-      // Use COOKING_METHODS from cookingMethods.ts
-      const recentMethods = Array.from(
-        new Set(
-          recentRecipes.flatMap(r =>
-            (r.instructions || []).flatMap(instr =>
-              COOKING_METHODS.filter(
-                m => instr && instr.toLowerCase().includes(m),
-              ),
-            ),
-          ),
-        ),
-      );
-      if (recentMethods.length > 0) {
-        avoidRepetition.push(
-          `Avoid these recently used cooking methods: ${recentMethods.join(', ')}`,
-        );
-      }
-    }
     return avoidRepetition.join('\n');
   }
 
@@ -295,7 +251,7 @@ export class PromptBuilderService {
     request: RecipeGenerationRequest,
   ): string {
     // See: recipe_prompt.md > Final Quality Check
-    // Use dynamic thresholds from request/userContext
+    // [Family Friendly Update]: Added bullet for family-friendliness
     const timeLimit =
       typeof request.timeToMake === 'number'
         ? request.timeToMake
@@ -310,26 +266,19 @@ export class PromptBuilderService {
       `- Makes exactly ${servings} serving${servings === 1 ? '' : 's'}`,
       '- Has clear and simple instructions for an easy cooking experience',
       '- Includes all required food components (fiber-rich carb, non-starchy vegetable, lean protein, healthy fat)',
+      '- Is family friendly: suitable for all ages, approachable flavors, not too spicy, easy to prepare, and likely to appeal to both children and adults.',
     ].join('\n');
   }
 
   /**
    * Build a prompt for recipe generation that matches the structure and language of recipe_prompt.md
    * This is the preferred method for single recipe generation.
-   *
-   * Sections:
-   *   - System Prompt (from markdown)
-   *   - User Preferences (from request/userContext)
-   *   - Required Recipe Components (from markdown)
-   *   - Avoid Repetition (from markdown and recent recipes)
-   *   - Final Quality Check (from markdown)
-   *
-   * See: /Users/brandon/Downloads/recipe_prompt.md
+   * recentRecipes is now required.
    */
   buildMarkdownAlignedPrompt(
     request: RecipeGenerationRequest,
-    userContext?: UserContext,
-    recentRecipes?: SimpleRecipe[],
+    userContext: UserContext | undefined,
+    recentRecipes: SimpleRecipe[],
   ): PromptTemplate {
     // --- 🧠 System Prompt ---
     const system = this.buildSystemPrompt();
@@ -368,22 +317,8 @@ export class PromptBuilderService {
   }
 
   /**
-   * Build a contextualized prompt for recipe generation with user history and preferences
-   * @deprecated - now uses buildMarkdownAlignedPrompt
-   */
-  buildRecipePrompt(
-    request: RecipeGenerationRequest,
-    userContext?: UserContext,
-  ): PromptTemplate {
-    // DEBUG: Log normalized user context
-    const normalized = normalizeUserContext(userContext || {});
-    console.debug('[PromptBuilder] Normalized User Context:', normalized);
-    // DEPRECATED: Use modular builder
-    return this.buildMarkdownAlignedPrompt(request, userContext);
-  }
-
-  /**
    * Build a prompt for batch weekly meal plan generation (all meals in one call)
+   * recentRecipes is now required (even if not used in this method, for consistency).
    */
   buildWeeklyMealPlanPrompt(
     mealCounts: {
@@ -393,6 +328,7 @@ export class PromptBuilderService {
       snacks: number;
     },
     userPreferences: UserContext,
+    _recentRecipes: SimpleRecipe[], // unused, but required for signature consistency
   ): PromptTemplate {
     // DEBUG: Log normalized user context
     const normalized = normalizeUserContext(userPreferences || {});
@@ -599,12 +535,13 @@ export class PromptBuilderService {
 
   /**
    * Build variety-enhanced prompt with creativity seeds and avoidance mechanisms
+   * recentRecipes is now required.
    */
   buildVarietyEnhancedPrompt(
     request: RecipeGenerationRequest,
-    userContext?: UserContext,
-    varietyConfig?: VarietyConfig,
-    recentRecipes?: SimpleRecipe[],
+    userContext: UserContext | undefined,
+    varietyConfig: VarietyConfig | undefined,
+    recentRecipes: SimpleRecipe[],
   ): PromptTemplate {
     // DEBUG: Log normalized user context and variety config
     const normalized = normalizeUserContext(userContext || {});
@@ -614,7 +551,11 @@ export class PromptBuilderService {
     );
     console.debug('[PromptBuilder] Variety Config:', varietyConfig);
     // Start with base prompt template
-    const baseTemplate = this.buildRecipePrompt(request, userContext);
+    const baseTemplate = this.buildMarkdownAlignedPrompt(
+      request,
+      userContext,
+      recentRecipes,
+    );
 
     // Enhance system prompt with variety instructions
     const varietySystemEnhancements = this.buildVarietySystemPrompt(
@@ -657,13 +598,6 @@ export class PromptBuilderService {
         '- Use different cooking methods, ingredient combinations, and flavor profiles\n';
       prompt += '- Ensure the recipe name and concept are unique\n';
     }
-
-    prompt += '\n## CREATIVITY GUIDELINES:\n';
-    prompt += '- Think outside conventional recipe patterns\n';
-    prompt += '- Consider unexpected but harmonious ingredient combinations\n';
-    prompt += '- Apply innovative cooking techniques where appropriate\n';
-    prompt +=
-      '- Focus on creating a memorable and distinctive culinary experience\n';
 
     return prompt;
   }

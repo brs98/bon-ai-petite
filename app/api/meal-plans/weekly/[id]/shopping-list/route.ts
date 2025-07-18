@@ -1,7 +1,7 @@
 import { db } from '@/lib/db/drizzle';
 import { getUser } from '@/lib/db/queries';
 import { mealPlanItems, shoppingLists, weeklyMealPlans } from '@/lib/db/schema';
-import { type GroceryCategory } from '@/types/recipe';
+import { ingredientConsolidatorService } from '@/lib/meal-planning/ingredient-consolidator';
 import { and, eq } from 'drizzle-orm';
 import { NextRequest } from 'next/server';
 
@@ -10,6 +10,22 @@ interface RouteParams {
     id: string;
   }>;
 }
+
+type GroceryCategory =
+  | 'produce'
+  | 'dairy'
+  | 'meat'
+  | 'poultry'
+  | 'seafood'
+  | 'bakery'
+  | 'deli'
+  | 'frozen'
+  | 'pantry'
+  | 'spices'
+  | 'beverages'
+  | 'snacks'
+  | 'health'
+  | 'other';
 
 interface ConsolidatedIngredient {
   name: string;
@@ -157,40 +173,8 @@ function categorizeIngredient(ingredientName: string): GroceryCategory {
   return 'pantry';
 }
 
-// Helper function to normalize unit names
-function normalizeUnit(unit: string): string {
-  const normalized = unit.toLowerCase().trim();
-
-  // Handle common unit variations
-  const unitMappings: Record<string, string> = {
-    cups: 'cup',
-    c: 'cup',
-    tablespoons: 'tbsp',
-    tablespoon: 'tbsp',
-    teaspoons: 'tsp',
-    teaspoon: 'tsp',
-    pounds: 'lb',
-    pound: 'lb',
-    ounces: 'oz',
-    ounce: 'oz',
-    grams: 'g',
-    gram: 'g',
-    kilograms: 'kg',
-    kilogram: 'kg',
-    milliliters: 'ml',
-    milliliter: 'ml',
-    liters: 'l',
-    liter: 'l',
-    pieces: 'piece',
-    cloves: 'clove',
-    slices: 'slice',
-  };
-
-  return unitMappings[normalized] || normalized;
-}
-
-// Helper function to consolidate ingredients with same name and unit
-function consolidateIngredients(
+// Enhanced consolidation function that handles unit conversions
+function consolidateIngredientsWithUnitConversion(
   ingredientsWithOrigins: Array<{
     name: string;
     quantity: number;
@@ -199,43 +183,63 @@ function consolidateIngredients(
     recipeId: number;
   }>,
 ): ConsolidatedIngredient[] {
-  const consolidated = new Map<string, ConsolidatedIngredient>();
+  // Convert to the format expected by the consolidator service
+  const ingredientsForConsolidation = ingredientsWithOrigins.map(ingredient => ({
+    name: ingredient.name,
+    quantity: ingredient.quantity,
+    unit: ingredient.unit,
+  }));
 
-  for (const ingredient of ingredientsWithOrigins) {
-    const normalizedName = ingredient.name.toLowerCase().trim();
-    const normalizedUnit = normalizeUnit(ingredient.unit);
-    const key = `${normalizedName}|${normalizedUnit}`;
+  // Use the consolidator service to handle unit conversions and consolidation
+  const consolidatedFromService = ingredientConsolidatorService.consolidateIngredientArray(
+    ingredientsForConsolidation
+  );
 
-    if (consolidated.has(key)) {
-      const existing = consolidated.get(key)!;
-      existing.quantity += ingredient.quantity;
-      // Add recipe info if not already present
-      if (!existing.recipeNames?.includes(ingredient.recipeName)) {
-        existing.recipeNames = [
-          ...(existing.recipeNames || []),
-          ingredient.recipeName,
-        ];
-        existing.recipeIds = [
-          ...(existing.recipeIds || []),
-          ingredient.recipeId,
-        ];
+  // Now we need to merge the recipe information back
+  const finalConsolidated: ConsolidatedIngredient[] = [];
+
+  for (const consolidated of consolidatedFromService) {
+    // Find all original ingredients that contributed to this consolidated ingredient
+    const contributingIngredients = ingredientsWithOrigins.filter(original => {
+      // Use the same normalization logic as the consolidator service
+      const normalizedOriginalName = ingredientConsolidatorService.normalizeIngredientName(original.name);
+      const consolidatedName = consolidated.name.toLowerCase().trim();
+      
+      // Check if names match after normalization
+      if (normalizedOriginalName === consolidatedName) {
+        return true;
       }
-    } else {
-      consolidated.set(key, {
-        name: ingredient.name,
-        quantity: ingredient.quantity,
-        unit: normalizedUnit,
-        category: categorizeIngredient(ingredient.name),
-        checked: false,
-        recipeNames: [ingredient.recipeName],
-        recipeIds: [ingredient.recipeId],
-      });
-    }
+
+      // Also check if the consolidator service would consider them similar
+      if (ingredientConsolidatorService.areIngredientNamesSimilar(normalizedOriginalName, consolidatedName)) {
+        return true;
+      }
+
+      // Additional check: try normalizing both names and comparing
+      const normalizedConsolidated = ingredientConsolidatorService.normalizeIngredientName(consolidatedName);
+      if (normalizedOriginalName === normalizedConsolidated) {
+        return true;
+      }
+
+      return false;
+    });
+
+    // Extract recipe information
+    const recipeNames = [...new Set(contributingIngredients.map(i => i.recipeName))];
+    const recipeIds = [...new Set(contributingIngredients.map(i => i.recipeId))];
+
+    finalConsolidated.push({
+      name: consolidated.name,
+      quantity: consolidated.quantity,
+      unit: consolidated.unit,
+      category: consolidated.category,
+      checked: false,
+      recipeNames,
+      recipeIds,
+    });
   }
 
-  return Array.from(consolidated.values()).sort((a, b) =>
-    a.name.localeCompare(b.name),
-  );
+  return finalConsolidated.sort((a, b) => a.name.localeCompare(b.name));
 }
 
 export async function POST(request: NextRequest, { params }: RouteParams) {
@@ -318,8 +322,8 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    // Consolidate ingredients by name and unit
-    const consolidatedIngredients = consolidateIngredients(allIngredients);
+    // Use enhanced consolidation with unit conversion
+    const consolidatedIngredients = consolidateIngredientsWithUnitConversion(allIngredients);
 
     // Check if shopping list already exists for this plan
     const existingShoppingList = await db.query.shoppingLists.findFirst({

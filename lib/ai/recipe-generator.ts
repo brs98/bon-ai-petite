@@ -141,33 +141,6 @@ export class RecipeGeneratorService {
       'air-frying',
       'dehydrating',
     ],
-    uniqueIngredients: [
-      'pomegranate seeds',
-      'sumac',
-      'harissa',
-      'miso paste',
-      'tahini',
-      'coconut aminos',
-      'nutritional yeast',
-      "za'atar",
-      'kimchi',
-      'tempeh',
-      'jackfruit',
-      'hemp hearts',
-      'spirulina',
-      'maca powder',
-      'turmeric',
-      'cardamom',
-      'star anise',
-      'lemongrass',
-      'kaffir lime leaves',
-      'galangal',
-      'black garlic',
-      'yuzu',
-      'shiso leaves',
-      'mirin',
-      'bonito flakes',
-    ],
   };
 
   constructor() {
@@ -218,11 +191,12 @@ export class RecipeGeneratorService {
         );
 
         // Generate enhanced prompt with variety mechanisms
+        // recentRecipes is now required
         const promptTemplate = promptBuilder.buildVarietyEnhancedPrompt(
           validatedRequest,
           userContext,
           varietyConfig,
-          session.recentRecipes,
+          session.recentRecipes, // always pass the session's recentRecipes
         );
 
         // Generate recipe using structured output with dynamic temperature
@@ -528,6 +502,73 @@ export class RecipeGeneratorService {
         }
         // --- End Healthy Balanced Meal Component Validation ---
 
+        // [Family Friendly Update]: Check for family-friendliness
+        // Check for excessive spiciness or ingredients not suitable for children
+        const spicyTerms = [
+          'chili',
+          'chilli',
+          'hot sauce',
+          'jalapeno',
+          'habanero',
+          'cayenne',
+          'sriracha',
+          'ghost pepper',
+          'spicy',
+          'chipotle',
+        ];
+        const notFamilyFriendlyIngredients = (
+          enhancedRecipe.ingredients || []
+        ).filter(ingredient =>
+          spicyTerms.some(term => ingredient.name.toLowerCase().includes(term)),
+        );
+        if (notFamilyFriendlyIngredients.length > 0) {
+          issues.push(
+            'Recipe contains ingredients that may be too spicy for children or not family friendly: ' +
+              notFamilyFriendlyIngredients.map(i => i.name).join(', '),
+          );
+        }
+        // Optionally, check for alcohol or other non-family-friendly ingredients
+        const nonFamilyTerms = [
+          'alcohol',
+          'wine',
+          'rum',
+          'vodka',
+          'tequila',
+          'whiskey',
+          'bourbon',
+          'beer',
+          'liqueur',
+        ];
+        const containsAlcohol = (enhancedRecipe.ingredients || []).some(
+          ingredient =>
+            nonFamilyTerms.some(term =>
+              ingredient.name.toLowerCase().includes(term),
+            ),
+        );
+        if (containsAlcohol) {
+          issues.push(
+            'Recipe contains alcohol or ingredients not suitable for all ages.',
+          );
+        }
+        // Optionally, check for instructions that mention alcohol or spiciness
+        if (enhancedRecipe.instructions) {
+          for (const step of enhancedRecipe.instructions) {
+            if (spicyTerms.some(term => step.toLowerCase().includes(term))) {
+              issues.push(
+                'Instructions may encourage making the dish too spicy for children.',
+              );
+            }
+            if (
+              nonFamilyTerms.some(term => step.toLowerCase().includes(term))
+            ) {
+              issues.push(
+                'Instructions may encourage use of alcohol or non-family-friendly ingredients.',
+              );
+            }
+          }
+        }
+        // --- End Healthy Balanced Meal Component Validation ---
+
         // Update session with new recipe
         this.updateSessionWithNewRecipe(session, enhancedRecipe);
 
@@ -728,20 +769,23 @@ export class RecipeGeneratorService {
     recipe: Recipe,
     recentRecipes: Recipe[],
   ): number {
-    if (recentRecipes.length === 0) return 1.0;
+    // Only consider the last 10 recipes for variety calculation
+    const last10Recipes = recentRecipes.slice(-10);
+    console.log('last10recipes', last10Recipes);
+    if (last10Recipes.length === 0) return 1.0;
 
     let varietyPoints = 0;
     let totalChecks = 0;
 
     // Check cuisine variety
-    const recentCuisines = recentRecipes
+    const recentCuisines = last10Recipes
       .map(r => r.cuisineType)
       .filter(Boolean);
     if (!recentCuisines.includes(recipe.cuisineType)) varietyPoints += 2;
     totalChecks += 2;
 
     // Check ingredient variety
-    const recentIngredients = recentRecipes.flatMap(
+    const recentIngredients = last10Recipes.flatMap(
       r => r.ingredients?.map(i => i.name.toLowerCase()) || [],
     );
     const recipeIngredients =
@@ -757,7 +801,7 @@ export class RecipeGeneratorService {
 
     // Check cooking method variety (inferred from instructions)
     const recentMethods = this.extractCookingMethodsFromInstructions(
-      recentRecipes.flatMap(r => r.instructions || []),
+      last10Recipes.flatMap(r => r.instructions || []),
     );
     const recipeMethods = this.extractCookingMethodsFromInstructions(
       recipe.instructions || [],
@@ -767,7 +811,7 @@ export class RecipeGeneratorService {
     totalChecks += 2;
 
     // Check name similarity
-    const recentNames = recentRecipes.map(r => r.name.toLowerCase());
+    const recentNames = last10Recipes.map(r => r.name.toLowerCase());
     const nameSimilarity = recentNames.some(
       name =>
         this.calculateStringSimilarity(name, recipe.name.toLowerCase()) > 0.6,
@@ -968,6 +1012,9 @@ export class RecipeGeneratorService {
       }
       // Remove all checks for creativitySeed and ingredientFocus
     }
+
+    // [Family Friendly Update]: Always add a 'family-friendly' tag
+    tags.push('family-friendly');
 
     recipe.tags = [...new Set(tags)]; // Remove duplicates
 

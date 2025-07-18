@@ -3,32 +3,40 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
 } from '@/components/ui/card';
 import {
-    Form,
-    FormControl,
-    FormDescription,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { calculateMacroProfile } from '@/lib/utils/nutrition';
 import {
-    ACTIVITY_LEVELS,
-    FITNESS_GOALS,
-    NutritionProfileSchema,
-    type NutritionProfile,
+  ACTIVITY_LEVELS,
+  FITNESS_GOALS,
+  NutritionProfileSchema,
+  type NutritionProfile,
 } from '@/types/recipe';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Apple, ChefHat, Dumbbell, Info, Ruler, User, Weight } from 'lucide-react';
+import {
+  Apple,
+  ChefHat,
+  Dumbbell,
+  Info,
+  Ruler,
+  User,
+  Weight,
+} from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -209,10 +217,14 @@ export function ProfileSetup({
 
   // Automatically set goalWeight to weight if maintain_weight is selected
   useEffect(() => {
-    const subscription = form.watch((values, { name }) => {
+    const subscription = form.watch(values => {
       const goals = values.goals;
       const weight = values.weight;
-      if (Array.isArray(goals) && goals[0] === 'maintain_weight' && weight !== undefined) {
+      if (
+        Array.isArray(goals) &&
+        goals[0] === 'maintain_weight' &&
+        weight !== undefined
+      ) {
         // Only update if goalWeight is not already equal to weight
         if (values.goalWeight !== weight) {
           form.setValue('goalWeight', weight);
@@ -297,10 +309,14 @@ export function ProfileSetup({
   }, [form, heightFeet, heightInches, weightLbs]);
 
   // Macro split selection state
-  const [selectedMacroSplit, setSelectedMacroSplit] = useState<number | null>(null);
+  const [selectedMacroSplit, setSelectedMacroSplit] = useState<number | null>(
+    null,
+  );
 
   // Add state for showing the benefits popover
-  const [showBenefitsPopover, setShowBenefitsPopover] = useState<number | null>(null);
+  const [showBenefitsPopover, setShowBenefitsPopover] = useState<number | null>(
+    null,
+  );
 
   // Watch form values for calories and macros
   const formValues = form.watch();
@@ -311,14 +327,23 @@ export function ProfileSetup({
     const split = MACRO_SPLIT_OPTIONS[index].split;
     const calories = form.getValues('dailyCalories');
     if (calories) {
-      form.setValue('macroCarbs', Math.round((calories * split.carbs) / 100 / 4));
-      form.setValue('macroProtein', Math.round((calories * split.protein) / 100 / 4));
+      form.setValue(
+        'macroCarbs',
+        Math.round((calories * split.carbs) / 100 / 4),
+      );
+      form.setValue(
+        'macroProtein',
+        Math.round((calories * split.protein) / 100 / 4),
+      );
       form.setValue('macroFat', Math.round((calories * split.fat) / 100 / 9));
     }
   }
 
   // If user edits macro grams manually, clear the selected split
-  function handleManualMacroChange(field: 'macroProtein' | 'macroCarbs' | 'macroFat', value: number | undefined) {
+  function handleManualMacroChange(
+    field: 'macroProtein' | 'macroCarbs' | 'macroFat',
+    value: number | undefined,
+  ) {
     setSelectedMacroSplit(null);
     form.setValue(field, value);
   }
@@ -329,8 +354,14 @@ export function ProfileSetup({
       const split = MACRO_SPLIT_OPTIONS[selectedMacroSplit].split;
       const calories = form.getValues('dailyCalories');
       if (calories) {
-        form.setValue('macroCarbs', Math.round((calories * split.carbs) / 100 / 4));
-        form.setValue('macroProtein', Math.round((calories * split.protein) / 100 / 4));
+        form.setValue(
+          'macroCarbs',
+          Math.round((calories * split.carbs) / 100 / 4),
+        );
+        form.setValue(
+          'macroProtein',
+          Math.round((calories * split.protein) / 100 / 4),
+        );
         form.setValue('macroFat', Math.round((calories * split.fat) / 100 / 9));
       }
     }
@@ -812,12 +843,20 @@ export function ProfileSetup({
                     <div className='space-y-6 text-center'>
                       <div className='space-y-2'>
                         <Apple className='h-12 w-12 mx-auto text-primary' />
-                        <h2 className='text-2xl font-bold'>Nutrition Targets</h2>
-                        <p className='text-muted-foreground'>Set your daily calorie and macronutrient goals. We'll use these to personalize your meal plans.</p>
+                        <h2 className='text-2xl font-bold'>
+                          Nutrition Targets
+                        </h2>
+                        <p className='text-muted-foreground'>
+                          Set your daily calorie and macronutrient goals. We'll
+                          use these to personalize your meal plans.
+                        </p>
                       </div>
                       {/* Daily Calorie Target input above macro targets */}
                       <div className='w-full max-w-3xl mx-auto mb-4 flex flex-col items-center'>
-                        <label className='font-semibold mb-1' htmlFor='dailyCalories'>
+                        <label
+                          className='font-semibold mb-1'
+                          htmlFor='dailyCalories'
+                        >
                           Daily Calorie Target
                         </label>
                         <Input
@@ -825,14 +864,20 @@ export function ProfileSetup({
                           type='number'
                           className='text-center text-lg font-mono'
                           value={formValues.dailyCalories || ''}
-                          onChange={e => form.setValue('dailyCalories', parseInt(e.target.value) || undefined)}
+                          onChange={e =>
+                            form.setValue(
+                              'dailyCalories',
+                              parseInt(e.target.value) || undefined,
+                            )
+                          }
                           min={0}
                           style={{ width: 120 }}
                           placeholder='Calories'
                         />
                         {calculatedCalories && (
                           <span className='text-xs text-muted-foreground mt-1'>
-                            Suggested: {calculatedCalories} calories based on your profile
+                            Suggested: {calculatedCalories} calories based on
+                            your profile
                           </span>
                         )}
                       </div>
@@ -847,14 +892,18 @@ export function ProfileSetup({
                           >
                             <CardHeader>
                               <div className='flex items-center justify-between'>
-                                <CardTitle className='text-base'>{option.label}</CardTitle>
+                                <CardTitle className='text-base'>
+                                  {option.label}
+                                </CardTitle>
                                 {selectedMacroSplit === idx && (
                                   <button
                                     type='button'
                                     className='ml-2 text-muted-foreground hover:text-primary focus:outline-none'
                                     onClick={e => {
                                       e.stopPropagation();
-                                      setShowBenefitsPopover(show => show === idx ? null : idx);
+                                      setShowBenefitsPopover(show =>
+                                        show === idx ? null : idx,
+                                      );
                                     }}
                                     aria-label='Show benefits'
                                   >
@@ -862,72 +911,113 @@ export function ProfileSetup({
                                   </button>
                                 )}
                               </div>
-                              <CardDescription className='text-xs'>{option.description}</CardDescription>
+                              <CardDescription className='text-xs'>
+                                {option.description}
+                              </CardDescription>
                             </CardHeader>
                           </Card>
                         ))}
                       </div>
                       {/* Benefits Popover (simple implementation) */}
-                      {selectedMacroSplit !== null && showBenefitsPopover === selectedMacroSplit && (
-                        <div className='mt-2 p-4 border rounded bg-muted max-w-xl mx-auto text-left z-10 relative'>
-                          <h3 className='font-bold mb-2'>{MACRO_SPLIT_OPTIONS[selectedMacroSplit].label} Benefits</h3>
-                          <ul>
-                            {MACRO_SPLIT_OPTIONS[selectedMacroSplit].benefits.map(b => <li key={b}>• {b}</li>)}
-                          </ul>
-                          <div className='text-xs mt-2'>
-                            <strong>Common For:</strong> {MACRO_SPLIT_OPTIONS[selectedMacroSplit].commonFor}
+                      {selectedMacroSplit !== null &&
+                        showBenefitsPopover === selectedMacroSplit && (
+                          <div className='mt-2 p-4 border rounded bg-muted max-w-xl mx-auto text-left z-10 relative'>
+                            <h3 className='font-bold mb-2'>
+                              {MACRO_SPLIT_OPTIONS[selectedMacroSplit].label}{' '}
+                              Benefits
+                            </h3>
+                            <ul>
+                              {MACRO_SPLIT_OPTIONS[
+                                selectedMacroSplit
+                              ].benefits.map(b => (
+                                <li key={b}>• {b}</li>
+                              ))}
+                            </ul>
+                            <div className='text-xs mt-2'>
+                              <strong>Common For:</strong>{' '}
+                              {
+                                MACRO_SPLIT_OPTIONS[selectedMacroSplit]
+                                  .commonFor
+                              }
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        )}
                       {/* Concise Macro Targets card-like section (no Card wrapper) */}
                       <div className='w-full max-w-3xl mx-auto mb-6 rounded-lg border shadow-sm bg-muted/50 p-6'>
                         <div className='flex flex-row justify-around gap-4 items-center'>
                           {/* Protein */}
                           <div className='flex flex-col items-center flex-1'>
                             <span className='text-2xl mb-1'>🥩</span>
-                            <span className='font-bold text-pink-600 mb-1'>Protein</span>
+                            <span className='font-bold text-pink-600 mb-1'>
+                              Protein
+                            </span>
                             <div className='flex items-center gap-2'>
                               <Input
                                 type='number'
                                 className='text-center text-lg font-mono'
                                 value={formValues.macroProtein || ''}
-                                onChange={e => handleManualMacroChange('macroProtein', parseInt(e.target.value) || undefined)}
+                                onChange={e =>
+                                  handleManualMacroChange(
+                                    'macroProtein',
+                                    parseInt(e.target.value) || undefined,
+                                  )
+                                }
                                 min={0}
                                 style={{ width: 70 }}
                               />
-                              <span className='text-sm text-muted-foreground'>grams</span>
+                              <span className='text-sm text-muted-foreground'>
+                                grams
+                              </span>
                             </div>
                           </div>
                           {/* Carbs */}
                           <div className='flex flex-col items-center flex-1'>
                             <span className='text-2xl mb-1'>🍚</span>
-                            <span className='font-bold text-green-600 mb-1'>Carbs</span>
+                            <span className='font-bold text-green-600 mb-1'>
+                              Carbs
+                            </span>
                             <div className='flex items-center gap-2'>
                               <Input
                                 type='number'
                                 className='text-center text-lg font-mono'
                                 value={formValues.macroCarbs || ''}
-                                onChange={e => handleManualMacroChange('macroCarbs', parseInt(e.target.value) || undefined)}
+                                onChange={e =>
+                                  handleManualMacroChange(
+                                    'macroCarbs',
+                                    parseInt(e.target.value) || undefined,
+                                  )
+                                }
                                 min={0}
                                 style={{ width: 70 }}
                               />
-                              <span className='text-sm text-muted-foreground'>grams</span>
+                              <span className='text-sm text-muted-foreground'>
+                                grams
+                              </span>
                             </div>
                           </div>
                           {/* Fat */}
                           <div className='flex flex-col items-center flex-1'>
                             <span className='text-2xl mb-1'>🥑</span>
-                            <span className='font-bold text-yellow-600 mb-1'>Fat</span>
+                            <span className='font-bold text-yellow-600 mb-1'>
+                              Fat
+                            </span>
                             <div className='flex items-center gap-2'>
                               <Input
                                 type='number'
                                 className='text-center text-lg font-mono'
                                 value={formValues.macroFat || ''}
-                                onChange={e => handleManualMacroChange('macroFat', parseInt(e.target.value) || undefined)}
+                                onChange={e =>
+                                  handleManualMacroChange(
+                                    'macroFat',
+                                    parseInt(e.target.value) || undefined,
+                                  )
+                                }
                                 min={0}
                                 style={{ width: 70 }}
                               />
-                              <span className='text-sm text-muted-foreground'>grams</span>
+                              <span className='text-sm text-muted-foreground'>
+                                grams
+                              </span>
                             </div>
                           </div>
                         </div>
