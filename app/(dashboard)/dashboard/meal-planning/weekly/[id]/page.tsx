@@ -5,8 +5,8 @@ import { MealPlanCard } from '@/components/meal-planning/MealPlanCard';
 import { ShoppingList } from '@/components/meal-planning/ShoppingList';
 import { Button } from '@/components/ui/button';
 import {
-    ShoppingList as ShoppingListType,
-    WeeklyMealPlanWithItems,
+  ShoppingList as ShoppingListType,
+  WeeklyMealPlanWithItems,
 } from '@/types/recipe';
 import { ChefHat, RefreshCw, Trash2 } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
@@ -399,10 +399,12 @@ export default function WeeklyMealPlanPage() {
         <div>
           {shoppingList ? (
             <ShoppingList
-              ingredients={shoppingList.ingredients.map((ingredient, index) => ({
-                ...ingredient,
-                id: `${ingredient.name}-${ingredient.unit}-${index}`,
-              }))}
+              ingredients={shoppingList.ingredients.map(
+                (ingredient, index) => ({
+                  ...ingredient,
+                  id: `${ingredient.name}-${ingredient.unit}-${index}`,
+                }),
+              )}
               planName={mealPlan ? mealPlan.name : ''}
               onIngredientToggle={(ingredientId, checked) => {
                 void (async () => {

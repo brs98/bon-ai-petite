@@ -1,3 +1,4 @@
+import { env } from '@/lib/env';
 import { openai } from '@ai-sdk/openai';
 import { generateObject } from 'ai';
 import * as dotenv from 'dotenv';
@@ -144,8 +145,8 @@ export class RecipeGeneratorService {
   };
 
   constructor() {
-    if (!process.env.OPENAI_API_KEY) {
-      throw new Error('OPENAI_API_KEY environment variable is required');
+    if (!env.OPENAI_API_KEY) {
+      throw new Error('OPENAI_API_KEY is not set');
     }
 
     // Reset global patterns daily

@@ -106,6 +106,13 @@
       "when": 1752039842769,
       "tag": "0014_perfect_blur",
       "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1752873531646,
+      "tag": "0015_red_magma",
+      "breakpoints": true
     }
   ]
 }

@@ -11,7 +11,7 @@ interface RouteParams {
   }>;
 }
 
-type GroceryCategory =
+type _GroceryCategory =
   | 'produce'
   | 'dairy'
   | 'meat'
@@ -37,142 +37,6 @@ interface ConsolidatedIngredient {
   recipeIds?: number[];
 }
 
-// Helper function to categorize ingredients
-function categorizeIngredient(ingredientName: string): GroceryCategory {
-  const name = ingredientName.toLowerCase();
-
-  // Produce
-  if (
-    name.includes('apple') ||
-    name.includes('banana') ||
-    name.includes('orange') ||
-    name.includes('carrot') ||
-    name.includes('onion') ||
-    name.includes('garlic') ||
-    name.includes('tomato') ||
-    name.includes('lettuce') ||
-    name.includes('spinach') ||
-    name.includes('pepper') ||
-    name.includes('cucumber') ||
-    name.includes('potato') ||
-    name.includes('celery') ||
-    name.includes('herb') ||
-    name.includes('basil') ||
-    name.includes('parsley') ||
-    name.includes('cilantro') ||
-    name.includes('lime') ||
-    name.includes('lemon') ||
-    name.includes('avocado') ||
-    name.includes('mushroom')
-  ) {
-    return 'produce';
-  }
-
-  // Dairy
-  if (
-    name.includes('milk') ||
-    name.includes('cheese') ||
-    name.includes('butter') ||
-    name.includes('cream') ||
-    name.includes('yogurt') ||
-    name.includes('egg')
-  ) {
-    return 'dairy';
-  }
-
-  // Meat
-  if (
-    name.includes('beef') ||
-    name.includes('pork') ||
-    name.includes('lamb') ||
-    name.includes('bacon') ||
-    name.includes('sausage') ||
-    name.includes('ham')
-  ) {
-    return 'meat';
-  }
-
-  // Poultry
-  if (
-    name.includes('chicken') ||
-    name.includes('turkey') ||
-    name.includes('duck')
-  ) {
-    return 'poultry';
-  }
-
-  // Seafood
-  if (
-    name.includes('fish') ||
-    name.includes('salmon') ||
-    name.includes('tuna') ||
-    name.includes('shrimp') ||
-    name.includes('crab') ||
-    name.includes('lobster') ||
-    name.includes('scallop') ||
-    name.includes('cod') ||
-    name.includes('tilapia')
-  ) {
-    return 'seafood';
-  }
-
-  // Bakery
-  if (
-    name.includes('bread') ||
-    name.includes('bagel') ||
-    name.includes('muffin') ||
-    name.includes('croissant') ||
-    name.includes('roll') ||
-    name.includes('bun')
-  ) {
-    return 'bakery';
-  }
-
-  // Frozen
-  if (
-    name.includes('frozen') ||
-    name.includes('ice cream') ||
-    name.includes('sorbet')
-  ) {
-    return 'frozen';
-  }
-
-  // Spices
-  if (
-    name.includes('salt') ||
-    name.includes('pepper') ||
-    name.includes('paprika') ||
-    name.includes('cumin') ||
-    name.includes('oregano') ||
-    name.includes('thyme') ||
-    name.includes('rosemary') ||
-    name.includes('cinnamon') ||
-    name.includes('nutmeg') ||
-    name.includes('ginger') ||
-    name.includes('turmeric') ||
-    name.includes('cardamom')
-  ) {
-    return 'spices';
-  }
-
-  // Beverages
-  if (
-    name.includes('juice') ||
-    name.includes('soda') ||
-    name.includes('water') ||
-    name.includes('tea') ||
-    name.includes('coffee') ||
-    name.includes('wine') ||
-    name.includes('beer') ||
-    name.includes('alcohol')
-  ) {
-    return 'beverages';
-  }
-
-  // Default to pantry for dry goods, oils, condiments, etc.
-  return 'pantry';
-}
-
 // Enhanced consolidation function that handles unit conversions
 function consolidateIngredientsWithUnitConversion(
   ingredientsWithOrigins: Array<{
@@ -184,16 +48,19 @@ function consolidateIngredientsWithUnitConversion(
   }>,
 ): ConsolidatedIngredient[] {
   // Convert to the format expected by the consolidator service
-  const ingredientsForConsolidation = ingredientsWithOrigins.map(ingredient => ({
-    name: ingredient.name,
-    quantity: ingredient.quantity,
-    unit: ingredient.unit,
-  }));
+  const ingredientsForConsolidation = ingredientsWithOrigins.map(
+    ingredient => ({
+      name: ingredient.name,
+      quantity: ingredient.quantity,
+      unit: ingredient.unit,
+    }),
+  );
 
   // Use the consolidator service to handle unit conversions and consolidation
-  const consolidatedFromService = ingredientConsolidatorService.consolidateIngredientArray(
-    ingredientsForConsolidation
-  );
+  const consolidatedFromService =
+    ingredientConsolidatorService.consolidateIngredientArray(
+      ingredientsForConsolidation,
+    );
 
   // Now we need to merge the recipe information back
   const finalConsolidated: ConsolidatedIngredient[] = [];
@@ -202,21 +69,28 @@ function consolidateIngredientsWithUnitConversion(
     // Find all original ingredients that contributed to this consolidated ingredient
     const contributingIngredients = ingredientsWithOrigins.filter(original => {
       // Use the same normalization logic as the consolidator service
-      const normalizedOriginalName = ingredientConsolidatorService.normalizeIngredientName(original.name);
+      const normalizedOriginalName =
+        ingredientConsolidatorService.normalizeIngredientName(original.name);
       const consolidatedName = consolidated.name.toLowerCase().trim();
-      
+
       // Check if names match after normalization
       if (normalizedOriginalName === consolidatedName) {
         return true;
       }
 
       // Also check if the consolidator service would consider them similar
-      if (ingredientConsolidatorService.areIngredientNamesSimilar(normalizedOriginalName, consolidatedName)) {
+      if (
+        ingredientConsolidatorService.areIngredientNamesSimilar(
+          normalizedOriginalName,
+          consolidatedName,
+        )
+      ) {
         return true;
       }
 
       // Additional check: try normalizing both names and comparing
-      const normalizedConsolidated = ingredientConsolidatorService.normalizeIngredientName(consolidatedName);
+      const normalizedConsolidated =
+        ingredientConsolidatorService.normalizeIngredientName(consolidatedName);
       if (normalizedOriginalName === normalizedConsolidated) {
         return true;
       }
@@ -225,8 +99,12 @@ function consolidateIngredientsWithUnitConversion(
     });
 
     // Extract recipe information
-    const recipeNames = [...new Set(contributingIngredients.map(i => i.recipeName))];
-    const recipeIds = [...new Set(contributingIngredients.map(i => i.recipeId))];
+    const recipeNames = [
+      ...new Set(contributingIngredients.map(i => i.recipeName)),
+    ];
+    const recipeIds = [
+      ...new Set(contributingIngredients.map(i => i.recipeId)),
+    ];
 
     finalConsolidated.push({
       name: consolidated.name,
@@ -323,7 +201,8 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     }
 
     // Use enhanced consolidation with unit conversion
-    const consolidatedIngredients = consolidateIngredientsWithUnitConversion(allIngredients);
+    const consolidatedIngredients =
+      consolidateIngredientsWithUnitConversion(allIngredients);
 
     // Check if shopping list already exists for this plan
     const existingShoppingList = await db.query.shoppingLists.findFirst({

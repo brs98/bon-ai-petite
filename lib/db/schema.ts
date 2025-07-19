@@ -275,6 +275,43 @@ export const shoppingLists = pgTable(
   }),
 );
 
+// Waitlist Table
+export const waitlistEntries = pgTable(
+  'waitlist_entries',
+  {
+    id: serial('id').primaryKey(),
+    email: varchar('email', { length: 255 }).notNull().unique(),
+    name: varchar('name', { length: 100 }),
+    reasonForInterest: text('reason_for_interest').notNull(), // Why they're interested in AI Petite
+    featurePriorities: text('feature_priorities').array(), // Array of feature priorities they mentioned
+    dietaryGoals: text('dietary_goals').array(), // lose_weight, gain_muscle, maintain, etc.
+    dietaryRestrictions: text('dietary_restrictions').array(), // vegetarian, vegan, gluten_free, etc.
+    cookingExperience: varchar('cooking_experience', { length: 20 }), // beginner, intermediate, advanced
+    householdSize: integer('household_size'), // Number of people they cook for
+    referralSource: varchar('referral_source', { length: 100 }), // How they found the site
+    ipAddress: varchar('ip_address', { length: 45 }), // For analytics and spam prevention
+    userAgent: text('user_agent'), // Browser/device info for analytics
+    status: varchar('status', { length: 20 }).notNull().default('waiting'), // waiting, invited, joined, declined
+    priorityScore: integer('priority_score'), // Calculated score based on responses for feature prioritization
+    invitedAt: timestamp('invited_at'),
+    joinedAt: timestamp('joined_at'),
+    declinedAt: timestamp('declined_at'),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  table => ({
+    emailIdx: index('waitlist_entries_email_idx').on(table.email),
+    statusIdx: index('waitlist_entries_status_idx').on(table.status),
+    priorityScoreIdx: index('waitlist_entries_priority_score_idx').on(
+      table.priorityScore,
+    ),
+    createdAtIdx: index('waitlist_entries_created_at_idx').on(table.createdAt),
+    reasonForInterestIdx: index('waitlist_entries_reason_for_interest_idx').on(
+      table.reasonForInterest,
+    ),
+  }),
+);
+
 // Weekly Meal Planning Relations
 export const weeklyMealPlansRelations = relations(
   weeklyMealPlans,
@@ -313,6 +350,10 @@ export type MealPlanItem = typeof mealPlanItems.$inferSelect;
 export type NewMealPlanItem = typeof mealPlanItems.$inferInsert;
 export type ShoppingList = typeof shoppingLists.$inferSelect;
 export type NewShoppingList = typeof shoppingLists.$inferInsert;
+
+// Waitlist Types
+export type WaitlistEntry = typeof waitlistEntries.$inferSelect;
+export type NewWaitlistEntry = typeof waitlistEntries.$inferInsert;
 
 // Extended types for complex queries
 export type WeeklyMealPlanWithItems = WeeklyMealPlan & {

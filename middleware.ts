@@ -1,4 +1,5 @@
 import { signToken, verifyToken } from '@/lib/auth/session';
+import { env } from '@/lib/env';
 import { NextResponse, type NextRequest } from 'next/server';
 
 const protectedRoutes = '/dashboard';
@@ -8,6 +9,23 @@ export async function middleware(request: NextRequest) {
   const sessionCookie = request.cookies.get('session');
   const isProtectedRoute = pathname.startsWith(protectedRoutes);
 
+  // If app is not launched, only allow access to waitlist page
+  if (!env.APP_LAUNCHED) {
+    // Allow access to waitlist page and static assets
+    if (
+      pathname === '/waitlist' ||
+      pathname.startsWith('/_next/') ||
+      pathname.startsWith('/api/') ||
+      pathname === '/favicon.ico'
+    ) {
+      return NextResponse.next();
+    }
+
+    // Redirect all other requests to waitlist
+    return NextResponse.redirect(new URL('/waitlist', request.url));
+  }
+
+  // App is launched - normal flow
   // Redirect to /pricing if accessing /sign-up without a plan
   if (pathname === '/sign-up' && request.method === 'GET') {
     const plan = request.nextUrl.searchParams.get('plan');

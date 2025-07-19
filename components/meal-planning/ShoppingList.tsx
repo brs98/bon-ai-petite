@@ -7,25 +7,25 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { GROCERY_CATEGORIES } from '@/types/recipe';
 import {
-    Check,
-    Download,
-    Edit3,
-    Filter,
-    Plus,
-    RefreshCw,
-    Search,
-    ShoppingCart,
-    Trash2,
-    X,
+  Check,
+  Download,
+  Edit3,
+  Filter,
+  Plus,
+  RefreshCw,
+  Search,
+  ShoppingCart,
+  Trash2,
+  X,
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
@@ -519,7 +519,9 @@ export function ShoppingList({
                 <div className='space-y-2'>
                   {categoryIngredients.map(ingredient => (
                     <div
-                      key={ingredient.id || `${ingredient.name}-${ingredient.unit}`}
+                      key={
+                        ingredient.id || `${ingredient.name}-${ingredient.unit}`
+                      }
                       className={cn(
                         'flex items-center gap-3 p-3 rounded-lg border transition-all',
                         ingredient.checked

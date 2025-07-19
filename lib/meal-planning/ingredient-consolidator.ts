@@ -544,27 +544,33 @@ export class IngredientConsolidatorService {
     ingredients: Ingredient[],
   ): ConsolidatedIngredient[] {
     // First pass: normalize all ingredients
-    const normalizedIngredients = ingredients.map(ingredient => 
-      this.normalizeIngredient(ingredient)
+    const normalizedIngredients = ingredients.map(ingredient =>
+      this.normalizeIngredient(ingredient),
     );
 
     // Group ingredients by name to handle unit conversions
-    const ingredientsByName = new Map<string, Array<{
-      name: string;
-      quantity: number;
-      unit: string;
-      originalIngredient: Ingredient;
-    }>>();
+    const ingredientsByName = new Map<
+      string,
+      Array<{
+        name: string;
+        quantity: number;
+        unit: string;
+        originalIngredient: Ingredient;
+      }>
+    >();
 
     for (let i = 0; i < normalizedIngredients.length; i++) {
       const normalized = normalizedIngredients[i];
       const original = ingredients[i];
       const name = normalized.name.toLowerCase().trim();
-      
+
       // Try to find a similar existing group with improved logic
-      const existingGroup = this.findSimilarIngredientGroup(ingredientsByName, name);
+      const existingGroup = this.findSimilarIngredientGroup(
+        ingredientsByName,
+        name,
+      );
       const groupKey = existingGroup || name;
-      
+
       if (!ingredientsByName.has(groupKey)) {
         ingredientsByName.set(groupKey, []);
       }
@@ -577,7 +583,7 @@ export class IngredientConsolidatorService {
     // Second pass: consolidate each group with smart unit selection
     const consolidated: ConsolidatedIngredient[] = [];
 
-    for (const [ingredientName, ingredientGroup] of ingredientsByName) {
+    for (const [_ingredientName, ingredientGroup] of ingredientsByName) {
       if (ingredientGroup.length === 1) {
         // Single ingredient, no consolidation needed
         const ingredient = ingredientGroup[0];
@@ -593,7 +599,8 @@ export class IngredientConsolidatorService {
       }
 
       // Multiple ingredients with same name, need to consolidate
-      const consolidatedGroup = this.consolidateIngredientGroup(ingredientGroup);
+      const consolidatedGroup =
+        this.consolidateIngredientGroup(ingredientGroup);
       consolidated.push(...consolidatedGroup); // Flatten the array of consolidated groups
     }
 
@@ -613,12 +620,15 @@ export class IngredientConsolidatorService {
     }>,
   ): ConsolidatedIngredient[] {
     // Group by unit first
-    const byUnit = new Map<string, Array<{
-      name: string;
-      quantity: number;
-      unit: string;
-      originalIngredient: Ingredient;
-    }>>();
+    const byUnit = new Map<
+      string,
+      Array<{
+        name: string;
+        quantity: number;
+        unit: string;
+        originalIngredient: Ingredient;
+      }>
+    >();
 
     for (const ingredient of ingredientGroup) {
       if (!byUnit.has(ingredient.unit)) {
@@ -632,15 +642,17 @@ export class IngredientConsolidatorService {
       const unit = Array.from(byUnit.keys())[0];
       const ingredients = byUnit.get(unit)!;
       const totalQuantity = ingredients.reduce((sum, i) => sum + i.quantity, 0);
-      
-      return [{
-        name: ingredients[0].name,
-        quantity: totalQuantity,
-        unit,
-        category: this.categorizeIngredient(ingredients[0].name),
-        checked: false,
-        originalIngredients: ingredients.map(i => i.originalIngredient),
-      }];
+
+      return [
+        {
+          name: ingredients[0].name,
+          quantity: totalQuantity,
+          unit,
+          category: this.categorizeIngredient(ingredients[0].name),
+          checked: false,
+          originalIngredients: ingredients.map(i => i.originalIngredient),
+        },
+      ];
     }
 
     // Different units - try to convert and consolidate
@@ -656,9 +668,9 @@ export class IngredientConsolidatorService {
         ingredient.quantity,
         ingredient.unit,
         targetUnit,
-        ingredient.name // Pass ingredient name for context-aware conversion
+        ingredient.name, // Pass ingredient name for context-aware conversion
       );
-      
+
       if (convertedQuantity !== null) {
         convertedIngredients.push({
           quantity: convertedQuantity,
@@ -677,26 +689,36 @@ export class IngredientConsolidatorService {
 
     // Check if all conversions were successful
     const allSuccessful = convertedIngredients.every(i => i.success);
-    
+
     if (allSuccessful) {
       // All ingredients can be converted to the same unit
-      const totalQuantity = convertedIngredients.reduce((sum, i) => sum + i.quantity, 0);
-      
-      return [{
-        name: ingredientGroup[0].name,
-        quantity: totalQuantity,
-        unit: targetUnit,
-        category: this.categorizeIngredient(ingredientGroup[0].name),
-        checked: false,
-        originalIngredients: convertedIngredients.map(i => i.originalIngredient),
-      }];
+      const totalQuantity = convertedIngredients.reduce(
+        (sum, i) => sum + i.quantity,
+        0,
+      );
+
+      return [
+        {
+          name: ingredientGroup[0].name,
+          quantity: totalQuantity,
+          unit: targetUnit,
+          category: this.categorizeIngredient(ingredientGroup[0].name),
+          checked: false,
+          originalIngredients: convertedIngredients.map(
+            i => i.originalIngredient,
+          ),
+        },
+      ];
     } else {
       // Some conversions failed, keep separate entries by unit
       const result: ConsolidatedIngredient[] = [];
-      
+
       for (const [unit, ingredients] of byUnit) {
-        const totalQuantity = ingredients.reduce((sum, i) => sum + i.quantity, 0);
-        
+        const totalQuantity = ingredients.reduce(
+          (sum, i) => sum + i.quantity,
+          0,
+        );
+
         result.push({
           name: ingredients[0].name,
           quantity: totalQuantity,
@@ -706,7 +728,7 @@ export class IngredientConsolidatorService {
           originalIngredients: ingredients.map(i => i.originalIngredient),
         });
       }
-      
+
       return result;
     }
   }
@@ -725,7 +747,10 @@ export class IngredientConsolidatorService {
     // Count units by frequency
     const unitCounts = new Map<string, number>();
     for (const ingredient of ingredientGroup) {
-      unitCounts.set(ingredient.unit, (unitCounts.get(ingredient.unit) || 0) + 1);
+      unitCounts.set(
+        ingredient.unit,
+        (unitCounts.get(ingredient.unit) || 0) + 1,
+      );
     }
 
     // Get the ingredient name for context
@@ -738,14 +763,15 @@ export class IngredientConsolidatorService {
     }
 
     // If one unit is used more frequently, prefer it
-    const mostFrequentUnit = Array.from(unitCounts.entries())
-      .sort((a, b) => b[1] - a[1])[0][0];
+    const mostFrequentUnit = Array.from(unitCounts.entries()).sort(
+      (a, b) => b[1] - a[1],
+    )[0][0];
 
     // For volume units, prefer larger units (cup > tbsp > tsp)
     // For weight units, prefer smaller units (g > oz > lb)
     const volumeUnits = ['tsp', 'tbsp', 'cup', 'ml', 'l', 'fl oz'];
     const weightUnits = ['g', 'kg', 'oz', 'lb'];
-    
+
     const volumeOrder = ['tsp', 'tbsp', 'cup', 'ml', 'l', 'fl oz'];
     const weightOrder = ['g', 'oz', 'lb', 'kg'];
 
@@ -783,17 +809,67 @@ export class IngredientConsolidatorService {
   private getPreferredUnitForIngredient(ingredientName: string): string | null {
     // Solid foods that should never be converted to liquid units
     const solidFoods = [
-      'broccoli', 'carrot', 'celery', 'cucumber', 'quinoa', 'rice', 'pasta',
-      'bread', 'croutons', 'cheese', 'parmesan', 'mozzarella', 'cheddar',
-      'chicken', 'turkey', 'beef', 'pork', 'salmon', 'fish', 'shrimp',
-      'egg', 'eggs', 'garlic', 'onion', 'tomato', 'bell pepper', 'asparagus',
-      'lettuce', 'spinach', 'kale', 'basil', 'parsley', 'cilantro', 'ginger',
-      'salt', 'pepper', 'chili powder', 'red pepper flakes', 'cumin',
-      'oregano', 'thyme', 'rosemary', 'cinnamon', 'nutmeg', 'paprika',
-      'turmeric', 'cardamom', 'black pepper', 'white pepper', 'cayenne',
-      'garlic powder', 'onion powder', 'italian seasoning', 'herbs',
-      'mixed vegetables', 'mixed berries', 'berries', 'strawberries',
-      'blueberries', 'raspberries', 'blackberries'
+      'broccoli',
+      'carrot',
+      'celery',
+      'cucumber',
+      'quinoa',
+      'rice',
+      'pasta',
+      'bread',
+      'croutons',
+      'cheese',
+      'parmesan',
+      'mozzarella',
+      'cheddar',
+      'chicken',
+      'turkey',
+      'beef',
+      'pork',
+      'salmon',
+      'fish',
+      'shrimp',
+      'egg',
+      'eggs',
+      'garlic',
+      'onion',
+      'tomato',
+      'bell pepper',
+      'asparagus',
+      'lettuce',
+      'spinach',
+      'kale',
+      'basil',
+      'parsley',
+      'cilantro',
+      'ginger',
+      'salt',
+      'pepper',
+      'chili powder',
+      'red pepper flakes',
+      'cumin',
+      'oregano',
+      'thyme',
+      'rosemary',
+      'cinnamon',
+      'nutmeg',
+      'paprika',
+      'turmeric',
+      'cardamom',
+      'black pepper',
+      'white pepper',
+      'cayenne',
+      'garlic powder',
+      'onion powder',
+      'italian seasoning',
+      'herbs',
+      'mixed vegetables',
+      'mixed berries',
+      'berries',
+      'strawberries',
+      'blueberries',
+      'raspberries',
+      'blackberries',
     ];
 
     // Check if this is a solid food
@@ -806,14 +882,40 @@ export class IngredientConsolidatorService {
 
     // Liquid foods that can be converted to volume units
     const liquidFoods = [
-      'oil', 'olive oil', 'vegetable oil', 'sesame oil', 'coconut oil',
-      'sauce', 'alfredo sauce', 'tomato sauce', 'marinara sauce',
-      'dressing', 'caesar dressing', 'vinaigrette', 'ranch dressing',
-      'juice', 'lemon juice', 'lime juice', 'orange juice',
-      'milk', 'cream', 'yogurt', 'greek yogurt',
-      'broth', 'stock', 'chicken broth', 'beef broth', 'vegetable broth',
-      'water', 'vinegar', 'balsamic', 'soy sauce', 'honey', 'syrup',
-      'glaze', 'balsamic glaze'
+      'oil',
+      'olive oil',
+      'vegetable oil',
+      'sesame oil',
+      'coconut oil',
+      'sauce',
+      'alfredo sauce',
+      'tomato sauce',
+      'marinara sauce',
+      'dressing',
+      'caesar dressing',
+      'vinaigrette',
+      'ranch dressing',
+      'juice',
+      'lemon juice',
+      'lime juice',
+      'orange juice',
+      'milk',
+      'cream',
+      'yogurt',
+      'greek yogurt',
+      'broth',
+      'stock',
+      'chicken broth',
+      'beef broth',
+      'vegetable broth',
+      'water',
+      'vinegar',
+      'balsamic',
+      'soy sauce',
+      'honey',
+      'syrup',
+      'glaze',
+      'balsamic glaze',
     ];
 
     // Check if this is a liquid food
@@ -844,7 +946,17 @@ export class IngredientConsolidatorService {
     // Don't convert between different unit types (volume vs weight vs count)
     const volumeUnits = ['tsp', 'tbsp', 'cup', 'ml', 'l', 'fl oz'];
     const weightUnits = ['g', 'kg', 'oz', 'lb'];
-    const countUnits = ['piece', 'slice', 'clove', 'leaf', 'bunch', 'can', 'large', 'medium', 'small'];
+    const countUnits = [
+      'piece',
+      'slice',
+      'clove',
+      'leaf',
+      'bunch',
+      'can',
+      'large',
+      'medium',
+      'small',
+    ];
 
     const fromIsVolume = volumeUnits.includes(fromUnit);
     const toIsVolume = volumeUnits.includes(toUnit);
@@ -858,7 +970,7 @@ export class IngredientConsolidatorService {
       // Bell pepper: cup to piece (approximate)
       { from: 'cup', to: 'piece', factor: 0.5, ingredient: 'bell pepper' },
       { from: 'piece', to: 'cup', factor: 2, ingredient: 'bell pepper' },
-      
+
       // Mozzarella: various forms conversion
       { from: 'cup', to: 'slice', factor: 4, ingredient: 'mozzarella' }, // 1 cup shredded = ~4 slices
       { from: 'slice', to: 'cup', factor: 0.25, ingredient: 'mozzarella' }, // 1 slice = ~1/4 cup shredded
@@ -866,15 +978,15 @@ export class IngredientConsolidatorService {
       { from: 'cup', to: 'piece', factor: 10, ingredient: 'mozzarella' }, // 1 cup shredded ≈ 10 balls
       { from: 'piece', to: 'slice', factor: 0.4, ingredient: 'mozzarella' }, // 1 ball ≈ 0.4 slices
       { from: 'slice', to: 'piece', factor: 2.5, ingredient: 'mozzarella' }, // 1 slice ≈ 2.5 balls
-      
+
       // Cucumber: piece to cup (approximate)
       { from: 'piece', to: 'cup', factor: 1, ingredient: 'cucumber' },
       { from: 'cup', to: 'piece', factor: 1, ingredient: 'cucumber' },
-      
+
       // Regular tomato conversions (only within same form)
       { from: 'medium', to: 'piece', factor: 1, ingredient: 'tomato' }, // medium = piece
       { from: 'piece', to: 'medium', factor: 1, ingredient: 'tomato' }, // piece = medium
-      
+
       // Cherry tomato conversions (separate from regular tomatoes)
       { from: 'piece', to: 'cup', factor: 0.0625, ingredient: 'cherry tomato' }, // 1 cherry tomato ≈ 1/16 cup
       { from: 'cup', to: 'piece', factor: 16, ingredient: 'cherry tomato' }, // 1 cup ≈ 16 cherry tomatoes
@@ -882,18 +994,30 @@ export class IngredientConsolidatorService {
 
     // Check for special conversions first
     for (const conversion of specialConversions) {
-      if (conversion.from === fromUnit && conversion.to === toUnit && 
-          ingredientName.toLowerCase().includes(conversion.ingredient)) {
+      if (
+        conversion.from === fromUnit &&
+        conversion.to === toUnit &&
+        ingredientName.toLowerCase().includes(conversion.ingredient)
+      ) {
         // Special handling for tomato types to avoid cross-contamination
-        if (conversion.ingredient === 'tomato' && ingredientName.toLowerCase().includes('cherry')) {
+        if (
+          conversion.ingredient === 'tomato' &&
+          ingredientName.toLowerCase().includes('cherry')
+        ) {
           // Skip regular tomato conversions for cherry tomatoes
           continue;
         }
-        if (conversion.ingredient === 'cherry tomato' && !ingredientName.toLowerCase().includes('cherry')) {
+        if (
+          conversion.ingredient === 'cherry tomato' &&
+          !ingredientName.toLowerCase().includes('cherry')
+        ) {
           // Skip cherry tomato conversions for regular tomatoes
           continue;
         }
-        if (conversion.ingredient === 'tomato' && ingredientName.toLowerCase().includes('can of tomatoes')) {
+        if (
+          conversion.ingredient === 'tomato' &&
+          ingredientName.toLowerCase().includes('can of tomatoes')
+        ) {
           // Skip regular tomato conversions for canned tomatoes
           continue;
         }
@@ -902,15 +1026,17 @@ export class IngredientConsolidatorService {
     }
 
     // Don't convert between different unit types unless it's a special case
-    if ((fromIsVolume && !toIsVolume) || 
-        (fromIsWeight && !toIsWeight) || 
-        (fromIsCount && !toIsCount)) {
+    if (
+      (fromIsVolume && !toIsVolume) ||
+      (fromIsWeight && !toIsWeight) ||
+      (fromIsCount && !toIsCount)
+    ) {
       return null;
     }
 
     // Find conversion path
     const conversion = this.unitConversions.find(
-      c => c.from === fromUnit && c.to === toUnit
+      c => c.from === fromUnit && c.to === toUnit,
     );
 
     if (conversion) {
@@ -919,7 +1045,7 @@ export class IngredientConsolidatorService {
 
     // Try reverse conversion
     const reverseConversion = this.unitConversions.find(
-      c => c.from === toUnit && c.to === fromUnit
+      c => c.from === toUnit && c.to === fromUnit,
     );
 
     if (reverseConversion) {
@@ -929,7 +1055,12 @@ export class IngredientConsolidatorService {
     // Try converting through a common base unit
     const baseUnit = this.findCommonBaseUnit(fromUnit, toUnit);
     if (baseUnit) {
-      const toBase = this.convertToUnit(quantity, fromUnit, baseUnit, ingredientName);
+      const toBase = this.convertToUnit(
+        quantity,
+        fromUnit,
+        baseUnit,
+        ingredientName,
+      );
       if (toBase !== null) {
         return this.convertToUnit(toBase, baseUnit, toUnit, ingredientName);
       }
@@ -1031,13 +1162,16 @@ export class IngredientConsolidatorService {
       .trim();
 
     // Special handling for canned tomatoes - keep them as "can of tomatoes"
-    if (normalized.includes('tomato') && (normalized.includes('can') || normalized.includes('canned'))) {
+    if (
+      normalized.includes('tomato') &&
+      (normalized.includes('can') || normalized.includes('canned'))
+    ) {
       return 'can of tomatoes';
     }
 
     // Handle common singular/plural variations
     normalized = this.normalizeSingularPlural(normalized);
-    
+
     // Handle other common variations
     normalized = this.normalizeCommonVariations(normalized);
 
@@ -1050,37 +1184,37 @@ export class IngredientConsolidatorService {
   private normalizeSingularPlural(name: string): string {
     // Common singular/plural mappings
     const singularPluralMap: Record<string, string> = {
-      'eggs': 'egg',
-      'tomatoes': 'tomato',
-      'potatoes': 'potato',
-      'onions': 'onion',
-      'carrots': 'carrot',
-      'cucumbers': 'cucumber',
-      'peppers': 'pepper',
+      eggs: 'egg',
+      tomatoes: 'tomato',
+      potatoes: 'potato',
+      onions: 'onion',
+      carrots: 'carrot',
+      cucumbers: 'cucumber',
+      peppers: 'pepper',
       'bell peppers': 'bell pepper',
-      'mushrooms': 'mushroom',
-      'apples': 'apple',
-      'bananas': 'banana',
-      'oranges': 'orange',
-      'lemons': 'lemon',
-      'limes': 'lime',
-      'avocados': 'avocado',
+      mushrooms: 'mushroom',
+      apples: 'apple',
+      bananas: 'banana',
+      oranges: 'orange',
+      lemons: 'lemon',
+      limes: 'lime',
+      avocados: 'avocado',
       'garlic cloves': 'garlic',
-      'cloves': 'garlic',
-      'herbs': 'herb',
-      'berries': 'berry',
-      'strawberries': 'strawberry',
-      'blueberries': 'blueberry',
-      'raspberries': 'raspberry',
-      'blackberries': 'blackberry',
-      'beans': 'bean',
+      cloves: 'garlic',
+      herbs: 'herb',
+      berries: 'berry',
+      strawberries: 'strawberry',
+      blueberries: 'blueberry',
+      raspberries: 'raspberry',
+      blackberries: 'blackberry',
+      beans: 'bean',
       'black beans': 'black bean',
       'kidney beans': 'kidney bean',
       'chicken breasts': 'chicken breast',
       'turkey breasts': 'turkey breast',
       'salmon fillets': 'salmon fillet',
       'fish fillets': 'fish fillet',
-      'shrimp': 'shrimp', // Same singular/plural
+      shrimp: 'shrimp', // Same singular/plural
       'bread slices': 'bread slice',
       'cheese slices': 'cheese slice',
       'mozzarella slices': 'mozzarella slice',
@@ -1104,17 +1238,17 @@ export class IngredientConsolidatorService {
       'heavy cream': 'heavy cream',
       'half and half': 'half and half',
       'sour cream': 'sour cream',
-      'buttermilk': 'buttermilk',
+      buttermilk: 'buttermilk',
       'unsalted butter': 'unsalted butter',
       'salted butter': 'salted butter',
-      'margarine': 'margarine',
+      margarine: 'margarine',
       'olive oil': 'olive oil',
       'vegetable oil': 'vegetable oil',
       'sesame oil': 'sesame oil',
       'coconut oil': 'coconut oil',
       'caesar dressing': 'caesar dressing',
       'ranch dressing': 'ranch dressing',
-      'vinaigrette': 'vinaigrette',
+      vinaigrette: 'vinaigrette',
       'balsamic vinegar': 'balsamic vinegar',
       'balsamic glaze': 'balsamic glaze',
       'soy sauce': 'soy sauce',
@@ -1145,17 +1279,17 @@ export class IngredientConsolidatorService {
       'white bread': 'white bread',
       'wheat bread': 'wheat bread',
       'sourdough bread': 'sourdough bread',
-      'croutons': 'crouton',
-      'crackers': 'cracker',
-      'chips': 'chip',
-      'cookies': 'cookie',
-      'candy': 'candy',
-      'chocolate': 'chocolate',
+      croutons: 'crouton',
+      crackers: 'cracker',
+      chips: 'chip',
+      cookies: 'cookie',
+      candy: 'candy',
+      chocolate: 'chocolate',
       'granola bars': 'granola bar',
       'trail mix': 'trail mix',
-      'popcorn': 'popcorn',
-      'pretzels': 'pretzel',
-      'nuts': 'nut',
+      popcorn: 'popcorn',
+      pretzels: 'pretzel',
+      nuts: 'nut',
       'dried fruit': 'dried fruit',
     };
 
@@ -1211,15 +1345,15 @@ export class IngredientConsolidatorService {
 
     // Handle common abbreviations
     const abbreviations: Record<string, string> = {
-      'tbsp': 'tablespoon',
-      'tsp': 'teaspoon',
-      'cup': 'cup',
-      'oz': 'ounce',
-      'lb': 'pound',
-      'g': 'gram',
-      'kg': 'kilogram',
-      'ml': 'milliliter',
-      'l': 'liter',
+      tbsp: 'tablespoon',
+      tsp: 'teaspoon',
+      cup: 'cup',
+      oz: 'ounce',
+      lb: 'pound',
+      g: 'gram',
+      kg: 'kilogram',
+      ml: 'milliliter',
+      l: 'liter',
     };
 
     // Only apply abbreviations if they're standalone (not part of a larger word)
@@ -1424,12 +1558,15 @@ export class IngredientConsolidatorService {
    * Find a similar ingredient group to merge with
    */
   private findSimilarIngredientGroup(
-    ingredientsByName: Map<string, Array<{
-      name: string;
-      quantity: number;
-      unit: string;
-      originalIngredient: Ingredient;
-    }>>,
+    ingredientsByName: Map<
+      string,
+      Array<{
+        name: string;
+        quantity: number;
+        unit: string;
+        originalIngredient: Ingredient;
+      }>
+    >,
     name: string,
   ): string | null {
     // Check for exact matches first
@@ -1463,23 +1600,34 @@ export class IngredientConsolidatorService {
     // Normalize both names for comparison
     const normalized1 = this.normalizeIngredientName(name1);
     const normalized2 = this.normalizeIngredientName(name2);
-    
+
     // Exact match after normalization
     if (normalized1 === normalized2) return true;
 
     // Check if one is a subset of the other (e.g., "egg" vs "large egg")
-    if (normalized1.includes(normalized2) || normalized2.includes(normalized1)) {
+    if (
+      normalized1.includes(normalized2) ||
+      normalized2.includes(normalized1)
+    ) {
       // But avoid false positives for very short words
       if (Math.min(normalized1.length, normalized2.length) >= 3) {
         // Special case: don't consolidate different tomato types
-        if ((normalized1.includes('cherry') && normalized2.includes('tomato') && !normalized2.includes('cherry')) ||
-            (normalized2.includes('cherry') && normalized1.includes('tomato') && !normalized1.includes('cherry'))) {
+        if (
+          (normalized1.includes('cherry') &&
+            normalized2.includes('tomato') &&
+            !normalized2.includes('cherry')) ||
+          (normalized2.includes('cherry') &&
+            normalized1.includes('tomato') &&
+            !normalized1.includes('cherry'))
+        ) {
           return false;
         }
-        
+
         // Don't consolidate "can of tomatoes" with regular tomatoes
-        if ((normalized1 === 'can of tomatoes' && normalized2 === 'tomato') ||
-            (normalized2 === 'can of tomatoes' && normalized1 === 'tomato')) {
+        if (
+          (normalized1 === 'can of tomatoes' && normalized2 === 'tomato') ||
+          (normalized2 === 'can of tomatoes' && normalized1 === 'tomato')
+        ) {
           return false;
         }
         return true;
@@ -1538,7 +1686,12 @@ export class IngredientConsolidatorService {
       ['grape tomato', 'grape tomatoes'], // Grape tomatoes only
       ['beefsteak tomato', 'beefsteak tomatoes'], // Beefsteak tomatoes only
       ['can of tomatoes', 'canned tomatoes', 'tomato can'], // Canned tomatoes only
-      ['mozzarella', 'mozzarella cheese', 'mozzarella balls', 'mozzarella ball'],
+      [
+        'mozzarella',
+        'mozzarella cheese',
+        'mozzarella balls',
+        'mozzarella ball',
+      ],
       ['bell pepper', 'bell peppers', 'red bell pepper', 'green bell pepper'],
       ['mixed greens', 'greens', 'salad greens', 'lettuce'],
       ['olive oil', 'oil', 'extra virgin olive oil'],
@@ -1560,7 +1713,10 @@ export class IngredientConsolidatorService {
     ];
 
     for (const variationGroup of variations) {
-      if (variationGroup.includes(normalized1) && variationGroup.includes(normalized2)) {
+      if (
+        variationGroup.includes(normalized1) &&
+        variationGroup.includes(normalized2)
+      ) {
         return true;
       }
     }
@@ -1604,8 +1760,8 @@ export class IngredientConsolidatorService {
         } else {
           matrix[i][j] = Math.min(
             matrix[i - 1][j - 1] + 1, // substitution
-            matrix[i][j - 1] + 1,     // insertion
-            matrix[i - 1][j] + 1      // deletion
+            matrix[i][j - 1] + 1, // insertion
+            matrix[i - 1][j] + 1, // deletion
           );
         }
       }

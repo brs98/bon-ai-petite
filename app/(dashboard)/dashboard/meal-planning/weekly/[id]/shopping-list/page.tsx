@@ -5,20 +5,20 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
-    ShoppingList as ShoppingListType,
-    WeeklyMealPlanWithItems,
+  ShoppingList as ShoppingListType,
+  WeeklyMealPlanWithItems,
 } from '@/types/recipe';
 import {
-    AlertTriangle,
-    ArrowLeft,
-    Calendar,
-    CheckCircle2,
-    ChefHat,
-    Download,
-    Printer,
-    RefreshCw,
-    Share2,
-    ShoppingCart,
+  AlertTriangle,
+  ArrowLeft,
+  Calendar,
+  CheckCircle2,
+  ChefHat,
+  Download,
+  Printer,
+  RefreshCw,
+  Share2,
+  ShoppingCart,
 } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -621,7 +621,10 @@ export default function ShoppingListPage() {
               void (async () => {
                 if (!shoppingList) return;
                 // Extract the original name from the ID (format: name-unit-index)
-                const originalName = ingredientId.split('-').slice(0, -2).join('-');
+                const originalName = ingredientId
+                  .split('-')
+                  .slice(0, -2)
+                  .join('-');
                 // Optimistically update UI
                 const updatedIngredients = shoppingList.ingredients.map(
                   ingredient => {
@@ -679,7 +682,10 @@ export default function ShoppingListPage() {
             onIngredientEdit={(ingredientId, updates) => {
               if (!shoppingList) return;
               // Extract the original name from the ID (format: name-unit-index)
-              const originalName = ingredientId.split('-').slice(0, -2).join('-');
+              const originalName = ingredientId
+                .split('-')
+                .slice(0, -2)
+                .join('-');
               const updatedIngredients = shoppingList.ingredients.map(
                 ingredient => {
                   if (ingredient.name === originalName) {
@@ -710,7 +716,10 @@ export default function ShoppingListPage() {
             onIngredientRemove={ingredientId => {
               if (!shoppingList) return;
               // Extract the original name from the ID (format: name-unit-index)
-              const originalName = ingredientId.split('-').slice(0, -2).join('-');
+              const originalName = ingredientId
+                .split('-')
+                .slice(0, -2)
+                .join('-');
               const updatedIngredients = shoppingList.ingredients.filter(
                 ingredient => ingredient.name !== originalName,
               );

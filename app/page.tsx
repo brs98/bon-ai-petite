@@ -3,6 +3,7 @@
 import { NutritionProfileBanner } from '@/components/nutrition/NutritionProfileBanner';
 import { Button } from '@/components/ui/button';
 import Logo from '@/components/ui/Logo';
+import { WaitlistSignup } from '@/components/WaitlistSignup';
 import {
   ArrowRight,
   CheckCircle,
@@ -167,8 +168,15 @@ export default function HomePage() {
                     size='lg'
                     variant='outline'
                     className='w-full sm:w-auto border-2 border-primary/30 hover:border-primary bg-white/50 backdrop-blur-sm text-primary hover:text-primary hover:bg-primary/5 px-8 py-4 text-lg rounded-xl transition-all duration-300'
+                    onClick={() => {
+                      const waitlistSection =
+                        document.getElementById('waitlist-section');
+                      if (waitlistSection) {
+                        waitlistSection.scrollIntoView({ behavior: 'smooth' });
+                      }
+                    }}
                   >
-                    Watch Demo
+                    Join Waitlist
                   </Button>
                 </motion.div>
               </motion.div>
@@ -739,6 +747,98 @@ export default function HomePage() {
               </motion.div>
             </motion.div>
           </div>
+        </div>
+      </motion.section>
+
+      {/* Waitlist Section */}
+      <motion.section
+        className='py-20 bg-gradient-to-br from-green-50 via-blue-50 to-purple-50 relative overflow-hidden'
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.8 }}
+        id='waitlist-section'
+      >
+        <motion.div
+          className='absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent'
+          animate={{
+            scale: [1, 1.1, 1],
+            opacity: [0.05, 0.1, 0.05],
+          }}
+          transition={{ duration: 4, repeat: Infinity }}
+        />
+        <div className='relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8'>
+          <motion.div
+            className='text-center mb-12'
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            <motion.h2
+              className='text-4xl font-bold text-gray-900 mb-6'
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              Be Among the First to Experience AI Petite
+            </motion.h2>
+            <motion.p
+              className='text-xl text-gray-600 max-w-3xl mx-auto'
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+            >
+              Join our exclusive waitlist and help shape the future of
+              AI-powered nutrition. Your feedback will directly influence which
+              features we develop first.
+            </motion.p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+          >
+            <WaitlistSignup />
+          </motion.div>
+
+          <motion.div
+            className='mt-12 grid md:grid-cols-3 gap-8 max-w-4xl mx-auto'
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.6 }}
+          >
+            <div className='text-center'>
+              <div className='text-3xl mb-3'>🎯</div>
+              <h3 className='font-semibold mb-2 text-gray-900'>
+                Feature Prioritization
+              </h3>
+              <p className='text-gray-600 text-sm'>
+                Your feedback directly influences which features we develop
+                first.
+              </p>
+            </div>
+            <div className='text-center'>
+              <div className='text-3xl mb-3'>🚀</div>
+              <h3 className='font-semibold mb-2 text-gray-900'>Early Access</h3>
+              <p className='text-gray-600 text-sm'>
+                Get exclusive early access to AI Petite before the public
+                launch.
+              </p>
+            </div>
+            <div className='text-center'>
+              <div className='text-3xl mb-3'>💡</div>
+              <h3 className='font-semibold mb-2 text-gray-900'>
+                Shape the Future
+              </h3>
+              <p className='text-gray-600 text-sm'>
+                Help us build the perfect AI nutrition assistant for your needs.
+              </p>
+            </div>
+          </motion.div>
         </div>
       </motion.section>
 

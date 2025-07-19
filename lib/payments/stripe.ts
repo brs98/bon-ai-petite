@@ -4,10 +4,15 @@ import {
   updateUserSubscription,
 } from '@/lib/db/queries';
 import { User } from '@/lib/db/schema';
+import { env } from '@/lib/env';
 import { redirect } from 'next/navigation';
 import Stripe from 'stripe';
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+if (!env.STRIPE_SECRET_KEY) {
+  throw new Error('STRIPE_SECRET_KEY is not set');
+}
+
+export const stripe = new Stripe(env.STRIPE_SECRET_KEY, {
   apiVersion: '2025-04-30.basil',
 });
 
