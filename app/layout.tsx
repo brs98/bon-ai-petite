@@ -1,13 +1,13 @@
 import { ConditionalNavigation } from '@/components/ui/ConditionalNavigation';
 import Logo from '@/components/ui/Logo';
 import { getUser } from '@/lib/db/queries';
+import { Analytics } from '@vercel/analytics/next';
 import type { Metadata, Viewport } from 'next';
 import { Manrope } from 'next/font/google';
 import Link from 'next/link';
 import { use } from 'react';
 import { SWRConfig } from 'swr';
 import './globals.css';
-import { Analytics } from '@vercel/analytics/next';
 
 export const metadata: Metadata = {
   title: 'Bon AI Petite - Your Personal AI Nutritionist',
