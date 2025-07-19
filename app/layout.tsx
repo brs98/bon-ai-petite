@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { use } from 'react';
 import { SWRConfig } from 'swr';
 import './globals.css';
+import { Analytics } from '@vercel/analytics/next';
 
 export const metadata: Metadata = {
   title: 'Bon AI Petite - Your Personal AI Nutritionist',
@@ -54,6 +55,7 @@ export default function RootLayout({
             <ConditionalNavigation user={user} />
           </header>
           {children}
+          <Analytics />
         </SWRConfig>
       </body>
     </html>
