@@ -295,10 +295,10 @@ export default function WaitlistPage() {
                 {[
                   {
                     quote:
-                      "As a busy mom of three, I'm always struggling to plan meals that everyone will eat. The idea of AI that knows my kids' picky eating habits and my husband's fitness goals is a total game-changer!",
-                    name: 'Jennifer L.',
-                    role: 'Mom of 3',
-                    avatar: 'JL',
+                      "As a busy mom of two, I'm always struggling to plan meals that everyone will eat. The idea of AI that knows my kids' picky eating habits and my husband's fitness goals is a total game-changer!",
+                    name: 'Audrey S.',
+                    role: 'Mom of 2',
+                    avatar: 'AS',
                   },
                   {
                     quote:
