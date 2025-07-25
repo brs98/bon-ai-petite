@@ -142,7 +142,9 @@ export default function NutritionSettingsPage() {
         <PaymentSuccessBanner />
         <div className='flex items-center gap-2'>
           <Settings className='h-6 w-6' />
-          <h1 className='text-xl sm:text-2xl font-bold'>Nutrition Profile Setup</h1>
+          <h1 className='text-xl sm:text-2xl font-bold'>
+            Nutrition Profile Setup
+          </h1>
         </div>
         <p className='text-muted-foreground text-sm sm:text-base'>
           Set up your nutrition profile to get personalized recipe

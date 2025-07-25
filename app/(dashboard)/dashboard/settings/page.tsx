@@ -1,9 +1,9 @@
 'use client';
 
 import {
-    deleteAccount,
-    updateAccount,
-    updatePassword,
+  deleteAccount,
+  updateAccount,
+  updatePassword,
 } from '@/app/(login)/actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
