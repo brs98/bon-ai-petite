@@ -10,6 +10,11 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from '@/components/ui/chart';
+import {
   Form,
   FormControl,
   FormDescription,
@@ -28,22 +33,14 @@ import {
   type NutritionProfile,
 } from '@/types/recipe';
 import { zodResolver } from '@hookform/resolvers/zod';
-import {
-  Apple,
-  ChefHat,
-  Dumbbell,
-  Info,
-  Ruler,
-  User,
-  Weight,
-} from 'lucide-react';
+import { Apple, ChefHat, Dumbbell, Ruler, User, Weight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { Cell, Pie, PieChart } from 'recharts';
 import { AllergyPreferencesStep } from '../recipes/RecipeGenerator/AllergyPreferencesStep';
 import { CuisinePreferencesStep } from '../recipes/RecipeGenerator/CuisinePreferencesStep';
 import { DietaryPreferencesStep } from '../recipes/RecipeGenerator/DietaryPreferencesStep';
-import { MacroTracker } from './MacroTracker';
 
 interface ProfileSetupProps {
   initialData?: Partial<NutritionProfile>;
@@ -108,6 +105,7 @@ const MACRO_SPLIT_OPTIONS = [
       'Reduces hunger by emphasizing protein and fat',
     ],
     commonFor: 'General health, body recomposition, insulin sensitivity',
+    colors: ['#22c55e', '#ef4444', '#f59e0b'], // green, red, orange
   },
   {
     label: 'High-Protein Fat Loss',
@@ -118,6 +116,7 @@ const MACRO_SPLIT_OPTIONS = [
       'Higher carbs can help support workouts and mood',
     ],
     commonFor: 'Cutting phases, fitness beginners, sustainable dieting',
+    colors: ['#22c55e', '#ef4444', '#f59e0b'], // green, red, orange
   },
   {
     label: 'Athletic Performance',
@@ -128,6 +127,7 @@ const MACRO_SPLIT_OPTIONS = [
       'Encourages muscle building while controlling fat',
     ],
     commonFor: 'Athletes, weightlifters, bodybuilders',
+    colors: ['#22c55e', '#ef4444', '#f59e0b'], // green, red, orange
   },
   {
     label: 'High-Carb',
@@ -138,6 +138,7 @@ const MACRO_SPLIT_OPTIONS = [
       'Supports glycogen replenishment',
     ],
     commonFor: 'Runners, cyclists, swimmers, vegans',
+    colors: ['#22c55e', '#ef4444', '#f59e0b'], // green, red, orange
   },
   {
     label: 'Low-Carb / Keto-Inspired',
@@ -148,6 +149,7 @@ const MACRO_SPLIT_OPTIONS = [
       'Can support fat loss through satiety and reduced insulin',
     ],
     commonFor: 'Low-carb dieters, insulin resistance, fat loss',
+    colors: ['#22c55e', '#ef4444', '#f59e0b'], // green, red, orange
   },
   {
     label: 'Ketogenic Diet',
@@ -158,6 +160,7 @@ const MACRO_SPLIT_OPTIONS = [
       'Good for neurological disorders (e.g., epilepsy), some weight loss strategies',
     ],
     commonFor: 'Keto followers, therapeutic diets, carb-sensitive individuals',
+    colors: ['#22c55e', '#ef4444', '#f59e0b'], // green, red, orange
   },
   {
     label: 'Muscle Gain / Bulking',
@@ -168,6 +171,7 @@ const MACRO_SPLIT_OPTIONS = [
       'Still provides energy without excessive fat gain',
     ],
     commonFor: 'Lean bulking phases, hard gainers',
+    colors: ['#22c55e', '#ef4444', '#f59e0b'], // green, red, orange
   },
 ];
 
@@ -286,7 +290,7 @@ export function ProfileSetup({
     if (age && weightKg && heightCm && activityLevel && gender) {
       const macroProfile = calculateMacroProfile({
         age,
-        gender,
+        gender: gender as 'male' | 'female',
         height: heightCm,
         weight: weightKg,
         activityLevel,
@@ -308,18 +312,59 @@ export function ProfileSetup({
     }
   }, [form, heightFeet, heightInches, weightLbs]);
 
+  // Trigger calculation when reaching the nutrition targets step
+  useEffect(() => {
+    if (currentStep === 6) {
+      const [
+        age,
+        weight,
+        height,
+        activityLevel,
+        goals,
+        gender,
+        dietaryRestrictions,
+      ] = form.watch([
+        'age',
+        'weight',
+        'height',
+        'activityLevel',
+        'goals',
+        'gender',
+        'dietaryRestrictions',
+      ]);
+
+      // Convert height (in) to cm, weight (lbs) to kg
+      const heightCm = height ? Math.round(height * 2.54) : undefined;
+      const weightKg = weight ? Math.round(weight * 0.453592) : undefined;
+      const primaryGoal =
+        Array.isArray(goals) && goals.length > 0 ? goals[0] : 'maintain_weight';
+
+      if (age && weightKg && heightCm && activityLevel && gender) {
+        const macroProfile = calculateMacroProfile({
+          age,
+          gender: gender as 'male' | 'female',
+          height: heightCm,
+          weight: weightKg,
+          activityLevel,
+          goal: primaryGoal,
+          dietaryPreferences: dietaryRestrictions,
+        });
+        setCalculatedCalories(macroProfile.calories);
+        form.setValue('dailyCalories', macroProfile.calories);
+        form.setValue('macroProtein', macroProfile.protein);
+        form.setValue('macroCarbs', macroProfile.carbs);
+        form.setValue('macroFat', macroProfile.fat);
+      }
+    }
+  }, [currentStep, form]);
+
+  // Watch form values for calories and macros
+  const formValues = form.watch();
+
   // Macro split selection state
   const [selectedMacroSplit, setSelectedMacroSplit] = useState<number | null>(
     null,
   );
-
-  // Add state for showing the benefits popover
-  const [showBenefitsPopover, setShowBenefitsPopover] = useState<number | null>(
-    null,
-  );
-
-  // Watch form values for calories and macros
-  const formValues = form.watch();
 
   // When a macro split is selected, update macro grams in the form
   function handleMacroSplitSelect(index: number) {
@@ -431,17 +476,17 @@ export function ProfileSetup({
   };
 
   return (
-    <div className='max-w-4xl mx-auto space-y-8'>
+    <div className='max-w-4xl mx-auto space-y-6 sm:space-y-8'>
       {/* Show confirmation after save */}
       {showConfirmation ? (
         <div className='flex flex-col items-center justify-center min-h-[300px] space-y-6'>
           <div className='text-center'>
-            <h2 className='text-2xl font-bold mb-2'>Profile Saved!</h2>
-            <p className='text-muted-foreground mb-4'>
+            <h2 className='text-xl sm:text-2xl font-bold mb-2'>Profile Saved!</h2>
+            <p className='text-muted-foreground mb-4 text-sm sm:text-base'>
               Your nutrition profile has been saved successfully.
             </p>
           </div>
-          <div className='flex flex-col sm:flex-row gap-4'>
+          <div className='flex flex-col sm:flex-row gap-4 w-full sm:w-auto'>
             <Button
               size='lg'
               variant='default'
@@ -449,13 +494,14 @@ export function ProfileSetup({
                 onComplete();
                 router.push('/dashboard/recipes/generate');
               }}
+              className='w-full sm:w-auto'
             >
               Generate a Recipe
             </Button>
             <Button
               size='lg'
               variant='outline'
-              className='flex items-center gap-2 border-primary text-primary'
+              className='flex items-center gap-2 border-primary text-primary w-full sm:w-auto'
               onClick={() => {
                 onComplete();
                 router.push('/dashboard/meal-planning/weekly');
@@ -494,28 +540,28 @@ export function ProfileSetup({
                 e.preventDefault();
                 void form.handleSubmit(onSubmit)();
               }}
-              className='space-y-8'
+              className='space-y-6 sm:space-y-8'
             >
               {/* Step content */}
               <Card>
-                <CardHeader>
-                  <CardTitle>{steps[currentStep].title}</CardTitle>
-                  <CardDescription>
+                <CardHeader className='pb-4 sm:pb-6'>
+                  <CardTitle className='text-lg sm:text-xl'>{steps[currentStep].title}</CardTitle>
+                  <CardDescription className='text-sm'>
                     {steps[currentStep].description}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className='space-y-6'>
                   {Number(currentStep) === 0 && (
-                    <div className='space-y-8 text-center'>
+                    <div className='space-y-6 sm:space-y-8 text-center'>
                       <div className='space-y-2'>
-                        <User className='h-12 w-12 mx-auto text-primary' />
-                        <h2 className='text-2xl font-bold'>Physical Stats</h2>
-                        <p className='text-muted-foreground'>
+                        <User className='h-8 w-8 sm:h-12 sm:w-12 mx-auto text-primary' />
+                        <h2 className='text-xl sm:text-2xl font-bold'>Physical Stats</h2>
+                        <p className='text-muted-foreground text-sm sm:text-base'>
                           Tell us about yourself so we can personalize your
                           nutrition plan.
                         </p>
                       </div>
-                      <div className='flex flex-col md:flex-row gap-6 max-w-3xl mx-auto'>
+                      <div className='flex flex-col gap-4 sm:gap-6 max-w-3xl mx-auto'>
                         {/* Age */}
                         <div className='flex-1 flex flex-col items-center'>
                           <FormField
@@ -523,8 +569,8 @@ export function ProfileSetup({
                             name='age'
                             render={({ field }) => (
                               <FormItem className='w-full'>
-                                <FormLabel className='flex items-center gap-2 justify-center'>
-                                  <User className='h-5 w-5 text-muted-foreground' />{' '}
+                                <FormLabel className='flex items-center gap-2 justify-center text-sm sm:text-base'>
+                                  <User className='h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground' />{' '}
                                   Age
                                 </FormLabel>
                                 <FormControl>
@@ -532,7 +578,7 @@ export function ProfileSetup({
                                     type='number'
                                     min={0}
                                     placeholder='Enter your age'
-                                    className='w-full text-lg py-4 text-center'
+                                    className='w-full text-base sm:text-lg py-3 sm:py-4 text-center'
                                     {...field}
                                     value={
                                       field.value === undefined
@@ -558,20 +604,19 @@ export function ProfileSetup({
                           name='gender'
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Gender</FormLabel>
-                              {/* FormControl should wrap only the RadioGroup, not each item */}
+                              <FormLabel className='text-sm sm:text-base'>Gender</FormLabel>
                               <FormControl>
                                 <RadioGroup
                                   onValueChange={field.onChange}
                                   value={field.value}
-                                  className='flex flex-row gap-4'
+                                  className='flex flex-row gap-4 justify-center'
                                 >
                                   <div className='flex items-center gap-2'>
                                     <RadioGroupItem
                                       value='male'
                                       id='gender-male'
                                     />
-                                    <FormLabel htmlFor='gender-male'>
+                                    <FormLabel htmlFor='gender-male' className='text-sm sm:text-base'>
                                       Male
                                     </FormLabel>
                                   </div>
@@ -580,7 +625,7 @@ export function ProfileSetup({
                                       value='female'
                                       id='gender-female'
                                     />
-                                    <FormLabel htmlFor='gender-female'>
+                                    <FormLabel htmlFor='gender-female' className='text-sm sm:text-base'>
                                       Female
                                     </FormLabel>
                                   </div>
@@ -593,8 +638,8 @@ export function ProfileSetup({
                         {/* Height */}
                         <div className='flex-1 flex flex-col items-center'>
                           <FormItem className='w-full'>
-                            <FormLabel className='flex items-center gap-2 justify-center'>
-                              <Ruler className='h-5 w-5 text-muted-foreground' />{' '}
+                            <FormLabel className='flex items-center gap-2 justify-center text-sm sm:text-base'>
+                              <Ruler className='h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground' />{' '}
                               Height
                             </FormLabel>
                             <div className='flex gap-2 items-end justify-center w-full'>
@@ -611,10 +656,10 @@ export function ProfileSetup({
                                     val === '' ? undefined : parseInt(val),
                                   );
                                 }}
-                                className='w-full text-lg py-4 text-center'
+                                className='w-full text-base sm:text-lg py-3 sm:py-4 text-center'
                                 aria-label='Height (feet)'
                               />
-                              <span className='self-center'>ft</span>
+                              <span className='self-center text-sm sm:text-base'>ft</span>
                               <Input
                                 type='number'
                                 min={0}
@@ -629,18 +674,18 @@ export function ProfileSetup({
                                     val === '' ? undefined : parseInt(val),
                                   );
                                 }}
-                                className='w-full text-lg py-4 text-center'
+                                className='w-full text-base sm:text-lg py-3 sm:py-4 text-center'
                                 aria-label='Height (inches)'
                               />
-                              <span className='self-center'>in</span>
+                              <span className='self-center text-sm sm:text-base'>in</span>
                             </div>
                           </FormItem>
                         </div>
                         {/* Weight */}
                         <div className='flex-1 flex flex-col items-center'>
                           <FormItem className='w-full'>
-                            <FormLabel className='flex items-center gap-2 justify-center'>
-                              <Weight className='h-5 w-5 text-muted-foreground' />{' '}
+                            <FormLabel className='flex items-center gap-2 justify-center text-sm sm:text-base'>
+                              <Weight className='h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground' />{' '}
                               Weight (lbs)
                             </FormLabel>
                             <Input
@@ -654,7 +699,7 @@ export function ProfileSetup({
                                   val === '' ? undefined : parseInt(val),
                                 );
                               }}
-                              className='w-full text-lg py-4 text-center'
+                              className='w-full text-base sm:text-lg py-3 sm:py-4 text-center'
                               aria-label='Weight (lbs)'
                             />
                           </FormItem>
@@ -664,26 +709,26 @@ export function ProfileSetup({
                   )}
 
                   {Number(currentStep) === 1 && (
-                    <div className='space-y-8 text-center'>
+                    <div className='space-y-6 sm:space-y-8 text-center'>
                       <div className='space-y-2'>
-                        <Dumbbell className='h-12 w-12 mx-auto text-primary' />
-                        <h2 className='text-2xl font-bold'>Activity Level</h2>
-                        <p className='text-muted-foreground'>
+                        <Dumbbell className='h-8 w-8 sm:h-12 sm:w-12 mx-auto text-primary' />
+                        <h2 className='text-xl sm:text-2xl font-bold'>Activity Level</h2>
+                        <p className='text-muted-foreground text-sm sm:text-base'>
                           Tell us about your lifestyle and daily activity so we
                           can personalize your nutrition plan.
                         </p>
                       </div>
-                      <div className='flex flex-col gap-8 max-w-2xl mx-auto'>
+                      <div className='flex flex-col gap-6 sm:gap-8 max-w-2xl mx-auto'>
                         {/* Activity Level Badge Group */}
                         <FormField
                           control={form.control}
                           name='activityLevel'
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className='flex items-center gap-2 justify-center'>
+                              <FormLabel className='flex items-center gap-2 justify-center text-sm sm:text-base'>
                                 Activity Level
                               </FormLabel>
-                              <div className='flex flex-wrap gap-3 justify-center'>
+                              <div className='flex flex-wrap gap-2 sm:gap-3 justify-center'>
                                 {ACTIVITY_LEVELS.map(level => (
                                   <Button
                                     key={level.value}
@@ -693,14 +738,14 @@ export function ProfileSetup({
                                         ? 'default'
                                         : 'outline'
                                     }
-                                    className='py-2 px-4 text-sm'
+                                    className='py-2 px-3 sm:px-4 text-xs sm:text-sm'
                                     onClick={() => field.onChange(level.value)}
                                   >
                                     {level.label}
                                   </Button>
                                 ))}
                               </div>
-                              <FormDescription>
+                              <FormDescription className='text-xs sm:text-sm'>
                                 This helps us calculate your daily calorie needs
                               </FormDescription>
                               <FormMessage />
@@ -712,25 +757,25 @@ export function ProfileSetup({
                   )}
 
                   {Number(currentStep) === 2 && (
-                    <div className='space-y-8 text-center'>
+                    <div className='space-y-6 sm:space-y-8 text-center'>
                       <div className='space-y-2'>
-                        <Weight className='h-12 w-12 mx-auto text-primary' />
-                        <h2 className='text-2xl font-bold'>Weight Goal</h2>
-                        <p className='text-muted-foreground'>
+                        <Weight className='h-8 w-8 sm:h-12 sm:w-12 mx-auto text-primary' />
+                        <h2 className='text-xl sm:text-2xl font-bold'>Weight Goal</h2>
+                        <p className='text-muted-foreground text-sm sm:text-base'>
                           What is your current weight goal?
                         </p>
                       </div>
-                      <div className='flex flex-col gap-8 max-w-2xl mx-auto'>
+                      <div className='flex flex-col gap-6 sm:gap-8 max-w-2xl mx-auto'>
                         {/* Weight Goal Selection */}
                         <FormField
                           control={form.control}
                           name='goals'
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className='flex items-center gap-2 justify-center'>
+                              <FormLabel className='flex items-center gap-2 justify-center text-sm sm:text-base'>
                                 Weight Goal
                               </FormLabel>
-                              <div className='flex flex-wrap gap-3 justify-center'>
+                              <div className='flex flex-wrap gap-2 sm:gap-3 justify-center'>
                                 {WEIGHT_GOALS.map(goal => {
                                   const selected = Array.isArray(field.value)
                                     ? field.value.includes(goal)
@@ -740,7 +785,7 @@ export function ProfileSetup({
                                       key={goal}
                                       type='button'
                                       variant={selected ? 'default' : 'outline'}
-                                      className='py-2 px-4 text-sm'
+                                      className='py-2 px-3 sm:px-4 text-xs sm:text-sm'
                                       onClick={() => field.onChange([goal])}
                                     >
                                       {goal === 'lose_weight' && 'Lose Weight'}
@@ -764,7 +809,7 @@ export function ProfileSetup({
                             name='goalWeight'
                             render={({ field }) => (
                               <FormItem className='w-full'>
-                                <FormLabel className='flex items-center gap-2 justify-center'>
+                                <FormLabel className='flex items-center gap-2 justify-center text-sm sm:text-base'>
                                   Goal Weight (lbs)
                                 </FormLabel>
                                 <FormControl>
@@ -772,7 +817,7 @@ export function ProfileSetup({
                                     type='number'
                                     min={0}
                                     placeholder='Enter your goal weight'
-                                    className='w-full text-lg py-4 text-center'
+                                    className='w-full text-base sm:text-lg py-3 sm:py-4 text-center'
                                     {...field}
                                     value={
                                       field.value === undefined
@@ -787,7 +832,7 @@ export function ProfileSetup({
                                     }}
                                   />
                                 </FormControl>
-                                <FormDescription>
+                                <FormDescription className='text-xs sm:text-sm'>
                                   Setting a goal weight helps us personalize
                                   your calorie and macro targets.
                                 </FormDescription>
@@ -842,215 +887,307 @@ export function ProfileSetup({
                   {Number(currentStep) === 6 && (
                     <div className='space-y-6 text-center'>
                       <div className='space-y-2'>
-                        <Apple className='h-12 w-12 mx-auto text-primary' />
-                        <h2 className='text-2xl font-bold'>
+                        <Apple className='h-8 w-8 sm:h-12 sm:w-12 mx-auto text-primary' />
+                        <h2 className='text-xl sm:text-2xl font-bold'>
                           Nutrition Targets
                         </h2>
-                        <p className='text-muted-foreground'>
+                        <p className='text-muted-foreground text-sm sm:text-base'>
                           Set your daily calorie and macronutrient goals. We'll
                           use these to personalize your meal plans.
                         </p>
                       </div>
-                      {/* Daily Calorie Target input above macro targets */}
-                      <div className='w-full max-w-3xl mx-auto mb-4 flex flex-col items-center'>
-                        <label
-                          className='font-semibold mb-1'
-                          htmlFor='dailyCalories'
-                        >
-                          Daily Calorie Target
-                        </label>
-                        <Input
-                          id='dailyCalories'
-                          type='number'
-                          className='text-center text-lg font-mono'
-                          value={formValues.dailyCalories || ''}
-                          onChange={e =>
-                            form.setValue(
-                              'dailyCalories',
-                              parseInt(e.target.value) || undefined,
-                            )
-                          }
-                          min={0}
-                          style={{ width: 120 }}
-                          placeholder='Calories'
-                        />
-                        {calculatedCalories && (
-                          <span className='text-xs text-muted-foreground mt-1'>
-                            Suggested: {calculatedCalories} calories based on
-                            your profile
-                          </span>
-                        )}
+                      
+                      {/* Macro Split Selection - Compact Cards */}
+                      <div className='w-full max-w-6xl mx-auto'>
+                        <h3 className='text-base sm:text-lg font-semibold mb-4'>
+                          Choose Your Macro Split
+                        </h3>
+
+                        {/* Scrollable container */}
+                        <div className='relative'>
+                          {/* Scrollable cards */}
+                          <div className='flex gap-2 sm:gap-3 overflow-x-auto py-4 scrollbar-hide px-4'>
+                            {/* Add a spacer at the end to show partial card */}
+                            <div className='flex-shrink-0 w-4' />
+                            {MACRO_SPLIT_OPTIONS.map((option, idx) => (
+                              <Card
+                                key={option.label}
+                                className={`min-w-[160px] sm:min-w-[200px] cursor-pointer transition-all duration-200 hover:shadow-lg ${
+                                  selectedMacroSplit === idx 
+                                    ? 'border-primary shadow-lg scale-105' 
+                                    : 'border-border hover:border-primary/50'
+                                }`}
+                                onClick={() => handleMacroSplitSelect(idx)}
+                                style={{ flex: '0 0 auto' }}
+                              >
+                                <CardHeader className='pb-2'>
+                                  <CardTitle className='text-xs sm:text-sm text-center'>
+                                    {option.label}
+                                  </CardTitle>
+                                </CardHeader>
+                                <CardContent className='space-y-2'>
+                                  {/* Compact macro breakdown */}
+                                  <div className='grid grid-cols-3 gap-1 text-xs'>
+                                    <div className='text-center'>
+                                      <div className='font-semibold text-green-600'>
+                                        {option.split.carbs}%
+                                      </div>
+                                      <div className='text-muted-foreground'>
+                                        C
+                                      </div>
+                                    </div>
+                                    <div className='text-center'>
+                                      <div className='font-semibold text-red-600'>
+                                        {option.split.protein}%
+                                      </div>
+                                      <div className='text-muted-foreground'>
+                                        P
+                                      </div>
+                                    </div>
+                                    <div className='text-center'>
+                                      <div className='font-semibold text-orange-600'>
+                                        {option.split.fat}%
+                                      </div>
+                                      <div className='text-muted-foreground'>
+                                        F
+                                      </div>
+                                    </div>
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            ))}
+                            {/* Add a spacer at the end to show partial card */}
+                            <div className='flex-shrink-0 w-4' />
+                          </div>
+                        </div>
                       </div>
-                      {/* Macro Split Selection - Horizontal Scrollable */}
-                      <div className='flex gap-2 overflow-x-auto pb-2'>
-                        {MACRO_SPLIT_OPTIONS.map((option, idx) => (
-                          <Card
-                            key={option.label}
-                            className={`min-w-[220px] cursor-pointer transition-all ${selectedMacroSplit === idx ? 'border-primary ring-2 ring-primary' : ''}`}
-                            onClick={() => handleMacroSplitSelect(idx)}
-                            style={{ flex: '0 0 auto' }}
-                          >
-                            <CardHeader>
-                              <div className='flex items-center justify-between'>
-                                <CardTitle className='text-base'>
-                                  {option.label}
-                                </CardTitle>
-                                {selectedMacroSplit === idx && (
-                                  <button
-                                    type='button'
-                                    className='ml-2 text-muted-foreground hover:text-primary focus:outline-none'
-                                    onClick={e => {
-                                      e.stopPropagation();
-                                      setShowBenefitsPopover(show =>
-                                        show === idx ? null : idx,
-                                      );
-                                    }}
-                                    aria-label='Show benefits'
+                      
+                      {/* Single Pie Chart with Calorie Input in Center */}
+                      {selectedMacroSplit !== null && (
+                        <div className='w-full max-w-2xl mx-auto'>
+                          <div className='flex items-center justify-center'>
+                            <div className='relative'>
+                              {/* Pie Chart */}
+                              <ChartContainer
+                                config={{
+                                  carbs: {
+                                    label: 'Carbs',
+                                    color:
+                                      MACRO_SPLIT_OPTIONS[selectedMacroSplit]
+                                        .colors[0],
+                                  },
+                                  protein: {
+                                    label: 'Protein',
+                                    color:
+                                      MACRO_SPLIT_OPTIONS[selectedMacroSplit]
+                                        .colors[1],
+                                  },
+                                  fat: {
+                                    label: 'Fat',
+                                    color:
+                                      MACRO_SPLIT_OPTIONS[selectedMacroSplit]
+                                        .colors[2],
+                                  },
+                                }}
+                                className='w-48 h-48 sm:w-64 sm:h-64'
+                              >
+                                <PieChart>
+                                  <ChartTooltip
+                                    cursor={false}
+                                    content={<ChartTooltipContent hideLabel />}
+                                  />
+                                  <Pie
+                                    data={[
+                                      {
+                                        name: 'Carbs',
+                                        value:
+                                          MACRO_SPLIT_OPTIONS[
+                                            selectedMacroSplit
+                                          ].split.carbs,
+                                        color:
+                                          MACRO_SPLIT_OPTIONS[
+                                            selectedMacroSplit
+                                          ].colors[0],
+                                      },
+                                      {
+                                        name: 'Protein',
+                                        value:
+                                          MACRO_SPLIT_OPTIONS[
+                                            selectedMacroSplit
+                                          ].split.protein,
+                                        color:
+                                          MACRO_SPLIT_OPTIONS[
+                                            selectedMacroSplit
+                                          ].colors[1],
+                                      },
+                                      {
+                                        name: 'Fat',
+                                        value:
+                                          MACRO_SPLIT_OPTIONS[
+                                            selectedMacroSplit
+                                          ].split.fat,
+                                        color:
+                                          MACRO_SPLIT_OPTIONS[
+                                            selectedMacroSplit
+                                          ].colors[2],
+                                      },
+                                    ]}
+                                    dataKey='value'
+                                    nameKey='name'
+                                    innerRadius={60}
+                                    outerRadius={75}
+                                    strokeWidth={3}
+                                    stroke='#fff'
                                   >
-                                    <Info className='h-4 w-4' />
-                                  </button>
-                                )}
+                                    {[
+                                      {
+                                        name: 'Carbs',
+                                        value:
+                                          MACRO_SPLIT_OPTIONS[
+                                            selectedMacroSplit
+                                          ].split.carbs,
+                                        color:
+                                          MACRO_SPLIT_OPTIONS[
+                                            selectedMacroSplit
+                                          ].colors[0],
+                                      },
+                                      {
+                                        name: 'Protein',
+                                        value:
+                                          MACRO_SPLIT_OPTIONS[
+                                            selectedMacroSplit
+                                          ].split.protein,
+                                        color:
+                                          MACRO_SPLIT_OPTIONS[
+                                            selectedMacroSplit
+                                          ].colors[1],
+                                      },
+                                      {
+                                        name: 'Fat',
+                                        value:
+                                          MACRO_SPLIT_OPTIONS[
+                                            selectedMacroSplit
+                                          ].split.fat,
+                                        color:
+                                          MACRO_SPLIT_OPTIONS[
+                                            selectedMacroSplit
+                                          ].colors[2],
+                                      },
+                                    ].map((entry, index) => (
+                                      <Cell
+                                        key={`cell-${index}`}
+                                        fill={entry.color}
+                                      />
+                                    ))}
+                                  </Pie>
+                                </PieChart>
+                              </ChartContainer>
+                              
+                              {/* Calorie Input in Center */}
+                              <div className='absolute inset-0 flex items-center justify-center'>
+                                <div className='text-center'>
+                                  <label className='block text-xs sm:text-sm font-medium text-muted-foreground mb-1'>
+                                    Daily Calories
+                                  </label>
+                                  <Input
+                                    type='number'
+                                    className='text-center text-base sm:text-lg font-mono w-24 sm:w-28 h-8 sm:h-10'
+                                    value={formValues.dailyCalories || ''}
+                                    onChange={e =>
+                                      form.setValue(
+                                        'dailyCalories',
+                                        parseInt(e.target.value) || undefined,
+                                      )
+                                    }
+                                    min={0}
+                                    placeholder='0'
+                                  />
+                                  {calculatedCalories && (
+                                    <div className='text-xs text-muted-foreground mt-1'>
+                                      Suggested: {calculatedCalories}
+                                    </div>
+                                  )}
+                                </div>
                               </div>
-                              <CardDescription className='text-xs'>
-                                {option.description}
-                              </CardDescription>
-                            </CardHeader>
-                          </Card>
-                        ))}
-                      </div>
-                      {/* Benefits Popover (simple implementation) */}
-                      {selectedMacroSplit !== null &&
-                        showBenefitsPopover === selectedMacroSplit && (
-                          <div className='mt-2 p-4 border rounded bg-muted max-w-xl mx-auto text-left z-10 relative'>
-                            <h3 className='font-bold mb-2'>
-                              {MACRO_SPLIT_OPTIONS[selectedMacroSplit].label}{' '}
-                              Benefits
-                            </h3>
-                            <ul>
+                            </div>
+                          </div>
+                          
+                          {/* Macro breakdown below pie chart */}
+                          <div className='mt-4 sm:mt-6 grid grid-cols-3 gap-2 sm:gap-4 max-w-md mx-auto'>
+                            <div className='text-center'>
+                              <div className='text-xl sm:text-2xl mb-1'>🥩</div>
+                              <div className='font-bold text-red-600 text-sm sm:text-base'>
+                                {formValues.macroProtein || 0}g
+                              </div>
+                              <div className='text-xs sm:text-sm text-muted-foreground'>
+                                Protein
+                              </div>
+                            </div>
+                            <div className='text-center'>
+                              <div className='text-xl sm:text-2xl mb-1'>🍚</div>
+                              <div className='font-bold text-green-600 text-sm sm:text-base'>
+                                {formValues.macroCarbs || 0}g
+                              </div>
+                              <div className='text-xs sm:text-sm text-muted-foreground'>
+                                Carbs
+                              </div>
+                            </div>
+                            <div className='text-center'>
+                              <div className='text-xl sm:text-2xl mb-1'>🥑</div>
+                              <div className='font-bold text-orange-600 text-sm sm:text-base'>
+                                {formValues.macroFat || 0}g
+                              </div>
+                              <div className='text-xs sm:text-sm text-muted-foreground'>
+                                Fat
+                              </div>
+                            </div>
+                          </div>
+                          
+                          {/* Benefits display below macro breakdown */}
+                          <div className='mt-4 sm:mt-6 p-3 sm:p-4 border rounded-lg bg-muted/50 text-left'>
+                            <h4 className='font-semibold text-xs sm:text-sm mb-2'>
+                              Benefits of{' '}
+                              {MACRO_SPLIT_OPTIONS[selectedMacroSplit].label}:
+                            </h4>
+                            <ul className='text-xs sm:text-sm space-y-1 mb-3'>
                               {MACRO_SPLIT_OPTIONS[
                                 selectedMacroSplit
-                              ].benefits.map(b => (
-                                <li key={b}>• {b}</li>
+                              ].benefits.map((benefit, i) => (
+                                <li key={i} className='flex items-start gap-2'>
+                                  <span className='text-primary mt-1'>•</span>
+                                  <span>{benefit}</span>
+                                </li>
                               ))}
                             </ul>
-                            <div className='text-xs mt-2'>
-                              <strong>Common For:</strong>{' '}
+                            <div className='text-xs sm:text-sm text-muted-foreground'>
+                              <strong>Common for:</strong>{' '}
                               {
                                 MACRO_SPLIT_OPTIONS[selectedMacroSplit]
                                   .commonFor
                               }
                             </div>
                           </div>
-                        )}
-                      {/* Concise Macro Targets card-like section (no Card wrapper) */}
-                      <div className='w-full max-w-3xl mx-auto mb-6 rounded-lg border shadow-sm bg-muted/50 p-6'>
-                        <div className='flex flex-row justify-around gap-4 items-center'>
-                          {/* Protein */}
-                          <div className='flex flex-col items-center flex-1'>
-                            <span className='text-2xl mb-1'>🥩</span>
-                            <span className='font-bold text-pink-600 mb-1'>
-                              Protein
-                            </span>
-                            <div className='flex items-center gap-2'>
-                              <Input
-                                type='number'
-                                className='text-center text-lg font-mono'
-                                value={formValues.macroProtein || ''}
-                                onChange={e =>
-                                  handleManualMacroChange(
-                                    'macroProtein',
-                                    parseInt(e.target.value) || undefined,
-                                  )
-                                }
-                                min={0}
-                                style={{ width: 70 }}
-                              />
-                              <span className='text-sm text-muted-foreground'>
-                                grams
-                              </span>
-                            </div>
-                          </div>
-                          {/* Carbs */}
-                          <div className='flex flex-col items-center flex-1'>
-                            <span className='text-2xl mb-1'>🍚</span>
-                            <span className='font-bold text-green-600 mb-1'>
-                              Carbs
-                            </span>
-                            <div className='flex items-center gap-2'>
-                              <Input
-                                type='number'
-                                className='text-center text-lg font-mono'
-                                value={formValues.macroCarbs || ''}
-                                onChange={e =>
-                                  handleManualMacroChange(
-                                    'macroCarbs',
-                                    parseInt(e.target.value) || undefined,
-                                  )
-                                }
-                                min={0}
-                                style={{ width: 70 }}
-                              />
-                              <span className='text-sm text-muted-foreground'>
-                                grams
-                              </span>
-                            </div>
-                          </div>
-                          {/* Fat */}
-                          <div className='flex flex-col items-center flex-1'>
-                            <span className='text-2xl mb-1'>🥑</span>
-                            <span className='font-bold text-yellow-600 mb-1'>
-                              Fat
-                            </span>
-                            <div className='flex items-center gap-2'>
-                              <Input
-                                type='number'
-                                className='text-center text-lg font-mono'
-                                value={formValues.macroFat || ''}
-                                onChange={e =>
-                                  handleManualMacroChange(
-                                    'macroFat',
-                                    parseInt(e.target.value) || undefined,
-                                  )
-                                }
-                                min={0}
-                                style={{ width: 70 }}
-                              />
-                              <span className='text-sm text-muted-foreground'>
-                                grams
-                              </span>
-                            </div>
-                          </div>
                         </div>
-                      </div>
-                      {/* MacroTracker below the macro targets section */}
-                      <div className='w-full max-w-3xl mx-auto mb-6'>
-                        <MacroTracker
-                          data-testid='macro-tracker'
-                          dailyCalories={formValues.dailyCalories}
-                          macroProtein={formValues.macroProtein}
-                          macroCarbs={formValues.macroCarbs}
-                          macroFat={formValues.macroFat}
-                        />
-                      </div>
+                      )}
                     </div>
                   )}
 
                   {Number(currentStep) === 7 && (
-                    <div className='space-y-8 text-center'>
+                    <div className='space-y-6 sm:space-y-8 text-center'>
                       <div className='space-y-2'>
-                        <h2 className='text-2xl font-bold'>
+                        <h2 className='text-xl sm:text-2xl font-bold'>
                           Review Your Profile
                         </h2>
-                        <p className='text-muted-foreground'>
+                        <p className='text-muted-foreground text-sm sm:text-base'>
                           Please review your information below. You can edit any
                           section before saving.
                         </p>
                       </div>
-                      <div className='flex flex-col gap-8 max-w-2xl mx-auto text-left'>
+                      <div className='flex flex-col gap-4 sm:gap-8 max-w-2xl mx-auto text-left'>
                         {/* Physical Stats */}
-                        <div className='rounded-lg border p-4 space-y-2 bg-muted/50'>
+                        <div className='rounded-lg border p-3 sm:p-4 space-y-2 bg-muted/50'>
                           <div className='flex justify-between items-center'>
-                            <h3 className='font-semibold text-lg'>
+                            <h3 className='font-semibold text-base sm:text-lg'>
                               Physical Stats
                             </h3>
                             <Button
@@ -1062,7 +1199,7 @@ export function ProfileSetup({
                               Edit
                             </Button>
                           </div>
-                          <div className='text-muted-foreground'>
+                          <div className='text-muted-foreground text-sm sm:text-base'>
                             {formValues.age} years old,{' '}
                             {formatHeight(formValues.height)},{' '}
                             {formValues.weight} lbs
@@ -1072,7 +1209,7 @@ export function ProfileSetup({
                             (formValues.goals ?? []).includes('gain_weight')) &&
                             formValues.goalWeight &&
                             formValues.goalWeight !== formValues.weight && (
-                              <div className='text-xs text-primary mt-2'>
+                              <div className='text-xs sm:text-sm text-primary mt-2'>
                                 <span>
                                   Goal weight:{' '}
                                   <b>{formValues.goalWeight} lbs</b>
@@ -1092,9 +1229,9 @@ export function ProfileSetup({
                             )}
                         </div>
                         {/* Activity Level */}
-                        <div className='rounded-lg border p-4 space-y-2 bg-muted/50'>
+                        <div className='rounded-lg border p-3 sm:p-4 space-y-2 bg-muted/50'>
                           <div className='flex justify-between items-center'>
-                            <h3 className='font-semibold text-lg'>
+                            <h3 className='font-semibold text-base sm:text-lg'>
                               Activity Level
                             </h3>
                             <Button
@@ -1119,9 +1256,9 @@ export function ProfileSetup({
                           </div>
                         </div>
                         {/* Goals */}
-                        <div className='rounded-lg border p-4 space-y-2 bg-muted/50'>
+                        <div className='rounded-lg border p-3 sm:p-4 space-y-2 bg-muted/50'>
                           <div className='flex justify-between items-center'>
-                            <h3 className='font-semibold text-lg'>Goals</h3>
+                            <h3 className='font-semibold text-base sm:text-lg'>Goals</h3>
                             <Button
                               type='button'
                               size='sm'
@@ -1145,9 +1282,9 @@ export function ProfileSetup({
                           </div>
                         </div>
                         {/* Allergies */}
-                        <div className='rounded-lg border p-4 space-y-2 bg-muted/50'>
+                        <div className='rounded-lg border p-3 sm:p-4 space-y-2 bg-muted/50'>
                           <div className='flex justify-between items-center'>
-                            <h3 className='font-semibold text-lg'>
+                            <h3 className='font-semibold text-base sm:text-lg'>
                               Allergies & Intolerances
                             </h3>
                             <Button
@@ -1175,9 +1312,9 @@ export function ProfileSetup({
                           </div>
                         </div>
                         {/* Dietary Preferences */}
-                        <div className='rounded-lg border p-4 space-y-2 bg-muted/50'>
+                        <div className='rounded-lg border p-3 sm:p-4 space-y-2 bg-muted/50'>
                           <div className='flex justify-between items-center'>
-                            <h3 className='font-semibold text-lg'>
+                            <h3 className='font-semibold text-base sm:text-lg'>
                               Dietary Preferences
                             </h3>
                             <Button
@@ -1207,9 +1344,9 @@ export function ProfileSetup({
                           </div>
                         </div>
                         {/* Preferred Cuisines */}
-                        <div className='rounded-lg border p-4 space-y-2 bg-muted/50'>
+                        <div className='rounded-lg border p-3 sm:p-4 space-y-2 bg-muted/50'>
                           <div className='flex justify-between items-center'>
-                            <h3 className='font-semibold text-lg'>
+                            <h3 className='font-semibold text-base sm:text-lg'>
                               Preferred Cuisines
                             </h3>
                             <Button
@@ -1237,9 +1374,9 @@ export function ProfileSetup({
                           </div>
                         </div>
                         {/* Nutrition Targets */}
-                        <div className='rounded-lg border p-4 space-y-2 bg-muted/50'>
+                        <div className='rounded-lg border p-3 sm:p-4 space-y-2 bg-muted/50'>
                           <div className='flex justify-between items-center'>
-                            <h3 className='font-semibold text-lg'>
+                            <h3 className='font-semibold text-base sm:text-lg'>
                               Nutrition Targets
                             </h3>
                             <Button
@@ -1251,7 +1388,7 @@ export function ProfileSetup({
                               Edit
                             </Button>
                           </div>
-                          <div className='flex flex-wrap gap-4'>
+                          <div className='flex flex-wrap gap-2 sm:gap-4 text-sm sm:text-base'>
                             <div>
                               <span className='font-medium'>Calories:</span>{' '}
                               {formValues.dailyCalories || '—'} kcal
@@ -1285,22 +1422,24 @@ export function ProfileSetup({
                     void prevStep();
                   }}
                   disabled={currentStep === 0}
+                  className='text-base sm:text-lg px-4 sm:px-6 py-2 sm:py-3'
                 >
                   Previous
                 </Button>
 
-                <div className='flex gap-2'>
+                <div className='flex gap-2 sm:gap-3'>
                   {currentStep < steps.length - 1 ? (
                     <Button
                       type='button'
                       onClick={() => {
                         void nextStep();
                       }}
+                      className='text-base sm:text-lg px-4 sm:px-6 py-2 sm:py-3'
                     >
                       Next
                     </Button>
                   ) : (
-                    <Button type='submit' disabled={isLoading}>
+                    <Button type='submit' disabled={isLoading} className='text-base sm:text-lg px-4 sm:px-6 py-2 sm:py-3'>
                       {isLoading ? 'Saving...' : 'Save Profile'}
                     </Button>
                   )}

@@ -45,9 +45,9 @@ export default function RootLayout({
           }}
         >
           {/* Header/NavBar */}
-          <header className='sticky top-0 z-30 w-full bg-white/80 dark:bg-background/80 backdrop-blur border-b border-border flex items-center justify-between px-6 py-3 shadow-sm'>
+          <header className='sticky top-0 z-30 w-full bg-white/80 dark:bg-background/80 backdrop-blur border-b border-border flex items-center justify-between px-4 sm:px-6 py-3 shadow-sm'>
             <Link href='/' className='flex items-center gap-2'>
-              <Logo width={40} height={40} className='rounded-xl' />
+              <Logo width={40} height={40} />
               <span className='ml-2 font-cursive text-2xl text-primary'>
                 Bon AI Petite
               </span>

@@ -8,17 +8,17 @@ import { getUser } from '@/lib/db/queries';
 import { nutritionProfiles, weeklyMealPlans } from '@/lib/db/schema';
 import { desc, eq } from 'drizzle-orm';
 import {
-  Activity,
-  ArrowRight,
-  Award,
-  BarChart3,
-  Calendar,
-  Clock,
-  Heart,
-  Plus,
-  Target,
-  Utensils,
-  Zap,
+    Activity,
+    ArrowRight,
+    Award,
+    BarChart3,
+    Calendar,
+    Clock,
+    Heart,
+    Plus,
+    Target,
+    Utensils,
+    Zap,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Suspense } from 'react';
@@ -95,7 +95,7 @@ export default async function DashboardPage() {
 
   if (!data) {
     return (
-      <section className='flex-1 p-4 lg:p-8'>
+      <section className='flex-1 px-4 sm:px-6 py-4 lg:py-8'>
         <div className='text-center py-12'>
           <p className='text-muted-foreground'>
             Please sign in to view your dashboard.
@@ -116,7 +116,7 @@ export default async function DashboardPage() {
     totalMeals > 0 ? (generatedMeals / totalMeals) * 100 : 0;
 
   return (
-    <section className='flex-1 p-4 lg:p-8 space-y-8'>
+    <section className='flex-1 px-4 sm:px-6 py-4 lg:py-8 space-y-8'>
       <Suspense fallback={null}>
         <PaymentSuccessBanner />
       </Suspense>

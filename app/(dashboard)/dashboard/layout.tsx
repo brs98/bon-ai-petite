@@ -5,5 +5,5 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <main className='flex-1 overflow-y-auto p-0 lg:p-4'>{children}</main>;
+  return <main className='flex-1 overflow-y-auto'>{children}</main>;
 }

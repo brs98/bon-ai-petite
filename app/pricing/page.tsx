@@ -1,6 +1,7 @@
 import { getStripePrices, getStripeProducts } from '@/lib/payments/stripe';
 import { Check, ChefHat, Sparkles, Zap } from 'lucide-react';
 import { SubmitButton } from './submit-button';
+import Logo from '@/components/ui/Logo';
 
 // Prices are fresh for one hour max
 export const revalidate = 3600;
@@ -25,8 +26,12 @@ const featureList = [
     premium: true,
   },
   { label: 'Weekly Meal Planning', essential: false, premium: true },
-  { label: 'Family Meal Planning', essential: false, premium: true },
   { label: 'Shopping List Creation', essential: false, premium: true },
+  {
+    label: 'Family Meal Planning (coming soon)',
+    essential: false,
+    premium: true,
+  },
   {
     label: 'Instacart Integration (coming soon)',
     essential: false,
@@ -71,9 +76,7 @@ export default async function PricingPage() {
       <div className='relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12'>
         <div className='text-center mb-16'>
           <div className='flex items-center justify-center mb-6'>
-            <div className='w-16 h-16 bg-gradient-to-r from-primary via-primary to-primary/80 rounded-2xl flex items-center justify-center shadow-lg'>
-              <ChefHat className='h-8 w-8 text-primary-foreground' />
-            </div>
+            <Logo width={120} height={120} />
           </div>
           <h1 className='text-5xl font-bold text-foreground mb-6'>
             Choose Your{' '}
@@ -247,13 +250,13 @@ function PricingCard({
                 feature.included
                   ? popular
                     ? 'bg-primary/20'
-                    : 'bg-accent/20'
+                    : 'bg-accent'
                   : 'bg-gray-200 border border-gray-300'
               }`}
             >
               {feature.included ? (
                 <Check
-                  className={`h-3 w-3 ${popular ? 'text-primary' : 'text-accent'}`}
+                  className={`h-3 w-3 ${popular ? 'text-primary' : 'text-accent-foreground'}`}
                 />
               ) : (
                 <span className='text-gray-400 font-bold text-lg'>×</span>

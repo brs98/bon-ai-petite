@@ -138,13 +138,13 @@ export default function NutritionSettingsPage() {
 
   if (showSetup || !profile || hasStepParam) {
     return (
-      <div className='space-y-6'>
+      <div className='space-y-6 px-4 sm:px-6 pt-6'>
         <PaymentSuccessBanner />
         <div className='flex items-center gap-2'>
           <Settings className='h-6 w-6' />
-          <h1 className='text-2xl font-bold'>Nutrition Profile Setup</h1>
+          <h1 className='text-xl sm:text-2xl font-bold'>Nutrition Profile Setup</h1>
         </div>
-        <p className='text-muted-foreground'>
+        <p className='text-muted-foreground text-sm sm:text-base'>
           Set up your nutrition profile to get personalized recipe
           recommendations.
         </p>
@@ -164,12 +164,12 @@ export default function NutritionSettingsPage() {
   }
 
   return (
-    <div className='space-y-6'>
+    <div className='space-y-6 px-4 sm:px-6 pt-6'>
       <PaymentSuccessBanner />
       <div className='flex items-center justify-between'>
         <div className='flex items-center gap-2'>
           <User className='h-6 w-6' />
-          <h1 className='text-2xl font-bold'>Nutrition Profile</h1>
+          <h1 className='text-xl sm:text-2xl font-bold'>Nutrition Profile</h1>
         </div>
         <Button
           onClick={() => {

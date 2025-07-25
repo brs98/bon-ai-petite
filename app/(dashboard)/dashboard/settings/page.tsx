@@ -1,9 +1,9 @@
 'use client';
 
 import {
-  deleteAccount,
-  updateAccount,
-  updatePassword,
+    deleteAccount,
+    updateAccount,
+    updatePassword,
 } from '@/app/(login)/actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -107,7 +107,7 @@ export default function SettingsPage() {
   >(deleteAccount, {});
 
   return (
-    <section className='flex-1 p-4 lg:p-8'>
+    <section className='flex-1 px-4 sm:px-6 py-4 lg:py-8'>
       <h1 className='text-lg lg:text-2xl font-medium text-foreground mb-6'>
         Settings
       </h1>

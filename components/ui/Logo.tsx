@@ -31,7 +31,7 @@ export default function Logo({
       xmlns='http://www.w3.org/2000/svg'
       width={width}
       height={height}
-      viewBox='0 0 684.000000 900.000000'
+      viewBox='0 0 784 890'
       preserveAspectRatio='xMidYMid meet'
       {...props}
     >
