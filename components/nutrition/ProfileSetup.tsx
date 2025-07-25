@@ -173,6 +173,17 @@ const MACRO_SPLIT_OPTIONS = [
     commonFor: 'Lean bulking phases, hard gainers',
     colors: ['#22c55e', '#ef4444', '#f59e0b'], // green, red, orange
   },
+  {
+    label: 'Custom',
+    split: null, // Will be calculated from manual values
+    description: 'Custom macro split',
+    benefits: [
+      'Fully customizable to your specific needs',
+      'Perfect for advanced users with specific requirements',
+    ],
+    commonFor: 'Advanced users, specific dietary needs, fine-tuned nutrition',
+    colors: ['#22c55e', '#ef4444', '#f59e0b'], // green, red, orange
+  },
 ];
 
 export function ProfileSetup({
@@ -371,7 +382,13 @@ export function ProfileSetup({
     setSelectedMacroSplit(index);
     const split = MACRO_SPLIT_OPTIONS[index].split;
     const calories = form.getValues('dailyCalories');
-    if (calories) {
+
+    // If it's the custom option (index 7), don't update macros automatically
+    if (index === 7) {
+      return;
+    }
+
+    if (calories && split) {
       form.setValue(
         'macroCarbs',
         Math.round((calories * split.carbs) / 100 / 4),
@@ -384,21 +401,22 @@ export function ProfileSetup({
     }
   }
 
-  // If user edits macro grams manually, clear the selected split
+  // If user edits macro grams manually, select the custom option
   function handleManualMacroChange(
     field: 'macroProtein' | 'macroCarbs' | 'macroFat',
     value: number | undefined,
   ) {
-    setSelectedMacroSplit(null);
+    setSelectedMacroSplit(7); // Select the "Custom" option
     form.setValue(field, value);
   }
 
   // If calories change and a split is selected, recalculate macro grams
   useEffect(() => {
-    if (selectedMacroSplit !== null) {
+    if (selectedMacroSplit !== null && selectedMacroSplit !== 7) {
+      // Skip custom option
       const split = MACRO_SPLIT_OPTIONS[selectedMacroSplit].split;
       const calories = form.getValues('dailyCalories');
-      if (calories) {
+      if (calories && split) {
         form.setValue(
           'macroCarbs',
           Math.round((calories * split.carbs) / 100 / 4),
@@ -481,7 +499,9 @@ export function ProfileSetup({
       {showConfirmation ? (
         <div className='flex flex-col items-center justify-center min-h-[300px] space-y-6'>
           <div className='text-center'>
-            <h2 className='text-xl sm:text-2xl font-bold mb-2'>Profile Saved!</h2>
+            <h2 className='text-xl sm:text-2xl font-bold mb-2'>
+              Profile Saved!
+            </h2>
             <p className='text-muted-foreground mb-4 text-sm sm:text-base'>
               Your nutrition profile has been saved successfully.
             </p>
@@ -545,7 +565,9 @@ export function ProfileSetup({
               {/* Step content */}
               <Card>
                 <CardHeader className='pb-4 sm:pb-6'>
-                  <CardTitle className='text-lg sm:text-xl'>{steps[currentStep].title}</CardTitle>
+                  <CardTitle className='text-lg sm:text-xl'>
+                    {steps[currentStep].title}
+                  </CardTitle>
                   <CardDescription className='text-sm'>
                     {steps[currentStep].description}
                   </CardDescription>
@@ -555,7 +577,9 @@ export function ProfileSetup({
                     <div className='space-y-6 sm:space-y-8 text-center'>
                       <div className='space-y-2'>
                         <User className='h-8 w-8 sm:h-12 sm:w-12 mx-auto text-primary' />
-                        <h2 className='text-xl sm:text-2xl font-bold'>Physical Stats</h2>
+                        <h2 className='text-xl sm:text-2xl font-bold'>
+                          Physical Stats
+                        </h2>
                         <p className='text-muted-foreground text-sm sm:text-base'>
                           Tell us about yourself so we can personalize your
                           nutrition plan.
@@ -604,7 +628,9 @@ export function ProfileSetup({
                           name='gender'
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className='text-sm sm:text-base'>Gender</FormLabel>
+                              <FormLabel className='text-sm sm:text-base'>
+                                Gender
+                              </FormLabel>
                               <FormControl>
                                 <RadioGroup
                                   onValueChange={field.onChange}
@@ -616,7 +642,10 @@ export function ProfileSetup({
                                       value='male'
                                       id='gender-male'
                                     />
-                                    <FormLabel htmlFor='gender-male' className='text-sm sm:text-base'>
+                                    <FormLabel
+                                      htmlFor='gender-male'
+                                      className='text-sm sm:text-base'
+                                    >
                                       Male
                                     </FormLabel>
                                   </div>
@@ -625,7 +654,10 @@ export function ProfileSetup({
                                       value='female'
                                       id='gender-female'
                                     />
-                                    <FormLabel htmlFor='gender-female' className='text-sm sm:text-base'>
+                                    <FormLabel
+                                      htmlFor='gender-female'
+                                      className='text-sm sm:text-base'
+                                    >
                                       Female
                                     </FormLabel>
                                   </div>
@@ -659,7 +691,9 @@ export function ProfileSetup({
                                 className='w-full text-base sm:text-lg py-3 sm:py-4 text-center'
                                 aria-label='Height (feet)'
                               />
-                              <span className='self-center text-sm sm:text-base'>ft</span>
+                              <span className='self-center text-sm sm:text-base'>
+                                ft
+                              </span>
                               <Input
                                 type='number'
                                 min={0}
@@ -677,7 +711,9 @@ export function ProfileSetup({
                                 className='w-full text-base sm:text-lg py-3 sm:py-4 text-center'
                                 aria-label='Height (inches)'
                               />
-                              <span className='self-center text-sm sm:text-base'>in</span>
+                              <span className='self-center text-sm sm:text-base'>
+                                in
+                              </span>
                             </div>
                           </FormItem>
                         </div>
@@ -712,7 +748,9 @@ export function ProfileSetup({
                     <div className='space-y-6 sm:space-y-8 text-center'>
                       <div className='space-y-2'>
                         <Dumbbell className='h-8 w-8 sm:h-12 sm:w-12 mx-auto text-primary' />
-                        <h2 className='text-xl sm:text-2xl font-bold'>Activity Level</h2>
+                        <h2 className='text-xl sm:text-2xl font-bold'>
+                          Activity Level
+                        </h2>
                         <p className='text-muted-foreground text-sm sm:text-base'>
                           Tell us about your lifestyle and daily activity so we
                           can personalize your nutrition plan.
@@ -760,7 +798,9 @@ export function ProfileSetup({
                     <div className='space-y-6 sm:space-y-8 text-center'>
                       <div className='space-y-2'>
                         <Weight className='h-8 w-8 sm:h-12 sm:w-12 mx-auto text-primary' />
-                        <h2 className='text-xl sm:text-2xl font-bold'>Weight Goal</h2>
+                        <h2 className='text-xl sm:text-2xl font-bold'>
+                          Weight Goal
+                        </h2>
                         <p className='text-muted-foreground text-sm sm:text-base'>
                           What is your current weight goal?
                         </p>
@@ -896,7 +936,7 @@ export function ProfileSetup({
                           use these to personalize your meal plans.
                         </p>
                       </div>
-                      
+
                       {/* Macro Split Selection - Compact Cards */}
                       <div className='w-full max-w-6xl mx-auto'>
                         <h3 className='text-base sm:text-lg font-semibold mb-4'>
@@ -913,8 +953,8 @@ export function ProfileSetup({
                               <Card
                                 key={option.label}
                                 className={`min-w-[160px] sm:min-w-[200px] cursor-pointer transition-all duration-200 hover:shadow-lg ${
-                                  selectedMacroSplit === idx 
-                                    ? 'border-primary shadow-lg scale-105' 
+                                  selectedMacroSplit === idx
+                                    ? 'border-primary shadow-lg scale-105'
                                     : 'border-border hover:border-primary/50'
                                 }`}
                                 onClick={() => handleMacroSplitSelect(idx)}
@@ -930,7 +970,7 @@ export function ProfileSetup({
                                   <div className='grid grid-cols-3 gap-1 text-xs'>
                                     <div className='text-center'>
                                       <div className='font-semibold text-green-600'>
-                                        {option.split.carbs}%
+                                        {option.split?.carbs || '—'}%
                                       </div>
                                       <div className='text-muted-foreground'>
                                         C
@@ -938,7 +978,7 @@ export function ProfileSetup({
                                     </div>
                                     <div className='text-center'>
                                       <div className='font-semibold text-red-600'>
-                                        {option.split.protein}%
+                                        {option.split?.protein || '—'}%
                                       </div>
                                       <div className='text-muted-foreground'>
                                         P
@@ -946,7 +986,7 @@ export function ProfileSetup({
                                     </div>
                                     <div className='text-center'>
                                       <div className='font-semibold text-orange-600'>
-                                        {option.split.fat}%
+                                        {option.split?.fat || '—'}%
                                       </div>
                                       <div className='text-muted-foreground'>
                                         F
@@ -961,211 +1001,817 @@ export function ProfileSetup({
                           </div>
                         </div>
                       </div>
-                      
+
                       {/* Single Pie Chart with Calorie Input in Center */}
                       {selectedMacroSplit !== null && (
-                        <div className='w-full max-w-2xl mx-auto'>
-                          <div className='flex items-center justify-center'>
-                            <div className='relative'>
-                              {/* Pie Chart */}
-                              <ChartContainer
-                                config={{
-                                  carbs: {
-                                    label: 'Carbs',
-                                    color:
-                                      MACRO_SPLIT_OPTIONS[selectedMacroSplit]
-                                        .colors[0],
-                                  },
-                                  protein: {
-                                    label: 'Protein',
-                                    color:
-                                      MACRO_SPLIT_OPTIONS[selectedMacroSplit]
-                                        .colors[1],
-                                  },
-                                  fat: {
-                                    label: 'Fat',
-                                    color:
-                                      MACRO_SPLIT_OPTIONS[selectedMacroSplit]
-                                        .colors[2],
-                                  },
-                                }}
-                                className='w-48 h-48 sm:w-64 sm:h-64'
-                              >
-                                <PieChart>
-                                  <ChartTooltip
-                                    cursor={false}
-                                    content={<ChartTooltipContent hideLabel />}
-                                  />
-                                  <Pie
-                                    data={[
-                                      {
-                                        name: 'Carbs',
-                                        value:
-                                          MACRO_SPLIT_OPTIONS[
-                                            selectedMacroSplit
-                                          ].split.carbs,
-                                        color:
-                                          MACRO_SPLIT_OPTIONS[
-                                            selectedMacroSplit
-                                          ].colors[0],
-                                      },
-                                      {
-                                        name: 'Protein',
-                                        value:
-                                          MACRO_SPLIT_OPTIONS[
-                                            selectedMacroSplit
-                                          ].split.protein,
-                                        color:
-                                          MACRO_SPLIT_OPTIONS[
-                                            selectedMacroSplit
-                                          ].colors[1],
-                                      },
-                                      {
-                                        name: 'Fat',
-                                        value:
-                                          MACRO_SPLIT_OPTIONS[
-                                            selectedMacroSplit
-                                          ].split.fat,
-                                        color:
-                                          MACRO_SPLIT_OPTIONS[
-                                            selectedMacroSplit
-                                          ].colors[2],
-                                      },
-                                    ]}
-                                    dataKey='value'
-                                    nameKey='name'
-                                    innerRadius={60}
-                                    outerRadius={75}
-                                    strokeWidth={3}
-                                    stroke='#fff'
-                                  >
-                                    {[
-                                      {
-                                        name: 'Carbs',
-                                        value:
-                                          MACRO_SPLIT_OPTIONS[
-                                            selectedMacroSplit
-                                          ].split.carbs,
-                                        color:
-                                          MACRO_SPLIT_OPTIONS[
-                                            selectedMacroSplit
-                                          ].colors[0],
-                                      },
-                                      {
-                                        name: 'Protein',
-                                        value:
-                                          MACRO_SPLIT_OPTIONS[
-                                            selectedMacroSplit
-                                          ].split.protein,
-                                        color:
-                                          MACRO_SPLIT_OPTIONS[
-                                            selectedMacroSplit
-                                          ].colors[1],
-                                      },
-                                      {
-                                        name: 'Fat',
-                                        value:
-                                          MACRO_SPLIT_OPTIONS[
-                                            selectedMacroSplit
-                                          ].split.fat,
-                                        color:
-                                          MACRO_SPLIT_OPTIONS[
-                                            selectedMacroSplit
-                                          ].colors[2],
-                                      },
-                                    ].map((entry, index) => (
-                                      <Cell
-                                        key={`cell-${index}`}
-                                        fill={entry.color}
-                                      />
-                                    ))}
-                                  </Pie>
-                                </PieChart>
-                              </ChartContainer>
-                              
-                              {/* Calorie Input in Center */}
-                              <div className='absolute inset-0 flex items-center justify-center'>
-                                <div className='text-center'>
-                                  <label className='block text-xs sm:text-sm font-medium text-muted-foreground mb-1'>
-                                    Daily Calories
-                                  </label>
-                                  <Input
-                                    type='number'
-                                    className='text-center text-base sm:text-lg font-mono w-24 sm:w-28 h-8 sm:h-10'
-                                    value={formValues.dailyCalories || ''}
-                                    onChange={e =>
-                                      form.setValue(
-                                        'dailyCalories',
-                                        parseInt(e.target.value) || undefined,
-                                      )
-                                    }
-                                    min={0}
-                                    placeholder='0'
-                                  />
-                                  {calculatedCalories && (
-                                    <div className='text-xs text-muted-foreground mt-1'>
-                                      Suggested: {calculatedCalories}
-                                    </div>
-                                  )}
+                        <div className='w-full max-w-4xl mx-auto'>
+                          {/* Desktop: Side-by-side layout */}
+                          <div className='hidden lg:flex gap-6 items-start'>
+                            {/* Left: Chart */}
+                            <div className='flex-shrink-0'>
+                              <div className='relative'>
+                                <ChartContainer
+                                  config={{
+                                    carbs: {
+                                      label: 'Carbs',
+                                      color:
+                                        selectedMacroSplit !== null
+                                          ? MACRO_SPLIT_OPTIONS[
+                                              selectedMacroSplit
+                                            ].colors[0]
+                                          : '#22c55e',
+                                    },
+                                    protein: {
+                                      label: 'Protein',
+                                      color:
+                                        selectedMacroSplit !== null
+                                          ? MACRO_SPLIT_OPTIONS[
+                                              selectedMacroSplit
+                                            ].colors[1]
+                                          : '#ef4444',
+                                    },
+                                    fat: {
+                                      label: 'Fat',
+                                      color:
+                                        selectedMacroSplit !== null
+                                          ? MACRO_SPLIT_OPTIONS[
+                                              selectedMacroSplit
+                                            ].colors[2]
+                                          : '#f59e0b',
+                                    },
+                                  }}
+                                  className='w-48 h-48 hover:scale-105 transition-transform duration-200 cursor-pointer'
+                                >
+                                  <PieChart>
+                                    <ChartTooltip
+                                      cursor={false}
+                                      content={
+                                        <ChartTooltipContent
+                                          hideLabel
+                                          formatter={(value, name) => (
+                                            <div className='flex items-center gap-2'>
+                                              <span className='text-muted-foreground'>
+                                                {name}
+                                              </span>
+                                              <span className='font-mono font-medium text-foreground'>
+                                                {value}%
+                                              </span>
+                                            </div>
+                                          )}
+                                        />
+                                      }
+                                    />
+                                    <Pie
+                                      data={(() => {
+                                        if (
+                                          selectedMacroSplit !== null &&
+                                          selectedMacroSplit !== 7
+                                        ) {
+                                          const split =
+                                            MACRO_SPLIT_OPTIONS[
+                                              selectedMacroSplit
+                                            ].split;
+                                          if (split) {
+                                            return [
+                                              {
+                                                name: 'Carbs',
+                                                value: split.carbs,
+                                                color:
+                                                  MACRO_SPLIT_OPTIONS[
+                                                    selectedMacroSplit
+                                                  ].colors[0],
+                                              },
+                                              {
+                                                name: 'Protein',
+                                                value: split.protein,
+                                                color:
+                                                  MACRO_SPLIT_OPTIONS[
+                                                    selectedMacroSplit
+                                                  ].colors[1],
+                                              },
+                                              {
+                                                name: 'Fat',
+                                                value: split.fat,
+                                                color:
+                                                  MACRO_SPLIT_OPTIONS[
+                                                    selectedMacroSplit
+                                                  ].colors[2],
+                                              },
+                                            ];
+                                          }
+                                        }
+
+                                        const totalCalories =
+                                          (formValues.macroProtein || 0) * 4 +
+                                          (formValues.macroCarbs || 0) * 4 +
+                                          (formValues.macroFat || 0) * 9;
+                                        if (totalCalories === 0) return [];
+
+                                        return [
+                                          {
+                                            name: 'Carbs',
+                                            value: Math.round(
+                                              (((formValues.macroCarbs || 0) *
+                                                4) /
+                                                totalCalories) *
+                                                100,
+                                            ),
+                                            color: '#22c55e',
+                                          },
+                                          {
+                                            name: 'Protein',
+                                            value: Math.round(
+                                              (((formValues.macroProtein || 0) *
+                                                4) /
+                                                totalCalories) *
+                                                100,
+                                            ),
+                                            color: '#ef4444',
+                                          },
+                                          {
+                                            name: 'Fat',
+                                            value: Math.round(
+                                              (((formValues.macroFat || 0) *
+                                                9) /
+                                                totalCalories) *
+                                                100,
+                                            ),
+                                            color: '#f59e0b',
+                                          },
+                                        ];
+                                      })()}
+                                      dataKey='value'
+                                      nameKey='name'
+                                      innerRadius={60}
+                                      outerRadius={75}
+                                      strokeWidth={3}
+                                      stroke='#fff'
+                                    >
+                                      {(() => {
+                                        if (
+                                          selectedMacroSplit !== null &&
+                                          selectedMacroSplit !== 7
+                                        ) {
+                                          const split =
+                                            MACRO_SPLIT_OPTIONS[
+                                              selectedMacroSplit
+                                            ].split;
+                                          if (split) {
+                                            return [
+                                              {
+                                                name: 'Carbs',
+                                                value: split.carbs,
+                                                color:
+                                                  MACRO_SPLIT_OPTIONS[
+                                                    selectedMacroSplit
+                                                  ].colors[0],
+                                              },
+                                              {
+                                                name: 'Protein',
+                                                value: split.protein,
+                                                color:
+                                                  MACRO_SPLIT_OPTIONS[
+                                                    selectedMacroSplit
+                                                  ].colors[1],
+                                              },
+                                              {
+                                                name: 'Fat',
+                                                value: split.fat,
+                                                color:
+                                                  MACRO_SPLIT_OPTIONS[
+                                                    selectedMacroSplit
+                                                  ].colors[2],
+                                              },
+                                            ].map((entry, index) => (
+                                              <Cell
+                                                key={`cell-${index}`}
+                                                fill={entry.color}
+                                              />
+                                            ));
+                                          }
+                                        }
+
+                                        const totalCalories =
+                                          (formValues.macroProtein || 0) * 4 +
+                                          (formValues.macroCarbs || 0) * 4 +
+                                          (formValues.macroFat || 0) * 9;
+                                        if (totalCalories === 0) return [];
+
+                                        return [
+                                          {
+                                            name: 'Carbs',
+                                            value: Math.round(
+                                              (((formValues.macroCarbs || 0) *
+                                                4) /
+                                                totalCalories) *
+                                                100,
+                                            ),
+                                            color: '#22c55e',
+                                          },
+                                          {
+                                            name: 'Protein',
+                                            value: Math.round(
+                                              (((formValues.macroProtein || 0) *
+                                                4) /
+                                                totalCalories) *
+                                                100,
+                                            ),
+                                            color: '#ef4444',
+                                          },
+                                          {
+                                            name: 'Fat',
+                                            value: Math.round(
+                                              (((formValues.macroFat || 0) *
+                                                9) /
+                                                totalCalories) *
+                                                100,
+                                            ),
+                                            color: '#f59e0b',
+                                          },
+                                        ].map((entry, index) => (
+                                          <Cell
+                                            key={`cell-${index}`}
+                                            fill={entry.color}
+                                          />
+                                        ));
+                                      })()}
+                                    </Pie>
+                                  </PieChart>
+                                </ChartContainer>
+
+                                {/* Calorie Input in Center */}
+                                <div className='absolute inset-0 flex items-center justify-center'>
+                                  <div className='text-center'>
+                                    <label className='block text-xs font-medium text-muted-foreground mb-1'>
+                                      Calories
+                                    </label>
+                                    <Input
+                                      type='number'
+                                      className='text-center text-sm font-mono w-20 h-8'
+                                      value={formValues.dailyCalories || ''}
+                                      onChange={e =>
+                                        form.setValue(
+                                          'dailyCalories',
+                                          parseInt(e.target.value) || undefined,
+                                        )
+                                      }
+                                      min={0}
+                                      placeholder='0'
+                                    />
+                                  </div>
                                 </div>
                               </div>
                             </div>
+
+                            {/* Right: Information and Controls */}
+                            <div className='flex-1 space-y-4'>
+                              {/* Interactive Macro breakdown */}
+                              <div className='grid grid-cols-3 gap-4'>
+                                <div className='text-center p-3 border rounded-lg bg-muted/30'>
+                                  <div className='text-2xl mb-1'>🍚</div>
+                                  <Input
+                                    type='number'
+                                    className='text-center font-bold text-green-600 text-lg border-0 bg-transparent p-0 h-auto focus-visible:ring-0 focus-visible:ring-offset-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
+                                    value={formValues.macroCarbs || ''}
+                                    onChange={e => {
+                                      const value = e.target.value;
+                                      handleManualMacroChange(
+                                        'macroCarbs',
+                                        value === ''
+                                          ? undefined
+                                          : parseInt(value),
+                                      );
+                                    }}
+                                    min={0}
+                                    placeholder='0'
+                                  />
+                                  <div className='text-sm text-muted-foreground'>
+                                    Carbs
+                                  </div>
+                                </div>
+                                <div className='text-center p-3 border rounded-lg bg-muted/30'>
+                                  <div className='text-2xl mb-1'>🥩</div>
+                                  <Input
+                                    type='number'
+                                    className='text-center font-bold text-red-600 text-lg border-0 bg-transparent p-0 h-auto focus-visible:ring-0 focus-visible:ring-offset-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
+                                    value={formValues.macroProtein || ''}
+                                    onChange={e => {
+                                      const value = e.target.value;
+                                      handleManualMacroChange(
+                                        'macroProtein',
+                                        value === ''
+                                          ? undefined
+                                          : parseInt(value),
+                                      );
+                                    }}
+                                    min={0}
+                                    placeholder='0'
+                                  />
+                                  <div className='text-sm text-muted-foreground'>
+                                    Protein
+                                  </div>
+                                </div>
+                                <div className='text-center p-3 border rounded-lg bg-muted/30'>
+                                  <div className='text-2xl mb-1'>🥑</div>
+                                  <Input
+                                    type='number'
+                                    className='text-center font-bold text-orange-600 text-lg border-0 bg-transparent p-0 h-auto focus-visible:ring-0 focus-visible:ring-offset-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
+                                    value={formValues.macroFat || ''}
+                                    onChange={e => {
+                                      const value = e.target.value;
+                                      handleManualMacroChange(
+                                        'macroFat',
+                                        value === ''
+                                          ? undefined
+                                          : parseInt(value),
+                                      );
+                                    }}
+                                    min={0}
+                                    placeholder='0'
+                                  />
+                                  <div className='text-sm text-muted-foreground'>
+                                    Fat
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Benefits or Custom message */}
+                              {selectedMacroSplit !== null &&
+                                selectedMacroSplit !== 7 && (
+                                  <div className='p-3 border rounded-lg bg-muted/50'>
+                                    <h4 className='font-semibold text-sm mb-2'>
+                                      Benefits of{' '}
+                                      {
+                                        MACRO_SPLIT_OPTIONS[selectedMacroSplit]
+                                          .label
+                                      }
+                                      :
+                                    </h4>
+                                    <ul className='text-sm space-y-1 mb-2'>
+                                      {MACRO_SPLIT_OPTIONS[
+                                        selectedMacroSplit
+                                      ].benefits
+                                        .slice(0, 2)
+                                        .map((benefit: string, i: number) => (
+                                          <li
+                                            key={i}
+                                            className='flex items-start gap-2'
+                                          >
+                                            <span className='text-primary mt-1'>
+                                              •
+                                            </span>
+                                            <span>{benefit}</span>
+                                          </li>
+                                        ))}
+                                    </ul>
+                                    <div className='text-xs text-muted-foreground'>
+                                      <strong>Common for:</strong>{' '}
+                                      {
+                                        MACRO_SPLIT_OPTIONS[selectedMacroSplit]
+                                          .commonFor
+                                      }
+                                    </div>
+                                  </div>
+                                )}
+
+                              {selectedMacroSplit === 7 && (
+                                <div className='p-3 border rounded-lg bg-blue-50 border-blue-200'>
+                                  <h4 className='font-semibold text-sm mb-2 text-blue-800'>
+                                    Custom Macro Split
+                                  </h4>
+                                  <p className='text-sm text-blue-700'>
+                                    You're using a custom macro split. The chart
+                                    shows the percentage breakdown of your
+                                    manually entered values.
+                                  </p>
+                                </div>
+                              )}
+                            </div>
                           </div>
-                          
-                          {/* Macro breakdown below pie chart */}
-                          <div className='mt-4 sm:mt-6 grid grid-cols-3 gap-2 sm:gap-4 max-w-md mx-auto'>
-                            <div className='text-center'>
-                              <div className='text-xl sm:text-2xl mb-1'>🥩</div>
-                              <div className='font-bold text-red-600 text-sm sm:text-base'>
-                                {formValues.macroProtein || 0}g
-                              </div>
-                              <div className='text-xs sm:text-sm text-muted-foreground'>
-                                Protein
+
+                          {/* Mobile: Stacked layout */}
+                          <div className='lg:hidden'>
+                            <div className='flex items-center justify-center mb-4'>
+                              <div className='relative'>
+                                <ChartContainer
+                                  config={{
+                                    carbs: {
+                                      label: 'Carbs',
+                                      color:
+                                        selectedMacroSplit !== null
+                                          ? MACRO_SPLIT_OPTIONS[
+                                              selectedMacroSplit
+                                            ].colors[0]
+                                          : '#22c55e',
+                                    },
+                                    protein: {
+                                      label: 'Protein',
+                                      color:
+                                        selectedMacroSplit !== null
+                                          ? MACRO_SPLIT_OPTIONS[
+                                              selectedMacroSplit
+                                            ].colors[1]
+                                          : '#ef4444',
+                                    },
+                                    fat: {
+                                      label: 'Fat',
+                                      color:
+                                        selectedMacroSplit !== null
+                                          ? MACRO_SPLIT_OPTIONS[
+                                              selectedMacroSplit
+                                            ].colors[2]
+                                          : '#f59e0b',
+                                    },
+                                  }}
+                                  className='w-48 h-48 sm:w-64 sm:h-64 hover:scale-105 transition-transform duration-200 cursor-pointer'
+                                >
+                                  <PieChart>
+                                    <ChartTooltip
+                                      cursor={false}
+                                      content={
+                                        <ChartTooltipContent
+                                          hideLabel
+                                          formatter={(value, name) => {
+                                            // Calculate grams from percentage and total calories
+                                            const totalCalories =
+                                              (formValues.macroProtein || 0) *
+                                                4 +
+                                              (formValues.macroCarbs || 0) * 4 +
+                                              (formValues.macroFat || 0) * 9;
+                                            let grams = 0;
+                                            if (totalCalories > 0) {
+                                              const percentage =
+                                                typeof value === 'number'
+                                                  ? value
+                                                  : parseFloat(String(value));
+                                              if (name === 'Fat') {
+                                                grams =
+                                                  ((percentage / 100) *
+                                                    totalCalories) /
+                                                  9;
+                                              } else {
+                                                grams =
+                                                  ((percentage / 100) *
+                                                    totalCalories) /
+                                                  4;
+                                              }
+                                            }
+
+                                            return (
+                                              <div className='flex items-center gap-2'>
+                                                <span className='text-muted-foreground'>
+                                                  {name}
+                                                </span>
+                                                <div className='flex flex-col'>
+                                                  <span className='font-mono font-medium text-foreground'>
+                                                    {typeof value === 'number'
+                                                      ? `${value.toFixed(1)}%`
+                                                      : `${value}%`}
+                                                  </span>
+                                                  <span className='text-xs text-muted-foreground'>
+                                                    {grams.toFixed(0)}g
+                                                  </span>
+                                                </div>
+                                              </div>
+                                            );
+                                          }}
+                                        />
+                                      }
+                                    />
+                                    <Pie
+                                      data={(() => {
+                                        if (
+                                          selectedMacroSplit !== null &&
+                                          selectedMacroSplit !== 7
+                                        ) {
+                                          const split =
+                                            MACRO_SPLIT_OPTIONS[
+                                              selectedMacroSplit
+                                            ].split;
+                                          if (split) {
+                                            return [
+                                              {
+                                                name: 'Carbs',
+                                                value: split.carbs,
+                                                color:
+                                                  MACRO_SPLIT_OPTIONS[
+                                                    selectedMacroSplit
+                                                  ].colors[0],
+                                              },
+                                              {
+                                                name: 'Protein',
+                                                value: split.protein,
+                                                color:
+                                                  MACRO_SPLIT_OPTIONS[
+                                                    selectedMacroSplit
+                                                  ].colors[1],
+                                              },
+                                              {
+                                                name: 'Fat',
+                                                value: split.fat,
+                                                color:
+                                                  MACRO_SPLIT_OPTIONS[
+                                                    selectedMacroSplit
+                                                  ].colors[2],
+                                              },
+                                            ];
+                                          }
+                                        }
+
+                                        const totalCalories =
+                                          (formValues.macroProtein || 0) * 4 +
+                                          (formValues.macroCarbs || 0) * 4 +
+                                          (formValues.macroFat || 0) * 9;
+                                        if (totalCalories === 0) return [];
+
+                                        return [
+                                          {
+                                            name: 'Carbs',
+                                            value: Math.round(
+                                              (((formValues.macroCarbs || 0) *
+                                                4) /
+                                                totalCalories) *
+                                                100,
+                                            ),
+                                            color: '#22c55e',
+                                          },
+                                          {
+                                            name: 'Protein',
+                                            value: Math.round(
+                                              (((formValues.macroProtein || 0) *
+                                                4) /
+                                                totalCalories) *
+                                                100,
+                                            ),
+                                            color: '#ef4444',
+                                          },
+                                          {
+                                            name: 'Fat',
+                                            value: Math.round(
+                                              (((formValues.macroFat || 0) *
+                                                9) /
+                                                totalCalories) *
+                                                100,
+                                            ),
+                                            color: '#f59e0b',
+                                          },
+                                        ];
+                                      })()}
+                                      dataKey='value'
+                                      nameKey='name'
+                                      innerRadius={60}
+                                      outerRadius={75}
+                                      strokeWidth={3}
+                                      stroke='#fff'
+                                    >
+                                      {(() => {
+                                        if (
+                                          selectedMacroSplit !== null &&
+                                          selectedMacroSplit !== 7
+                                        ) {
+                                          const split =
+                                            MACRO_SPLIT_OPTIONS[
+                                              selectedMacroSplit
+                                            ].split;
+                                          if (split) {
+                                            return [
+                                              {
+                                                name: 'Carbs',
+                                                value: split.carbs,
+                                                color:
+                                                  MACRO_SPLIT_OPTIONS[
+                                                    selectedMacroSplit
+                                                  ].colors[0],
+                                              },
+                                              {
+                                                name: 'Protein',
+                                                value: split.protein,
+                                                color:
+                                                  MACRO_SPLIT_OPTIONS[
+                                                    selectedMacroSplit
+                                                  ].colors[1],
+                                              },
+                                              {
+                                                name: 'Fat',
+                                                value: split.fat,
+                                                color:
+                                                  MACRO_SPLIT_OPTIONS[
+                                                    selectedMacroSplit
+                                                  ].colors[2],
+                                              },
+                                            ].map((entry, index) => (
+                                              <Cell
+                                                key={`cell-${index}`}
+                                                fill={entry.color}
+                                              />
+                                            ));
+                                          }
+                                        }
+
+                                        const totalCalories =
+                                          (formValues.macroProtein || 0) * 4 +
+                                          (formValues.macroCarbs || 0) * 4 +
+                                          (formValues.macroFat || 0) * 9;
+                                        if (totalCalories === 0) return [];
+
+                                        return [
+                                          {
+                                            name: 'Carbs',
+                                            value: Math.round(
+                                              (((formValues.macroCarbs || 0) *
+                                                4) /
+                                                totalCalories) *
+                                                100,
+                                            ),
+                                            color: '#22c55e',
+                                          },
+                                          {
+                                            name: 'Protein',
+                                            value: Math.round(
+                                              (((formValues.macroProtein || 0) *
+                                                4) /
+                                                totalCalories) *
+                                                100,
+                                            ),
+                                            color: '#ef4444',
+                                          },
+                                          {
+                                            name: 'Fat',
+                                            value: Math.round(
+                                              (((formValues.macroFat || 0) *
+                                                9) /
+                                                totalCalories) *
+                                                100,
+                                            ),
+                                            color: '#f59e0b',
+                                          },
+                                        ].map((entry, index) => (
+                                          <Cell
+                                            key={`cell-${index}`}
+                                            fill={entry.color}
+                                          />
+                                        ));
+                                      })()}
+                                    </Pie>
+                                  </PieChart>
+                                </ChartContainer>
+
+                                {/* Calorie Input in Center */}
+                                <div className='absolute inset-0 flex items-center justify-center'>
+                                  <div className='text-center'>
+                                    <label className='block text-xs sm:text-sm font-medium text-muted-foreground mb-1'>
+                                      Daily Calories
+                                    </label>
+                                    <Input
+                                      type='number'
+                                      className='text-center text-base sm:text-lg font-mono w-24 sm:w-28 h-8 sm:h-10'
+                                      value={formValues.dailyCalories || ''}
+                                      onChange={e =>
+                                        form.setValue(
+                                          'dailyCalories',
+                                          parseInt(e.target.value) || undefined,
+                                        )
+                                      }
+                                      min={0}
+                                      placeholder='0'
+                                    />
+                                    {calculatedCalories && (
+                                      <div className='text-xs text-muted-foreground mt-1'>
+                                        Suggested: {calculatedCalories}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
                               </div>
                             </div>
-                            <div className='text-center'>
-                              <div className='text-xl sm:text-2xl mb-1'>🍚</div>
-                              <div className='font-bold text-green-600 text-sm sm:text-base'>
-                                {formValues.macroCarbs || 0}g
+
+                            {/* Mobile interactive macro breakdown */}
+                            <div className='grid grid-cols-3 gap-2 sm:gap-4 max-w-md mx-auto mb-4'>
+                              <div className='text-center p-3 border rounded-lg bg-muted/30'>
+                                <div className='text-xl sm:text-2xl mb-1'>
+                                  🥩
+                                </div>
+                                <Input
+                                  type='number'
+                                  className='text-center font-bold text-red-600 text-sm sm:text-base border-0 bg-transparent p-0 h-auto focus-visible:ring-0 focus-visible:ring-offset-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
+                                  value={formValues.macroProtein || ''}
+                                  onChange={e => {
+                                    const value = e.target.value;
+                                    handleManualMacroChange(
+                                      'macroProtein',
+                                      value === ''
+                                        ? undefined
+                                        : parseInt(value),
+                                    );
+                                  }}
+                                  min={0}
+                                  placeholder='0'
+                                />
+                                <div className='text-xs sm:text-sm text-muted-foreground'>
+                                  Protein
+                                </div>
                               </div>
-                              <div className='text-xs sm:text-sm text-muted-foreground'>
-                                Carbs
+                              <div className='text-center p-3 border rounded-lg bg-muted/30'>
+                                <div className='text-xl sm:text-2xl mb-1'>
+                                  🍚
+                                </div>
+                                <Input
+                                  type='number'
+                                  className='text-center font-bold text-green-600 text-sm sm:text-base border-0 bg-transparent p-0 h-auto focus-visible:ring-0 focus-visible:ring-offset-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
+                                  value={formValues.macroCarbs || ''}
+                                  onChange={e => {
+                                    const value = e.target.value;
+                                    handleManualMacroChange(
+                                      'macroCarbs',
+                                      value === ''
+                                        ? undefined
+                                        : parseInt(value),
+                                    );
+                                  }}
+                                  min={0}
+                                  placeholder='0'
+                                />
+                                <div className='text-xs sm:text-sm text-muted-foreground'>
+                                  Carbs
+                                </div>
+                              </div>
+                              <div className='text-center p-3 border rounded-lg bg-muted/30'>
+                                <div className='text-xl sm:text-2xl mb-1'>
+                                  🥑
+                                </div>
+                                <Input
+                                  type='number'
+                                  className='text-center font-bold text-orange-600 text-sm sm:text-base border-0 bg-transparent p-0 h-auto focus-visible:ring-0 focus-visible:ring-offset-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
+                                  value={formValues.macroFat || ''}
+                                  onChange={e => {
+                                    const value = e.target.value;
+                                    handleManualMacroChange(
+                                      'macroFat',
+                                      value === ''
+                                        ? undefined
+                                        : parseInt(value),
+                                    );
+                                  }}
+                                  min={0}
+                                  placeholder='0'
+                                />
+                                <div className='text-xs sm:text-sm text-muted-foreground'>
+                                  Fat
+                                </div>
                               </div>
                             </div>
-                            <div className='text-center'>
-                              <div className='text-xl sm:text-2xl mb-1'>🥑</div>
-                              <div className='font-bold text-orange-600 text-sm sm:text-base'>
-                                {formValues.macroFat || 0}g
+
+                            {/* Mobile benefits or custom message */}
+                            {selectedMacroSplit !== null &&
+                              selectedMacroSplit !== 7 && (
+                                <div className='p-3 border rounded-lg bg-muted/50 text-left'>
+                                  <h4 className='font-semibold text-xs sm:text-sm mb-2'>
+                                    Benefits of{' '}
+                                    {
+                                      MACRO_SPLIT_OPTIONS[selectedMacroSplit]
+                                        .label
+                                    }
+                                    :
+                                  </h4>
+                                  <ul className='text-xs sm:text-sm space-y-1 mb-3'>
+                                    {MACRO_SPLIT_OPTIONS[
+                                      selectedMacroSplit
+                                    ].benefits.map(
+                                      (benefit: string, i: number) => (
+                                        <li
+                                          key={i}
+                                          className='flex items-start gap-2'
+                                        >
+                                          <span className='text-primary mt-1'>
+                                            •
+                                          </span>
+                                          <span>{benefit}</span>
+                                        </li>
+                                      ),
+                                    )}
+                                  </ul>
+                                  <div className='text-xs sm:text-sm text-muted-foreground'>
+                                    <strong>Common for:</strong>{' '}
+                                    {
+                                      MACRO_SPLIT_OPTIONS[selectedMacroSplit]
+                                        .commonFor
+                                    }
+                                  </div>
+                                </div>
+                              )}
+
+                            {selectedMacroSplit === 7 && (
+                              <div className='p-3 border rounded-lg bg-blue-50 border-blue-200 text-left'>
+                                <h4 className='font-semibold text-xs sm:text-sm mb-2 text-blue-800'>
+                                  Custom Macro Split
+                                </h4>
+                                <p className='text-xs sm:text-sm text-blue-700'>
+                                  You're using a custom macro split. The chart
+                                  above shows the percentage breakdown of your
+                                  manually entered values.
+                                </p>
                               </div>
-                              <div className='text-xs sm:text-sm text-muted-foreground'>
-                                Fat
-                              </div>
-                            </div>
-                          </div>
-                          
-                          {/* Benefits display below macro breakdown */}
-                          <div className='mt-4 sm:mt-6 p-3 sm:p-4 border rounded-lg bg-muted/50 text-left'>
-                            <h4 className='font-semibold text-xs sm:text-sm mb-2'>
-                              Benefits of{' '}
-                              {MACRO_SPLIT_OPTIONS[selectedMacroSplit].label}:
-                            </h4>
-                            <ul className='text-xs sm:text-sm space-y-1 mb-3'>
-                              {MACRO_SPLIT_OPTIONS[
-                                selectedMacroSplit
-                              ].benefits.map((benefit, i) => (
-                                <li key={i} className='flex items-start gap-2'>
-                                  <span className='text-primary mt-1'>•</span>
-                                  <span>{benefit}</span>
-                                </li>
-                              ))}
-                            </ul>
-                            <div className='text-xs sm:text-sm text-muted-foreground'>
-                              <strong>Common for:</strong>{' '}
-                              {
-                                MACRO_SPLIT_OPTIONS[selectedMacroSplit]
-                                  .commonFor
-                              }
-                            </div>
+                            )}
                           </div>
                         </div>
                       )}
@@ -1258,7 +1904,9 @@ export function ProfileSetup({
                         {/* Goals */}
                         <div className='rounded-lg border p-3 sm:p-4 space-y-2 bg-muted/50'>
                           <div className='flex justify-between items-center'>
-                            <h3 className='font-semibold text-base sm:text-lg'>Goals</h3>
+                            <h3 className='font-semibold text-base sm:text-lg'>
+                              Goals
+                            </h3>
                             <Button
                               type='button'
                               size='sm'
@@ -1439,7 +2087,11 @@ export function ProfileSetup({
                       Next
                     </Button>
                   ) : (
-                    <Button type='submit' disabled={isLoading} className='text-base sm:text-lg px-4 sm:px-6 py-2 sm:py-3'>
+                    <Button
+                      type='submit'
+                      disabled={isLoading}
+                      className='text-base sm:text-lg px-4 sm:px-6 py-2 sm:py-3'
+                    >
                       {isLoading ? 'Saving...' : 'Save Profile'}
                     </Button>
                   )}
