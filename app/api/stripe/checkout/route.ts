@@ -89,7 +89,18 @@ export async function GET(request: NextRequest) {
           })
           .where(eq(users.id, user[0].id));
 
-        await setSession(user[0]);
+        // Only set session if subscription is active or trialing
+        if (
+          subscription.status === 'active' ||
+          subscription.status === 'trialing'
+        ) {
+          const updatedUser = {
+            ...user[0],
+            planName: normalizePlanName((plan.product as Stripe.Product).name),
+            subscriptionStatus: subscription.status,
+          };
+          await setSession(updatedUser);
+        }
         return user[0];
       })();
 

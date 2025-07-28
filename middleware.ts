@@ -43,6 +43,23 @@ export async function middleware(request: NextRequest) {
   if (sessionCookie && request.method === 'GET') {
     try {
       const parsed = await verifyToken(sessionCookie.value);
+
+      // For protected routes, verify user has active subscription
+      if (isProtectedRoute) {
+        const { getUser } = await import('@/lib/db/queries');
+        const user = await getUser();
+
+        if (
+          !user ||
+          !user.subscriptionStatus ||
+          (user.subscriptionStatus !== 'active' &&
+            user.subscriptionStatus !== 'trialing')
+        ) {
+          res.cookies.delete('session');
+          return NextResponse.redirect(new URL('/pricing', request.url));
+        }
+      }
+
       const expiresInOneDay = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
       res.cookies.set({

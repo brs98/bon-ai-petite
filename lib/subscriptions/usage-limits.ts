@@ -52,6 +52,16 @@ export async function checkUsageLimit(
     .limit(1);
   const user = userArr[0];
   if (!user) return false;
+
+  // Require active subscription - no access without valid subscription
+  if (
+    !user.subscriptionStatus ||
+    (user.subscriptionStatus !== 'active' &&
+      user.subscriptionStatus !== 'trialing')
+  ) {
+    return false;
+  }
+
   const plan = (user.planName as keyof typeof PLAN_LIMITS) || 'essential';
   const planLimits = PLAN_LIMITS[plan] || PLAN_LIMITS.essential;
   const limit = planLimits[action];
