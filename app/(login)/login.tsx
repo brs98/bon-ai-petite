@@ -8,7 +8,7 @@ import { ActionState } from '@/lib/auth/middleware';
 import { Loader2, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { useActionState } from 'react';
+import { useActionState, useEffect, useState } from 'react';
 import { signIn, signUp } from './actions';
 
 export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
@@ -22,27 +22,80 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
     { error: '' },
   );
 
-  // Plan display information
-  const planInfo = {
-    essential: {
-      name: 'Essential Plan',
-      price: '$8/month',
-      features: [
-        'AI-Generated Meal Plans',
-        'Basic Dietary Preferences',
-        'Shopping List Generation',
-      ],
-    },
-    premium: {
-      name: 'Premium Plan',
-      price: '$12/month',
-      features: [
-        'Everything in Essential',
-        'Advanced Nutrition Tracking',
-        'Family Meal Planning',
-      ],
-    },
-  };
+  const [planInfo, setPlanInfo] = useState<{
+    essential?: {
+      name: string;
+      price: string;
+      features: string[];
+    };
+    premium?: {
+      name: string;
+      price: string;
+      features: string[];
+    };
+  }>({});
+
+  useEffect(() => {
+    async function fetchPlanData() {
+      try {
+        const response = await fetch('/api/pricing');
+        if (!response.ok) {
+          throw new Error('Failed to fetch pricing data');
+        }
+        const data = await response.json();
+
+        setPlanInfo({
+          essential: data.essential
+            ? {
+                name: 'Essential Plan',
+                price: `$${data.essential.price / 100}/${data.essential.interval}`,
+                features: [
+                  'AI-Generated Meal Plans',
+                  'Basic Dietary Preferences',
+                  'Shopping List Generation',
+                ],
+              }
+            : undefined,
+          premium: data.premium
+            ? {
+                name: 'Premium Plan',
+                price: `$${data.premium.price / 100}/${data.premium.interval}`,
+                features: [
+                  'Everything in Essential',
+                  'Advanced Nutrition Tracking',
+                  'Family Meal Planning',
+                ],
+              }
+            : undefined,
+        });
+      } catch (error) {
+        console.error('Failed to fetch plan data:', error);
+        // Fallback to hardcoded values if API fails
+        setPlanInfo({
+          essential: {
+            name: 'Essential Plan',
+            price: '$20/month',
+            features: [
+              'AI-Generated Meal Plans',
+              'Basic Dietary Preferences',
+              'Shopping List Generation',
+            ],
+          },
+          premium: {
+            name: 'Premium Plan',
+            price: '$30/month',
+            features: [
+              'Everything in Essential',
+              'Advanced Nutrition Tracking',
+              'Family Meal Planning',
+            ],
+          },
+        });
+      }
+    }
+
+    fetchPlanData().catch(console.error);
+  }, []);
 
   const selectedPlan =
     plan && planInfo[plan as keyof typeof planInfo]
