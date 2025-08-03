@@ -23,20 +23,26 @@ export async function GET() {
     );
 
     return NextResponse.json({
-      essential: essentialProduct && essentialPrice ? {
-        price: essentialPrice.unitAmount,
-        interval: essentialPrice.interval,
-      } : null,
-      premium: premiumProduct && premiumPrice ? {
-        price: premiumPrice.unitAmount,
-        interval: premiumPrice.interval,
-      } : null,
+      essential:
+        essentialProduct && essentialPrice
+          ? {
+              price: essentialPrice.unitAmount,
+              interval: essentialPrice.interval,
+            }
+          : null,
+      premium:
+        premiumProduct && premiumPrice
+          ? {
+              price: premiumPrice.unitAmount,
+              interval: premiumPrice.interval,
+            }
+          : null,
     });
   } catch (error) {
     console.error('Error fetching pricing data:', error);
     return NextResponse.json(
       { error: 'Failed to fetch pricing data' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

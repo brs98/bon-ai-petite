@@ -257,3 +257,51 @@ export const updateAccount = validatedActionWithUser(
     return { success: 'Account updated successfully.' };
   },
 );
+const continueCheckoutSchema = z.object({
+  plan: z.enum(['essential', 'premium']),
+});
+
+export const continueCheckout = validatedActionWithUser(
+  continueCheckoutSchema,
+  async (data, _, user) => {
+    const { plan } = data;
+
+    // Get Stripe prices and products to find the correct price ID
+    const { getStripePrices, getStripeProducts } = await import(
+      '@/lib/payments/stripe'
+    );
+    const [prices, products] = await Promise.all([
+      getStripePrices(),
+      getStripeProducts(),
+    ]);
+
+    // Find the product that matches the selected plan
+    const targetProduct = products.find(product => {
+      const productName = product.name.toLowerCase();
+      if (plan === 'essential') {
+        return (
+          productName.includes('base') || productName.includes('essential')
+        );
+      } else if (plan === 'premium') {
+        return productName.includes('plus') || productName.includes('premium');
+      }
+      return false;
+    });
+
+    if (targetProduct) {
+      // Find the price for this product
+      const targetPrice = prices.find(
+        price => price.productId === targetProduct.id,
+      );
+
+      if (targetPrice) {
+        return createCheckoutSession({
+          user,
+          priceId: targetPrice.id,
+        });
+      }
+    }
+
+    return { error: 'Plan not found. Please try again.' };
+  },
+);

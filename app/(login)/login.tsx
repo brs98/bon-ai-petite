@@ -9,7 +9,7 @@ import { Loader2, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useActionState, useEffect, useState } from 'react';
-import { signIn, signUp } from './actions';
+import { signIn, signUp, continueCheckout } from './actions';
 
 export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
   const searchParams = useSearchParams();
@@ -22,6 +22,17 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
     { error: '' },
   );
 
+  const [continueState, continueAction, continuePending] = useActionState<
+    ActionState,
+    FormData
+  >(continueCheckout, { error: '' });
+
+  const [currentUser, setCurrentUser] = useState<{
+    id: number;
+    name?: string;
+    email: string;
+  } | null>(null);
+  const [userLoading, setUserLoading] = useState(true);
   const [planInfo, setPlanInfo] = useState<{
     essential?: {
       name: string;
@@ -34,6 +45,24 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
       features: string[];
     };
   }>({});
+
+  useEffect(() => {
+    async function checkCurrentUser() {
+      try {
+        const response = await fetch('/api/user');
+        if (response.ok) {
+          const userData = await response.json();
+          setCurrentUser(userData);
+        }
+      } catch (error) {
+        console.error('Failed to fetch current user:', error);
+      } finally {
+        setUserLoading(false);
+      }
+    }
+
+    void checkCurrentUser();
+  }, []);
 
   useEffect(() => {
     async function fetchPlanData() {
@@ -141,87 +170,162 @@ export function Login({ mode = 'signin' }: { mode?: 'signin' | 'signup' }) {
 
       <div className='sm:mx-auto sm:w-full sm:max-w-md'>
         <div className='bg-card py-8 px-6 shadow-xl rounded-3xl border border-border'>
-          <form className='space-y-6' action={formAction}>
-            <input type='hidden' name='redirect' value={redirect || ''} />
-            <input type='hidden' name='priceId' value={priceId || ''} />
-            <input type='hidden' name='inviteId' value={inviteId || ''} />
-            <input type='hidden' name='plan' value={plan || ''} />
-
-            <div>
-              <Label
-                htmlFor='email'
-                className='block text-sm font-medium text-card-foreground mb-2'
-              >
-                Email address
-              </Label>
-              <Input
-                id='email'
-                name='email'
-                type='email'
-                autoComplete='email'
-                defaultValue={state.email}
-                required
-                maxLength={50}
-                className='w-full px-4 py-3 border border-input rounded-xl focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring transition-colors duration-200'
-                placeholder='Enter your email'
-              />
+          {/* Show loading state while checking user */}
+          {userLoading ? (
+            <div className='flex justify-center items-center py-12'>
+              <Loader2 className='animate-spin h-8 w-8 text-primary' />
             </div>
-
-            <div>
-              <Label
-                htmlFor='password'
-                className='block text-sm font-medium text-card-foreground mb-2'
-              >
-                Password
-              </Label>
-              <Input
-                id='password'
-                name='password'
-                type='password'
-                autoComplete={
-                  mode === 'signin' ? 'current-password' : 'new-password'
-                }
-                defaultValue={state.password}
-                required
-                minLength={8}
-                maxLength={100}
-                className='w-full px-4 py-3 border border-input rounded-xl focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring transition-colors duration-200'
-                placeholder={
-                  mode === 'signin'
-                    ? 'Enter your password'
-                    : 'Create a password (min. 8 characters)'
-                }
-              />
-            </div>
-
-            {state?.error && (
-              <div className='bg-destructive/10 border border-destructive/20 rounded-xl p-4'>
-                <div className='text-destructive text-sm'>{state.error}</div>
+          ) : /* Show continue checkout for logged-in users in signup mode with plan */
+          currentUser && mode === 'signup' && plan ? (
+            <div className='space-y-6'>
+              <div className='text-center'>
+                <div className='bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4'>
+                  <Sparkles className='h-8 w-8 text-primary' />
+                </div>
+                <h3 className='text-xl font-semibold text-foreground mb-2'>
+                  Welcome back, {currentUser.name || 'there'}!
+                </h3>
+                <p className='text-muted-foreground mb-6'>
+                  You're already signed in. Ready to continue with your{' '}
+                  {selectedPlan?.name}?
+                </p>
               </div>
-            )}
 
-            <div>
-              <Button
-                type='submit'
-                className='w-full bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary/80 text-primary-foreground py-3 px-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 font-semibold'
-                disabled={pending}
-              >
-                {pending ? (
-                  <>
-                    <Loader2 className='animate-spin mr-2 h-4 w-4' />
-                    Loading...
-                  </>
-                ) : mode === 'signin' ? (
-                  'Sign in'
-                ) : (
-                  <>
-                    <Sparkles className='mr-2 h-4 w-4' />
-                    Start Free Trial
-                  </>
-                )}
-              </Button>
+              {continueState?.error && (
+                <div className='bg-destructive/10 border border-destructive/20 rounded-xl p-4'>
+                  <div className='text-destructive text-sm'>
+                    {continueState.error}
+                  </div>
+                </div>
+              )}
+
+              <form action={continueAction}>
+                <input type='hidden' name='plan' value={plan} />
+                <Button
+                  type='submit'
+                  className='w-full bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary/80 text-primary-foreground py-3 px-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 font-semibold'
+                  disabled={continuePending}
+                >
+                  {continuePending ? (
+                    <>
+                      <Loader2 className='animate-spin mr-2 h-4 w-4' />
+                      Loading...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className='mr-2 h-4 w-4' />
+                      Continue to Checkout
+                    </>
+                  )}
+                </Button>
+              </form>
+
+              <div className='text-center'>
+                <p className='text-sm text-muted-foreground'>
+                  Not you?{' '}
+                  <Link
+                    href='/sign-in'
+                    onClick={e => {
+                      e.preventDefault();
+                      void (async () => {
+                        const { signOut } = await import('./actions');
+                        await signOut();
+                      })();
+                    }}
+                    className='text-primary hover:text-primary/80 font-medium underline'
+                  >
+                    Sign out
+                  </Link>{' '}
+                  and try again.
+                </p>
+              </div>
             </div>
-          </form>
+          ) : (
+            /* Show regular login/signup form */ <form
+              className='space-y-6'
+              action={formAction}
+            >
+              <input type='hidden' name='redirect' value={redirect || ''} />
+              <input type='hidden' name='priceId' value={priceId || ''} />
+              <input type='hidden' name='inviteId' value={inviteId || ''} />
+              <input type='hidden' name='plan' value={plan || ''} />
+
+              <div>
+                <Label
+                  htmlFor='email'
+                  className='block text-sm font-medium text-card-foreground mb-2'
+                >
+                  Email address
+                </Label>
+                <Input
+                  id='email'
+                  name='email'
+                  type='email'
+                  autoComplete='email'
+                  defaultValue={state.email}
+                  required
+                  maxLength={50}
+                  className='w-full px-4 py-3 border border-input rounded-xl focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring transition-colors duration-200'
+                  placeholder='Enter your email'
+                />
+              </div>
+
+              <div>
+                <Label
+                  htmlFor='password'
+                  className='block text-sm font-medium text-card-foreground mb-2'
+                >
+                  Password
+                </Label>
+                <Input
+                  id='password'
+                  name='password'
+                  type='password'
+                  autoComplete={
+                    mode === 'signin' ? 'current-password' : 'new-password'
+                  }
+                  defaultValue={state.password}
+                  required
+                  minLength={8}
+                  maxLength={100}
+                  className='w-full px-4 py-3 border border-input rounded-xl focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring transition-colors duration-200'
+                  placeholder={
+                    mode === 'signin'
+                      ? 'Enter your password'
+                      : 'Create a password (min. 8 characters)'
+                  }
+                />
+              </div>
+
+              {state?.error && (
+                <div className='bg-destructive/10 border border-destructive/20 rounded-xl p-4'>
+                  <div className='text-destructive text-sm'>{state.error}</div>
+                </div>
+              )}
+
+              <div>
+                <Button
+                  type='submit'
+                  className='w-full bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary/80 text-primary-foreground py-3 px-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 font-semibold'
+                  disabled={pending}
+                >
+                  {pending ? (
+                    <>
+                      <Loader2 className='animate-spin mr-2 h-4 w-4' />
+                      Loading...
+                    </>
+                  ) : mode === 'signin' ? (
+                    'Sign in'
+                  ) : (
+                    <>
+                      <Sparkles className='mr-2 h-4 w-4' />
+                      Start Free Trial
+                    </>
+                  )}
+                </Button>
+              </div>
+            </form>
+          )}
 
           <div className='mt-6'>
             <div className='relative'>

@@ -1,6 +1,7 @@
 import { getStripePrices, getStripeProducts } from '@/lib/payments/stripe';
-import { Check, ChefHat, Sparkles, Zap } from 'lucide-react';
-import { SubmitButton } from './submit-button';
+import { Check, ChefHat, Sparkles, Zap, ArrowRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 import Logo from '@/components/ui/Logo';
 
 // Prices are fresh for one hour max
@@ -198,80 +199,94 @@ function PricingCard({
   popular?: boolean;
 }) {
   return (
-    <div
-      className={`relative bg-card/80 backdrop-blur-sm rounded-3xl shadow-xl border transition-all duration-300 hover:shadow-2xl hover:scale-105 ${
-        popular
-          ? 'border-primary/30 ring-2 ring-primary/20 bg-gradient-to-b from-card to-primary/5'
-          : 'border-border hover:border-primary/20'
-      } p-8`}
-    >
-      {popular && (
-        <div className='absolute -top-4 left-1/2 transform -translate-x-1/2'>
-          <div className='bg-primary text-primary-foreground px-6 py-2 rounded-full text-sm font-medium flex items-center shadow-lg'>
-            <Sparkles className='h-4 w-4 mr-1' />
-            Most Popular
+    <Link href={`/sign-up?plan=${planId}`} className='block'>
+      <div
+        className={`relative bg-card/80 backdrop-blur-sm rounded-3xl shadow-xl border transition-all duration-300 hover:shadow-2xl hover:scale-105 cursor-pointer ${
+          popular
+            ? 'border-primary/30 ring-2 ring-primary/20 bg-gradient-to-b from-card to-primary/5'
+            : 'border-border hover:border-primary/20'
+        } p-8`}
+      >
+        {popular && (
+          <div className='absolute -top-4 left-1/2 transform -translate-x-1/2'>
+            <div className='bg-primary text-primary-foreground px-6 py-2 rounded-full text-sm font-medium flex items-center shadow-lg'>
+              <Sparkles className='h-4 w-4 mr-1' />
+              Most Popular
+            </div>
+          </div>
+        )}
+
+        <div className='text-center mb-8'>
+          <div
+            className={`inline-flex items-center justify-center w-12 h-12 rounded-xl mb-4 ${
+              popular
+                ? 'bg-gradient-to-r from-primary to-primary'
+                : 'bg-gradient-to-r from-accent to-secondary'
+            }`}
+          >
+            {popular ? (
+              <Zap className='h-6 w-6 text-primary-foreground' />
+            ) : (
+              <ChefHat className='h-6 w-6 text-accent-foreground' />
+            )}
+          </div>
+          <h2 className='text-2xl font-bold text-foreground mb-2'>{name}</h2>
+          <p className='text-sm text-muted-foreground mb-6'>
+            {trialDays} day free trial included
+          </p>
+          <div className='mb-4'>
+            <span className='text-5xl font-bold text-foreground'>
+              ${price / 100}
+            </span>
+            <span className='text-xl text-muted-foreground ml-1'>
+              /{interval}
+            </span>
           </div>
         </div>
-      )}
 
-      <div className='text-center mb-8'>
-        <div
-          className={`inline-flex items-center justify-center w-12 h-12 rounded-xl mb-4 ${
-            popular
-              ? 'bg-gradient-to-r from-primary to-primary'
-              : 'bg-gradient-to-r from-accent to-secondary'
-          }`}
-        >
-          {popular ? (
-            <Zap className='h-6 w-6 text-primary-foreground' />
-          ) : (
-            <ChefHat className='h-6 w-6 text-accent-foreground' />
-          )}
-        </div>
-        <h2 className='text-2xl font-bold text-foreground mb-2'>{name}</h2>
-        <p className='text-sm text-muted-foreground mb-6'>
-          {trialDays} day free trial included
-        </p>
-        <div className='mb-4'>
-          <span className='text-5xl font-bold text-foreground'>
-            ${price / 100}
-          </span>
-          <span className='text-xl text-muted-foreground ml-1'>
-            /{interval}
-          </span>
+        <ul className='space-y-4 mb-8'>
+          {features.map((feature, index) => (
+            <li key={index} className='flex items-start'>
+              <div
+                className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center mr-3 mt-0.5 ${
+                  feature.included
+                    ? popular
+                      ? 'bg-primary/20'
+                      : 'bg-accent'
+                    : 'bg-gray-200 border border-gray-300'
+                }`}
+              >
+                {feature.included ? (
+                  <Check
+                    className={`h-3 w-3 ${popular ? 'text-primary' : 'text-accent-foreground'}`}
+                  />
+                ) : (
+                  <span className='text-gray-400 font-bold text-lg'>×</span>
+                )}
+              </div>
+              <span
+                className={`text-foreground ${!feature.included ? 'opacity-60 line-through' : ''}`}
+              >
+                {feature.label}
+              </span>
+            </li>
+          ))}
+        </ul>
+
+        <div className='mt-auto'>
+          <Button
+            variant={popular ? 'default' : 'outline'}
+            className={`w-full rounded-xl transition-all duration-300 transform hover:scale-105 ${
+              popular
+                ? 'bg-gradient-to-r from-primary via-primary to-primary/80 hover:from-primary/90 hover:via-primary/90 hover:to-primary/80 text-primary-foreground shadow-lg hover:shadow-xl'
+                : 'border-2 border-accent/30 hover:border-accent bg-white/50 backdrop-blur-sm text-foreground hover:text-accent-foreground hover:bg-accent/5'
+            }`}
+          >
+            {popular ? 'Start Free Trial' : 'Get Started'}
+            <ArrowRight className='ml-2 h-4 w-4' />
+          </Button>
         </div>
       </div>
-
-      <ul className='space-y-4 mb-8'>
-        {features.map((feature, index) => (
-          <li key={index} className='flex items-start'>
-            <div
-              className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center mr-3 mt-0.5 ${
-                feature.included
-                  ? popular
-                    ? 'bg-primary/20'
-                    : 'bg-accent'
-                  : 'bg-gray-200 border border-gray-300'
-              }`}
-            >
-              {feature.included ? (
-                <Check
-                  className={`h-3 w-3 ${popular ? 'text-primary' : 'text-accent-foreground'}`}
-                />
-              ) : (
-                <span className='text-gray-400 font-bold text-lg'>×</span>
-              )}
-            </div>
-            <span
-              className={`text-foreground ${!feature.included ? 'opacity-60 line-through' : ''}`}
-            >
-              {feature.label}
-            </span>
-          </li>
-        ))}
-      </ul>
-
-      <SubmitButton planId={planId} popular={popular} />
-    </div>
+    </Link>
   );
 }
